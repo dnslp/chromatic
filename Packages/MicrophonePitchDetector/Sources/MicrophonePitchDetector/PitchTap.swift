@@ -9,7 +9,7 @@ final class PitchTap {
     private var bufferSize: UInt32 { PitchTracker.defaultBufferSize }
     private let input: AVAudioMixerNode
     private var tracker: PitchTracker?
-    private let handler: (Double) -> Void
+    private let handler: (Double, Double) -> Void // Updated handler type
     private let didReceiveAudio: () -> Void
 
     // MARK: - Starting
@@ -27,9 +27,9 @@ final class PitchTap {
     ///
     /// - Parameters:
     ///   - input: Node to analyze
-    ///   - handler: Callback to call when a pitch is detected
+    ///   - handler: Callback to call when a pitch and amplitude are detected
     ///   - didReceiveAudio: Callback to call when any audio is detected
-    init(_ input: AVAudioMixerNode, handler: @escaping (Double) -> Void, didReceiveAudio: @escaping () -> Void) {
+    init(_ input: AVAudioMixerNode, handler: @escaping (Double, Double) -> Void, didReceiveAudio: @escaping () -> Void) {
         self.input = input
         self.handler = handler
         self.didReceiveAudio = didReceiveAudio
@@ -45,8 +45,8 @@ final class PitchTap {
             tracker = PitchTracker(sampleRate: buffer.format.sampleRate)
         }
 
-        if let pitch = tracker?.getPitch(from: buffer) {
-            self.handler(pitch)
+        if let pitchAndAmplitude = tracker?.getPitch(from: buffer) {
+            self.handler(pitchAndAmplitude.pitch, pitchAndAmplitude.amplitude)
         }
     }
 }

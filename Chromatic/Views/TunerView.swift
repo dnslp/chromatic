@@ -54,6 +54,9 @@ struct TunerView: View {
 
             NoteTicks(tunerData: tunerData, showFrequencyText: true)
 
+            Text("Amplitude: \(String(format: "%.2f", tunerData.amplitude))")
+                .padding()
+
             Spacer()
         }
 #endif
@@ -63,7 +66,7 @@ struct TunerView: View {
 struct TunerView_Previews: PreviewProvider {
     static var previews: some View {
         TunerView(
-            tunerData: TunerData(),
+            tunerData: TunerData(pitch: 440, amplitude: 0.5), // Added example amplitude for preview
             modifierPreference: .preferSharps,
             selectedTransposition: 0
         )

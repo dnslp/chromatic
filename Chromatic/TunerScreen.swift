@@ -10,7 +10,7 @@ struct TunerScreen: View {
 
     var body: some View {
         TunerView(
-            tunerData: TunerData(pitch: pitchDetector.pitch),
+            tunerData: TunerData(pitch: pitchDetector.pitch, amplitude: pitchDetector.amplitude), // Pass amplitude
             modifierPreference: modifierPreference,
             selectedTransposition: selectedTransposition
         )

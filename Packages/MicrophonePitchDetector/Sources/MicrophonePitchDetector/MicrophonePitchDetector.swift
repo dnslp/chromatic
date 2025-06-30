@@ -10,6 +10,7 @@ public final class MicrophonePitchDetector: ObservableObject {
     private var tracker: PitchTap!
 
     @Published public var pitch: Double = 440
+    @Published public var amplitude: Double = 0.0 // New published property
     @Published public var didReceiveAudio = false
     @Published public var showMicrophoneAccessAlert = false
 
@@ -31,9 +32,10 @@ public final class MicrophonePitchDetector: ObservableObject {
 #if !os(macOS)
         try engine.configureSession()
 #endif
-        tracker = PitchTap(engine.inputMixer, handler: { pitch in
+        tracker = PitchTap(engine.inputMixer, handler: { pitch, amplitude in
             Task { @MainActor in
                 self.pitch = pitch
+                self.amplitude = amplitude // Set the new amplitude property
             }
         }, didReceiveAudio: {
             Task { @MainActor in
