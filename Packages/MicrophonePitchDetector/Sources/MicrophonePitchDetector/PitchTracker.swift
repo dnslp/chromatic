@@ -14,7 +14,7 @@ public final class PitchTracker {
         ptrack = ZenPTrack(sampleRate: sampleRate, hopSize: hopSize, peakCount: peakCount)
     }
 
-    public func getPitch(from buffer: AVAudioPCMBuffer, amplitudeThreshold: Double = 0.1) -> Double? {
+    public func getPitch(from buffer: AVAudioPCMBuffer, amplitudeThreshold: Double = 0.1) -> (pitch: Double, amplitude: Double)? {
         guard let floatData = buffer.floatChannelData else { return nil }
 
         var pitch = 0.0
@@ -30,7 +30,7 @@ public final class PitchTracker {
         }
 
         if amplitude > amplitudeThreshold, pitch > 0 {
-            return pitch
+            return (pitch: pitch, amplitude: amplitude)
         } else {
             return nil
         }
