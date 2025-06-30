@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "8F3ECCF72682821900415B9F"
-               BuildableName = "Zen Tuner watchOS.app"
-               BlueprintName = "Zen Tuner watchOS"
-               ReferencedContainer = "container:ZenTuner.xcodeproj">
+               BuildableName = "Chromatic watchOS.app"
+               BlueprintName = "Chromatic watchOS"
+               ReferencedContainer = "container:Chromatic.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -45,9 +45,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "8F3ECCF72682821900415B9F"
-            BuildableName = "Zen Tuner watchOS.app"
-            BlueprintName = "Zen Tuner watchOS"
-            ReferencedContainer = "container:ZenTuner.xcodeproj">
+            BuildableName = "Chromatic watchOS.app"
+            BlueprintName = "Chromatic watchOS"
+            ReferencedContainer = "container:Chromatic.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -62,9 +62,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "8F3ECCF72682821900415B9F"
-            BuildableName = "Zen Tuner watchOS.app"
-            BlueprintName = "Zen Tuner watchOS"
-            ReferencedContainer = "container:ZenTuner.xcodeproj">
+            BuildableName = "Chromatic watchOS.app"
+            BlueprintName = "Chromatic watchOS"
+            ReferencedContainer = "container:Chromatic.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

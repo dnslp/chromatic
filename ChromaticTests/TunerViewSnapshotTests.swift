@@ -2,7 +2,7 @@ import SnapshotTesting
 import SwiftUI
 import UIKit
 import XCTest
-@testable import ZenTuner
+@testable import Chromatic
 
 final class TunerViewSnapshotTests: XCTestCase {
     override func setUp() {

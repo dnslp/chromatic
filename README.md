@@ -1,14 +1,14 @@
-# Zen Tuner
+# Chromatic Tuner
 
-![CI](https://github.com/jpsim/ZenTuner/workflows/CI/badge.svg)
+![CI](https://github.com/jpsim/Chromatic/workflows/CI/badge.svg)
 
 A minimal chromatic tuner for iOS, watchOS, macOS & visionOS. Works well with
 any instrument, whether it’s woodwinds, brass, strings or voice.
 
-|       | Dark                                | Light                                |
-| ----- | ----------------------------------- | ------------------------------------ |
-| iOS   | ![](images/zentuner-ios-dark.png)   | ![](images/zentuner-ios-light.png)   |
-| macOS | ![](images/zentuner-macos-dark.png) | ![](images/zentuner-macos-light.png) |
+|       | Dark                                  | Light                                   |
+| ----- | ------------------------------------- | ------------------------------------- |
+| iOS   | ![](images/chromatic-ios-dark.png)   | ![](images/chromatic-ios-light.png)   |
+| macOS | ![](images/chromatic-macos-dark.png) | ![](images/chromatic-macos-light.png) |
 
 ## Features
 

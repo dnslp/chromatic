@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct ZenTunerApp: App {
+struct ChromaticApp: App {
     var body: some Scene {
         WindowGroup {
             TunerScreen()
