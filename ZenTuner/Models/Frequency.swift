@@ -13,7 +13,8 @@ struct Frequency: Equatable {
 
         /// Humans can distinguish a difference in pitch of about 5–6 cents:
         /// https://en.wikipedia.org/wiki/Cent_%28music%29#Human_perception
-        var isPerceptible: Bool { fabsf(cents) > 6 }
+        static let perceptibilityThreshold: Float = 6
+        var isPerceptible: Bool { fabsf(cents) > MusicalDistance.perceptibilityThreshold }
 
         /// A distance is flat if it is less than zero.
         var isFlat: Bool { cents < 0 }

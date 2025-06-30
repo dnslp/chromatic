@@ -51,6 +51,18 @@ struct TunerView: View {
             )
 
             MatchedNoteFrequency(frequency: tunerData.closestNote.frequency)
+                .padding(.bottom, 2) // Add a little space
+
+            // Display current detected pitch
+            Text("Detected: \(tunerData.pitch.localizedString())")
+                .font(.caption)
+                .foregroundColor(.secondary)
+
+            // Display target standard pitch
+            Text("Target: \(tunerData.closestNote.frequency.localizedString()) (\(match.note.names.first ?? "")\(match.octave))")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .padding(.bottom, 5) // Add some space before NoteTicks
 
             NoteTicks(tunerData: tunerData, showFrequencyText: true)
 
