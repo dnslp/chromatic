@@ -1,5 +1,5 @@
 import XCTest
-@testable import ZenTuner
+@testable import Chromatic
 
 class TranspositionTests: XCTestCase {
     func testBFlatTranspositions() {
