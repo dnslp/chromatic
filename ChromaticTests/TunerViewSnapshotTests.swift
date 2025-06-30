@@ -11,22 +11,38 @@ final class TunerViewSnapshotTests: XCTestCase {
     }
 
     func testTunerView() {
-        let view = TunerView(
-            tunerData: TunerData(),
-            modifierPreference: .preferSharps,
-            selectedTransposition: 0
-        )
-        for device in SnapshotDevice.all {
-            assertSnapshot(
-                matching: view,
-                as: .image(device.config, .light),
-                named: "\(device.fastlaneName)-light"
+        let defaultTunerData = TunerData() // In tune
+        let sharpTunerData = TunerData(pitch: 443, amplitude: 0.5) // Approx +11.8 cents (A4=440) -> Should be Green/Yellow
+        let verySharpTunerData = TunerData(pitch: 448, amplitude: 0.5) // Approx +31 cents -> Should be Yellow/Red
+        let flatTunerData = TunerData(pitch: 437, amplitude: 0.5) // Approx -11.9 cents -> Should be Green/Yellow
+        let veryFlatTunerData = TunerData(pitch: 432, amplitude: 0.5) // Approx -31.7 cents -> Should be Yellow/Red
+
+        let testCases: [(name: String, data: TunerData)] = [
+            ("inTune", defaultTunerData),
+            ("sharp", sharpTunerData),
+            ("verySharp", verySharpTunerData),
+            ("flat", flatTunerData),
+            ("veryFlat", veryFlatTunerData)
+        ]
+
+        for testCase in testCases {
+            let view = TunerView(
+                tunerData: testCase.data,
+                modifierPreference: .preferSharps,
+                selectedTransposition: 0
             )
-            assertSnapshot(
-                matching: view,
-                as: .image(device.config, .dark),
-                named: "\(device.fastlaneName)-dark"
-            )
+            for device in SnapshotDevice.all {
+                assertSnapshot(
+                    matching: view,
+                    as: .image(device.config, .light),
+                    named: "\(device.fastlaneName)-\(testCase.name)-light"
+                )
+                assertSnapshot(
+                    matching: view,
+                    as: .image(device.config, .dark),
+                    named: "\(device.fastlaneName)-\(testCase.name)-dark"
+                )
+            }
         }
     }
 }

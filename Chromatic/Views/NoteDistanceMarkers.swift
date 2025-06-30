@@ -12,6 +12,7 @@ struct NoteDistanceMarkers: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
+        .animation(.easeInOut, value: tunerData.closestNote.distance)
         .alignmentGuide(.noteTickCenter) { dimensions in
             dimensions[VerticalAlignment.center]
         }
