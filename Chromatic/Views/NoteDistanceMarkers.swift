@@ -10,43 +10,37 @@ struct NoteDistanceMarkers: View {
                     .frame(width: 1, height: tickSize(forIndex: index).height)
                     .cornerRadius(1)
                     .foregroundColor(colorForTick(atIndex: index))
-                    .animation(.easeInOut, value: tunerData.closestNote.distance) // Animation per tick
+                    .animation(.easeInOut, value: tunerData.closestNote.distance.cents) // Animate based on cents
                     .inExpandingRectangle()
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
-        // It's generally better to apply a single animation modifier to the container
-        // if all elements within animate based on the same value change.
-        // However, if individual ticks need to animate independently based on their own color changes,
-        // then animating each Rectangle might be intended.
-        // For now, moving animation to each rectangle as it's more likely to reflect individual changes.
-        // If the whole block of ticks should animate together, it should be on the HStack.
-        // Let's stick to animating individual rectangles for now as per previous step.
         .alignmentGuide(.noteTickCenter) { dimensions in
             dimensions[VerticalAlignment.center]
         }
     }
 
     private func colorForTick(atIndex index: Int) -> Color {
-        let currentPitchActualDistance = tunerData.closestNote.distance // e.g., +10 cents (sharp)
-        let tickPositionInCents = Double(index - 12) // e.g., tick at index 13 is +1 cent from center
+        let currentPitchActualDistanceCents = Double(tunerData.closestNote.distance.cents) // Use .cents and cast to Double
+        let tickPositionInCents = Double(index - 12) // This is already a Double representing cents offset
 
+        // Thresholds (as Doubles for comparison with Double types)
         let greenZoneHalfWidth: Double = 2.5
         let yellowZoneHalfWidth: Double = 7.5
 
-        let diffFromActualPitch = tickPositionInCents - currentPitchActualDistance
+        let diffFromActualPitch = tickPositionInCents - currentPitchActualDistanceCents
 
-        if currentPitchActualDistance > greenZoneHalfWidth && tickPositionInCents < 0 {
+        if currentPitchActualDistanceCents > greenZoneHalfWidth && tickPositionInCents < 0 {
             return .secondary
         }
-        if currentPitchActualDistance < -greenZoneHalfWidth && tickPositionInCents > 0 {
+        if currentPitchActualDistanceCents < -greenZoneHalfWidth && tickPositionInCents > 0 {
             return .secondary
         }
 
         let isTickOnCorrectSideOrPitchInTune: Bool =
-            (currentPitchActualDistance >= 0 && tickPositionInCents >= -greenZoneHalfWidth) ||
-            (currentPitchActualDistance <= 0 && tickPositionInCents <= greenZoneHalfWidth) ||
-            abs(currentPitchActualDistance) <= greenZoneHalfWidth
+            (currentPitchActualDistanceCents >= 0 && tickPositionInCents >= -greenZoneHalfWidth) ||
+            (currentPitchActualDistanceCents <= 0 && tickPositionInCents <= greenZoneHalfWidth) ||
+            abs(currentPitchActualDistanceCents) <= greenZoneHalfWidth
 
         if isTickOnCorrectSideOrPitchInTune {
             if abs(diffFromActualPitch) <= greenZoneHalfWidth {
@@ -54,8 +48,9 @@ struct NoteDistanceMarkers: View {
             } else if abs(diffFromActualPitch) <= yellowZoneHalfWidth {
                 return .slightlyPerceptibleMusicalDistance
             } else {
-                if !((currentPitchActualDistance > yellowZoneHalfWidth && tickPositionInCents < currentPitchActualDistance) ||
-                     (currentPitchActualDistance < -yellowZoneHalfWidth && tickPositionInCents > currentPitchActualDistance)) {
+                // Only color red if it's not "behind" the current pitch direction when pitch is far off
+                if !((currentPitchActualDistanceCents > yellowZoneHalfWidth && tickPositionInCents < currentPitchActualDistanceCents) ||
+                     (currentPitchActualDistanceCents < -yellowZoneHalfWidth && tickPositionInCents > currentPitchActualDistanceCents)) {
                     return .perceptibleMusicalDistance
                 }
             }
@@ -97,17 +92,27 @@ extension View {
 
 struct NoteDistanceMarkers_Previews: PreviewProvider {
     static var previews: some View {
+        // Helper to create TunerData; assumes A4 = 440 Hz for pitch calculations if not perfectly on a note
+        // The TunerData init will calculate the 'closestNote' and its 'distance'
+        let makeTunerData = { (hz: Double) -> TunerData in
+            TunerData(pitch: hz, amplitude: 0.5)
+        }
+
         Group {
-            NoteDistanceMarkers(tunerData: TunerData(pitch: 440.0, amplitude: 0.5)) // In tune
-                .previewDisplayName("In Tune")
-            NoteDistanceMarkers(tunerData: TunerData(pitch: 443.0, amplitude: 0.5)) // Slightly Sharp (+11.8 cents)
+            NoteDistanceMarkers(tunerData: makeTunerData(440.0)) // In tune (A4)
+                .previewDisplayName("In Tune (A4)")
+            NoteDistanceMarkers(tunerData: makeTunerData(443.0)) // Slightly Sharp from A4 (+11.8 cents)
                 .previewDisplayName("Slightly Sharp")
-            NoteDistanceMarkers(tunerData: TunerData(pitch: 452.0, amplitude: 0.5)) // Very Sharp (+47 cents)
+            NoteDistanceMarkers(tunerData: makeTunerData(452.0)) // Very Sharp from A4 (+47 cents)
                 .previewDisplayName("Very Sharp")
-            NoteDistanceMarkers(tunerData: TunerData(pitch: 437.0, amplitude: 0.5)) // Slightly Flat (-11.9 cents)
+            NoteDistanceMarkers(tunerData: makeTunerData(437.0)) // Slightly Flat from A4 (-11.9 cents)
                 .previewDisplayName("Slightly Flat")
-            NoteDistanceMarkers(tunerData: TunerData(pitch: 429.0, amplitude: 0.5)) // Very Flat (-43 cents)
+            NoteDistanceMarkers(tunerData: makeTunerData(429.0)) // Very Flat from A4 (-43 cents)
                 .previewDisplayName("Very Flat")
+            NoteDistanceMarkers(tunerData: makeTunerData(261.63)) // In tune (C4)
+                .previewDisplayName("In Tune (C4)")
+            NoteDistanceMarkers(tunerData: makeTunerData(263.0)) // Slightly sharp from C4
+                .previewDisplayName("Slightly Sharp (C4)")
         }
         .previewLayout(.fixed(width: 300, height: 200))
         .background(Color.gray.opacity(0.2))
