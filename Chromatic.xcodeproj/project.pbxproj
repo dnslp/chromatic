@@ -51,6 +51,8 @@
 		8FB571FF25B73ECF007C28BC /* TunerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FB571F425B73ECF007C28BC /* TunerView.swift */; };
 		8FD5D594267849EF00E5577D /* MicrophonePitchDetector in Frameworks */ = {isa = PBXBuildFile; productRef = 8FD5D593267849EF00E5577D /* MicrophonePitchDetector */; };
 		8FE56CDD25BE05D20038664C /* TranspositionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FE56CDC25BE05D20038664C /* TranspositionTests.swift */; };
+		BEED6E942E143B3E00037881 /* PlaylistManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEED6E932E143B3B00037881 /* PlaylistManager.swift */; };
+		BEED6E952E143B3E00037881 /* PlaylistManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEED6E932E143B3B00037881 /* PlaylistManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -119,6 +121,7 @@
 		8FE56CDA25BE05D20038664C /* ChromaticTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ChromaticTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8FE56CDC25BE05D20038664C /* TranspositionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranspositionTests.swift; sourceTree = "<group>"; };
 		8FE56CDE25BE05D20038664C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		BEED6E932E143B3B00037881 /* PlaylistManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -257,6 +260,7 @@
 		8FB571D725B73E9A007C28BC /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				BEED6E932E143B3B00037881 /* PlaylistManager.swift */,
 				8FB571D925B73E9A007C28BC /* Frequency.swift */,
 				8FB571D825B73E9A007C28BC /* ModifierPreference.swift */,
 				8FB571DA25B73E9A007C28BC /* ScaleNote.swift */,
@@ -345,7 +349,7 @@
 			);
 			dependencies = (
 			);
-			name = "Chromatic";
+			name = Chromatic;
 			packageProductDependencies = (
 				8FD5D593267849EF00E5577D /* MicrophonePitchDetector */,
 			);
@@ -479,6 +483,7 @@
 				8F2D9757269390D800B512D0 /* MicrophoneAccessAlert.swift in Sources */,
 				8F2D975B2693930000B512D0 /* NoteTicks.swift in Sources */,
 				8F3ECD1F2682834700415B9F /* ModifierPreference.swift in Sources */,
+				BEED6E942E143B3E00037881 /* PlaylistManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -489,6 +494,7 @@
 				8FB571E525B73E9A007C28BC /* TunerData.swift in Sources */,
 				8FB571F525B73ECF007C28BC /* CurrentNoteMarker.swift in Sources */,
 				8FB571F925B73ECF007C28BC /* MatchedNoteView.swift in Sources */,
+				BEED6E952E143B3E00037881 /* PlaylistManager.swift in Sources */,
 				8F2D9755269390D800B512D0 /* MicrophoneAccessAlert.swift in Sources */,
 				8FB571E925B73E9A007C28BC /* Alignment.swift in Sources */,
 				8FB571E325B73E9A007C28BC /* ScaleNote.swift in Sources */,
@@ -545,7 +551,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IBSC_MODULE = Chromatic_WatchKit_Extension;
 				INFOPLIST_FILE = BuildSupport/watchOS/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Chromatic";
+				INFOPLIST_KEY_CFBundleDisplayName = Chromatic;
 				INFOPLIST_KEY_CFBundleExecutable = "Chromatic watchOS";
 				INFOPLIST_KEY_CFBundleName = "Chromatic watchOS";
 				INFOPLIST_KEY_CFBundleVersion = 15;
@@ -574,7 +580,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IBSC_MODULE = Chromatic_WatchKit_Extension;
 				INFOPLIST_FILE = BuildSupport/watchOS/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Chromatic";
+				INFOPLIST_KEY_CFBundleDisplayName = Chromatic;
 				INFOPLIST_KEY_CFBundleExecutable = "Chromatic watchOS";
 				INFOPLIST_KEY_CFBundleName = "Chromatic watchOS";
 				INFOPLIST_KEY_CFBundleVersion = 15;
