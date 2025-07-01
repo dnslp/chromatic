@@ -5,23 +5,16 @@ import SwiftUI
 
 @main
 struct ChromaticApp: App {
-    // Single shared player instance
     @StateObject private var audioPlayer = AudioPlayer()
-
     var body: some Scene {
         WindowGroup {
             TabView {
-                // Tuner tab
                 TunerScreen()
-                    .tabItem {
-                        Label("Tuner", systemImage: "tuningfork")
-                    }
-
-                // Player tab
+                    .tabItem { Label("Tuner", systemImage: "tuningfork") }
                 PlayerView(audioPlayer: audioPlayer)
-                    .tabItem {
-                        Label("Player", systemImage: "music.note")
-                    }
+                    .tabItem { Label("Player", systemImage: "music.note") }
+                MixerView()
+                    .tabItem { Label("Mixer", systemImage: "slider.horizontal.3") }
             }
             .onAppear {
                 #if os(iOS)
