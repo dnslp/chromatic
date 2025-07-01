@@ -14,6 +14,11 @@ public final class MicrophonePitchDetector: ObservableObject {
     @Published public var didReceiveAudio = false
     @Published public var showMicrophoneAccessAlert = false
 
+    /// The underlying AVAudioEngine instance.
+    public var avAudioEngine: AVAudioEngine {
+        return engine.avEngine // Exposing the raw AVAudioEngine instance from our AudioEngine wrapper
+    }
+
     public init() {}
 
     @MainActor

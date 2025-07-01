@@ -8,75 +8,51 @@ import Foundation
 import AVFoundation
 
 class PlaylistManager: ObservableObject {
-    @Published var currentTrackFile: AVAudioFile? // Renamed for clarity
+    // For single track playback
+    @Published var currentTrackFile: AVAudioFile?
     @Published var currentTrackName: String?
-    @Published var isPlaying: Bool = false
+    @Published var isPlaying: Bool = false // Represents state for single or synchronous playback
 
-    private var audioPlayerNode = AVAudioPlayerNode()
-    private var audioEngine: AVAudioEngine? // Optional, will be set externally
-    private var playlist: [URL] = []
-    private var currentIndex: Int = 0
+    // Player node for single track playback
+    private var singleTrackPlayerNode: AVAudioPlayerNode?
 
-    // Initializer no longer sets up its own engine immediately
+    // For multiple synchronous tracks
+    private var syncPlayerNodes: [AVAudioPlayerNode] = []
+    private var syncAudioFiles: [AVAudioFile] = []
+    // We'll use a single mixer for all playlist audio, whether single or sync
+    private var playlistMixerNode = AVAudioMixerNode()
+
+    private var audioEngine: AVAudioEngine?
+    private var playlist: [URL] = [] // Still useful for browsing individual tracks
+    private var currentIndex: Int = 0 // For single track selection
+
     init() {
-        loadPlaylist()
+        loadPlaylist() // Loads available tracks into `playlist`
     }
 
-    // Call this method to provide the shared AVAudioEngine
-    // and connect the player node to it.
     func attachTo(engine: AVAudioEngine) {
         guard self.audioEngine == nil else {
             print("PlaylistManager is already attached to an audio engine.")
-            // Optionally, disconnect from the old engine and connect to the new one
-            // For now, we assume it's only attached once.
             return
         }
-
         self.audioEngine = engine
-        
-        // Create a dedicated mixer for our playlist audio
-        let playlistMixer = AVAudioMixerNode()
-        engine.attach(playlistMixer)
-        
-        // Attach the player node to the provided engine
-        engine.attach(audioPlayerNode)
 
-        // Connect player node to our dedicated playlistMixer
-        // Use a common stereo format, similar to what MicrophonePitchDetector's AudioEngine uses internally.
-        // This helps ensure compatibility before a specific file is scheduled on audioPlayerNode.
-        guard let commonFormat = AVAudioFormat(standardFormatWithSampleRate: 44100, channels: 2) else {
-            fatalError("PlaylistManager: Could not create common AVAudioFormat.") // Should not happen
-        }
-        engine.connect(audioPlayerNode, to: playlistMixer, format: commonFormat)
+        // Attach the common playlist mixer to the engine
+        engine.attach(playlistMixerNode)
 
-        // Connect our playlistMixer to the engine's output node
+        // Connect the playlist mixer to the engine's output node
         let outputNode = engine.outputNode
-        // Use a common format for the connection to the output node,
-        // or the output node's input format for bus 0.
+        // Ensure a compatible format for the connection to the output node.
+        // Using the output node's input format for bus 0 is a common approach.
         let mixerConnectionFormat = outputNode.inputFormat(forBus: 0)
-        engine.connect(playlistMixer, to: outputNode, format: mixerConnectionFormat)
-        print("PlaylistManager: Connected audioPlayerNode -> playlistMixer -> outputNode.")
+        engine.connect(playlistMixerNode, to: outputNode, format: mixerConnectionFormat)
+        print("PlaylistManager: Connected playlistMixerNode to outputNode.")
 
-        // Ensure the engine is running. The MicrophonePitchDetector should have started it.
         if !engine.isRunning {
             do {
                 try engine.start()
             } catch {
                 print("Error starting shared audio engine in PlaylistManager: \(error.localizedDescription)")
-            }
-        }
-        
-        // If a track was pre-loaded and waiting, schedule it now
-        if let trackFile = self.currentTrackFile, audioEngine?.isRunning == true {
-            // Stop any existing playback and reset before scheduling new file
-            audioPlayerNode.stop()
-            audioPlayerNode.reset()
-            
-            audioPlayerNode.scheduleFile(trackFile, at: nil) { [weak self] in
-                DispatchQueue.main.async {
-                    self?.isPlaying = false
-                    // Optionally, auto-play next or handle end of track
-                }
             }
         }
     }
@@ -218,69 +194,208 @@ class PlaylistManager: ObservableObject {
         // Ensure the track is scheduled before playing, especially if it wasn't scheduled during attachTo (e.g. engine wasn't running)
         // or if play is called after a pause and the buffer needs to be rescheduled.
         // A more robust solution might check audioPlayerNode.playerTime or a similar property
-        // to see if it's already scheduled and at the end.
-        // For simplicity, we'll re-schedule if not currently playing. This handles starting from scratch
-        // or continuing after a track finished.
-        if !audioPlayerNode.isPlaying || audioPlayerNode.playerTime == nil /* crude check for needing scheduling */ {
-            // Stop and reset before scheduling a new file or re-scheduling the current one
-            audioPlayerNode.stop()
-            audioPlayerNode.reset()
-            audioPlayerNode.scheduleFile(currentTrackFile!, at: nil) { [weak self] in
-                 DispatchQueue.main.async {
-                    self?.isPlaying = false
-                    // Consider calling nextTrack() here for auto-advancing playlist
-                }
+        // This method is now for single track playback.
+        // It will create, configure, and use `singleTrackPlayerNode`.
+        // It should also ensure any synchronous playback is stopped.
+
+        stopSynchronousPlayback() // Stop any sync playback first.
+
+        if currentTrackFile == nil {
+            print("No track loaded. Attempting to prepare one for single playback.")
+            if !playlist.isEmpty {
+                prepareTrack(at: currentIndex) // This sets currentTrackFile
+            } else {
+                print("Playlist is empty. Cannot prepare single track.")
+                return
             }
         }
+
+        guard let trackToPlay = currentTrackFile else {
+            print("Still no single track available to play.")
+            return
+        }
+
+        // Stop and reset existing single track player node if it exists
+        if let existingPlayer = singleTrackPlayerNode {
+            existingPlayer.stop()
+            audioEngine?.detach(existingPlayer)
+            self.singleTrackPlayerNode = nil
+        }
+
+        let playerNode = AVAudioPlayerNode()
+        self.singleTrackPlayerNode = playerNode
+        engine.attach(playerNode)
+
+        // Connect to the common playlistMixerNode
+        guard let format = trackToPlay.processingFormat as AVAudioFormat? else {
+            print("Error: Could not get processing format for single track \(trackToPlay.url.lastPathComponent).")
+            // Fallback or error handling
+            let commonFormat = AVAudioFormat(standardFormatWithSampleRate: 44100, channels: 2) ?? AVAudioFormat()
+            engine.connect(playerNode, to: playlistMixerNode, format: commonFormat)
+            // We might choose to not proceed if the format is unknown.
+            return
+        }
+        engine.connect(playerNode, to: playlistMixerNode, format: format)
 
         if !engine.isRunning {
             do {
                 try engine.start()
             } catch {
-                print("Could not start audio engine: \(error.localizedDescription)")
+                print("Could not start audio engine for single track: \(error.localizedDescription)")
                 return
             }
         }
 
-        audioPlayerNode.play()
+        playerNode.scheduleFile(trackToPlay, at: nil) { [weak self] in
+            DispatchQueue.main.async {
+                self?.isPlaying = false
+                // self?.nextTrack() // Optional: auto-play next
+            }
+        }
+        playerNode.play()
         isPlaying = true
     }
 
     func pause() {
-        // No need to check audioEngine for pause, as node operations are safe.
-        audioPlayerNode.pause()
+        // Pauses whatever is currently playing (single or sync)
+        if !(syncPlayerNodes.isEmpty) {
+            for playerNode in syncPlayerNodes where playerNode.isPlaying {
+                playerNode.pause()
+            }
+        } else if let playerNode = singleTrackPlayerNode, playerNode.isPlaying {
+            playerNode.pause()
+        }
         isPlaying = false
     }
 
     func nextTrack() {
         guard !playlist.isEmpty else { return }
+        stopAllPlayback() // Stop current playback (single or sync) before switching track
         let nextIndex = (currentIndex + 1) % playlist.count
-        prepareTrack(at: nextIndex)
-        if isPlaying { // If it was playing, start the new track
-            play()
-        }
+        prepareTrack(at: nextIndex) // This sets currentTrackFile and currentTrackName
+        // User needs to press play() again to start the new track.
     }
 
     func previousTrack() {
         guard !playlist.isEmpty else { return }
+        stopAllPlayback() // Stop current playback (single or sync) before switching track
         let prevIndex = (currentIndex - 1 + playlist.count) % playlist.count
         prepareTrack(at: prevIndex)
-        if isPlaying { // If it was playing, start the new track
-            play()
+        // User needs to press play() again to start the new track.
+    }
+
+    // --- Methods for Synchronous Playback ---
+
+    func playSynchronously(urls: [URL]) {
+        guard let engine = audioEngine, !urls.isEmpty else {
+            print("Audio engine not attached or no URLs provided for synchronous playback.")
+            return
+        }
+
+        stopAllPlayback() // Stop any current playback (single or sync)
+
+        var tempPlayerNodes: [AVAudioPlayerNode] = []
+        var tempAudioFiles: [AVAudioFile] = []
+
+        for url in urls {
+            do {
+                let audioFile = try AVAudioFile(forReading: url)
+                let playerNode = AVAudioPlayerNode()
+
+                engine.attach(playerNode)
+                // Connect each player node to the common playlistMixerNode
+                guard let format = audioFile.processingFormat as AVAudioFormat? else {
+                     print("Could not get processing format for \(url.lastPathComponent) for sync playback.")
+                     // Fallback to a common format if specific one fails, or skip this file
+                     let commonFormat = AVAudioFormat(standardFormatWithSampleRate: 44100, channels: 2) ?? AVAudioFormat()
+                     engine.connect(playerNode, to: playlistMixerNode, format: commonFormat)
+                     // Consider not adding this file if its format is problematic
+                     continue
+                 }
+                engine.connect(playerNode, to: playlistMixerNode, format: format)
+
+                tempAudioFiles.append(audioFile)
+                tempPlayerNodes.append(playerNode)
+
+            } catch {
+                print("Error loading audio file \(url.lastPathComponent) for sync playback: \(error.localizedDescription)")
+                // Continue to next file, or decide to abort all if one fails
+            }
+        }
+
+        guard !tempPlayerNodes.isEmpty else {
+            print("No audio files successfully loaded for synchronous playback.")
+            return
+        }
+
+        self.syncAudioFiles = tempAudioFiles
+        self.syncPlayerNodes = tempPlayerNodes
+
+        if !engine.isRunning {
+            do {
+                try engine.start()
+            } catch {
+                print("Could not start audio engine for sync playback: \(error.localizedDescription)")
+                // Clean up attached nodes if engine fails to start
+                for node in tempPlayerNodes { engine.detach(node) }
+                self.syncPlayerNodes.removeAll()
+                self.syncAudioFiles.removeAll()
+                return
+            }
+        }
+
+        var allScheduledSuccessfully = true
+        for (index, playerNode) in syncPlayerNodes.enumerated() {
+            let audioFile = syncAudioFiles[index]
+            playerNode.scheduleFile(audioFile, at: nil) { [weak self] in
+                DispatchQueue.main.async {
+                    // Check if all sync players have finished
+                    if self?.syncPlayerNodes.allSatisfy({ !$0.isPlaying }) ?? false {
+                        if self?.isPlaying == true && !(self?.syncPlayerNodes.isEmpty ?? true) {
+                           self?.isPlaying = false
+                           print("All synchronous tracks finished.")
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Only play if all files were scheduled
+        if allScheduledSuccessfully {
+            for playerNode in syncPlayerNodes {
+                playerNode.play()
+            }
+            isPlaying = true
+            currentTrackFile = nil // Clear single track info
+            currentTrackName = "Synchronous Playback"
+        } else {
+            print("Not all files could be scheduled for synchronous playback. Aborting.")
+            // Cleanup nodes that might have been attached but not played
+            stopSynchronousPlayback()
         }
     }
-    
-    // Call this method to allow the audio engine to run alongside microphone input
-    func connectToEngine(_ engine: AVAudioEngine) {
-        // Disconnect from internal engine's main mixer if previously connected
-        audioEngine?.disconnectNodeOutput(audioPlayerNode)
 
-        // Connect to the provided engine's main mixer
-        let mainMixer = engine.mainMixerNode
-        engine.connect(audioPlayerNode, to: mainMixer, format: mainMixer.outputFormat(forBus: 0))
-        
-        // Use the external engine going forward
-        self.audioEngine = engine
+    private func stopSingleTrackPlayback() {
+        if let playerNode = singleTrackPlayerNode {
+            playerNode.stop()
+            audioEngine?.detach(playerNode)
+            singleTrackPlayerNode = nil
+        }
+    }
+
+    private func stopSynchronousPlayback() {
+        for playerNode in syncPlayerNodes {
+            playerNode.stop()
+            audioEngine?.detach(playerNode)
+        }
+        syncPlayerNodes.removeAll()
+        syncAudioFiles.removeAll()
+    }
+
+    func stopAllPlayback() {
+        stopSingleTrackPlayback()
+        stopSynchronousPlayback()
+        isPlaying = false
     }
 }
 
