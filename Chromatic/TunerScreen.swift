@@ -11,10 +11,11 @@ struct TunerScreen: View {
     var body: some View {
         TunerView(
             tunerData: TunerData(pitch: pitchDetector.pitch, amplitude: pitchDetector.amplitude), // Pass amplitude
+            micIsActive: pitchDetector.didReceiveAudio, // Pass the mic status
             modifierPreference: modifierPreference,
             selectedTransposition: selectedTransposition
         )
-        .opacity(pitchDetector.didReceiveAudio ? 1 : 0.5)
+        .opacity(pitchDetector.didReceiveAudio ? 1 : 0.5) // Keep existing opacity behavior
         .animation(.easeInOut, value: pitchDetector.didReceiveAudio)
         .task {
             do {

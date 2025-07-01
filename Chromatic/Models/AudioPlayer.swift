@@ -9,11 +9,14 @@ class AudioPlayer: ObservableObject {
     @Published var isPlaying = false
     @Published var currentSong: String = ""
     @Published var songList: [String] = []
+    @Published var volume: Float = 1.0 // Target volume
+    @Published var averagePower: Float = -160.0 // For VU meter, dBFS
 
     private var player: AVAudioPlayer?
     private var songURLs: [URL] = []
     private var currentIndex: Int = 0
     private var fadeTimer: Timer?
+    private var meterUpdateTimer: Timer?
 
     // Fade settings
     private let fadeDuration: TimeInterval = 0.5
@@ -44,10 +47,17 @@ class AudioPlayer: ObservableObject {
         guard !songURLs.isEmpty else { return }
         let url = songURLs[currentIndex]
         do {
+            // Stop metering before changing the player instance
+            stopMetering()
+
             player = try AVAudioPlayer(contentsOf: url)
-            player?.numberOfLoops = -1
-            player?.volume = 1.0
+            player?.numberOfLoops = -1 // Loop indefinitely
+            player?.volume = self.volume // Initialize with current target volume
+            player?.isMeteringEnabled = true // Enable metering
             player?.prepareToPlay()
+
+            // If it was playing, and a new song is selected, start metering for the new song if it auto-plays
+            // For now, metering is started by fadeIn()
         } catch {
             print("❌ Failed to load \(url.lastPathComponent): \(error)")
         }
@@ -86,38 +96,103 @@ class AudioPlayer: ObservableObject {
         select(at: prev)
     }
 
+    func setVolume(_ newVolume: Float) {
+        let clampedVolume = min(max(newVolume, 0.0), 1.0) // Ensure volume is between 0 and 1
+        self.volume = clampedVolume
+        // If player is active and not currently fading, apply volume directly
+        if player?.isPlaying == true && fadeTimer == nil {
+            player?.volume = self.volume
+        }
+        // If currently fading in, the fade logic will pick up the new target self.volume.
+        // If currently fading out, it will continue to fade to 0. This behavior can be adjusted if needed.
+    }
+
+    // MARK: - Metering
+    private func startMetering() {
+        stopMetering() // Ensure no existing timer is running
+        guard player != nil else { return }
+        meterUpdateTimer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { [weak self] _ in
+            guard let self = self, let player = self.player, player.isPlaying else { return }
+            player.updateMeters()
+            self.averagePower = player.averagePower(forChannel: 0)
+        }
+    }
+
+    private func stopMetering() {
+        meterUpdateTimer?.invalidate()
+        meterUpdateTimer = nil
+        // Reset power when stopping, or let it hold the last value?
+        // For a live VU meter, it's often better to go to min value when stopped.
+        self.averagePower = -160.0
+    }
+
+
     // MARK: - Fade In/Out
 
     private func fadeIn() {
         guard let player = player else { return }
-        fadeTimer?.invalidate()
-        player.volume = 0
+        fadeTimer?.invalidate() // Cancel any existing fade
+        player.volume = 0 // Start from silent
         player.play()
-        let step = Float(stepInterval / fadeDuration)
-        var vol: Float = 0
-        fadeTimer = Timer.scheduledTimer(withTimeInterval: stepInterval, repeats: true) { timer in
-            vol += step
-            player.volume = min(vol, 1.0)
-            if player.volume >= 1.0 {
+        startMetering() // Start metering when playback begins
+
+        let targetVolume = self.volume // Use the class property as target
+        if targetVolume == 0 { // If target volume is 0, just set to 0 and don't "fade"
+            player.volume = 0
+            self.isPlaying = true // It's "playing" at volume 0
+            return
+        }
+
+        let step = Float(targetVolume) * Float(stepInterval / fadeDuration) // Scale step by target volume
+        var currentFadeVolume: Float = 0
+
+        fadeTimer = Timer.scheduledTimer(withTimeInterval: stepInterval, repeats: true) { [weak self] timer in
+            guard let self = self else { timer.invalidate(); return }
+            currentFadeVolume += step
+            if currentFadeVolume >= targetVolume {
+                player.volume = targetVolume
                 timer.invalidate()
+                self.fadeTimer = nil
                 self.isPlaying = true
+            } else {
+                player.volume = currentFadeVolume
             }
         }
     }
 
     private func fadeOut(completion: @escaping () -> Void = {}) {
-        guard let player = player, isPlaying else { completion(); return }
-        fadeTimer?.invalidate()
-        let step = Float(stepInterval / fadeDuration)
-        var vol = player.volume
-        fadeTimer = Timer.scheduledTimer(withTimeInterval: stepInterval, repeats: true) { timer in
-            vol -= step
-            player.volume = max(vol, 0.0)
-            if player.volume <= 0 {
-                timer.invalidate()
+        guard let player = player, (isPlaying || fadeTimer != nil) else { // Also consider if it's in midst of fading in
+            completion()
+            return
+        }
+
+        fadeTimer?.invalidate() // Cancel any existing fade (like an ongoing fadeIn)
+        self.isPlaying = false // Set immediately, actual stop happens after fade
+
+        let startingVolume = player.volume // Fade from current actual volume
+        if startingVolume == 0 { // If already silent
+            player.pause()
+            self.stopMetering()
+            self.fadeTimer = nil
+            completion()
+            return
+        }
+
+        let step = startingVolume * Float(stepInterval / fadeDuration) // Scale step by starting volume
+        var currentFadeVolume = startingVolume
+
+        fadeTimer = Timer.scheduledTimer(withTimeInterval: stepInterval, repeats: true) { [weak self] timer in
+            guard let self = self else { timer.invalidate(); completion(); return }
+            currentFadeVolume -= step
+            if currentFadeVolume <= 0 {
+                player.volume = 0
                 player.pause()
-                self.isPlaying = false
+                self.stopMetering()
+                timer.invalidate()
+                self.fadeTimer = nil
                 completion()
+            } else {
+                player.volume = currentFadeVolume
             }
         }
     }

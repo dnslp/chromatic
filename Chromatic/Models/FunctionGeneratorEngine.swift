@@ -68,9 +68,23 @@ class Channel: ObservableObject, Identifiable { // Conforms to ObservableObject
         }
     }
     @Published var gain: Float = 0.5            // 0.0–1.0
-    @Published var isPlaying: Bool = false      // Start/Stop flag
+    @Published var isPlaying: Bool = false {     // Start/Stop flag
+        didSet {
+            if !isPlaying {
+                // Reset power when channel stops explicitly
+                // The tap might also do this, but this ensures immediate UI update if user stops it.
+                DispatchQueue.main.async { // Ensure UI updates on main thread
+                    self.averagePower = -160.0
+                }
+            }
+        }
+    }
+    @Published var averagePower: Float = -160.0 // For VU meter, dBFS
+
     fileprivate var phase: Double = 0.0 // Not @Published as it's internal to audio rendering
     var sourceNode: AVAudioSourceNode!  // initialized in init(), not UI state
+    private var isPlayingCancellable: AnyCancellable?
+
 
     var currentDisplayPitchName: String { // This was added in a previous step, ensure it's correctly placed
         selectedPitch?.name ?? (pitchFrequencies.first(where: { $0.name == "A4" })?.name ?? pitchFrequencies.first?.name ?? "N/A")
@@ -147,24 +161,94 @@ class Channel: ObservableObject, Identifiable { // Conforms to ObservableObject
 /// Engine managing four oscillators
 class FunctionGeneratorEngine: ObservableObject {
     @Published var channels: [Channel] = []
+    @Published var isAnyChannelPlaying: Bool = false
     private let engine = AVAudioEngine()
+    private var channelCancellables: [AnyCancellable] = []
 
     init(channelsCount: Int = 4) {
-        let sampleRate = engine.outputNode.outputFormat(forBus: 0).sampleRate
-        let format = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1)!
+        let outputFormat = engine.outputNode.outputFormat(forBus: 0)
+        let sampleRate = outputFormat.sampleRate
+        // Use a common format for all nodes and taps.
+        // The sourceNode is mono, so we'll tap that mono signal.
+        guard let processingFormat = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1) else {
+            print("❌ Failed to create processing format for FunctionGeneratorEngine.")
+            // Consider throwing an error or handling this more gracefully
+            return
+        }
 
-        for _ in 0..<channelsCount {
-            let channel = Channel(format: format)
+        for i in 0..<channelsCount {
+            let channel = Channel(format: processingFormat)
             channels.append(channel)
             engine.attach(channel.sourceNode)
-            engine.connect(channel.sourceNode, to: engine.mainMixerNode, format: format)
+            engine.connect(channel.sourceNode, to: engine.mainMixerNode, format: processingFormat)
+
+            // Subscribe to isPlaying for this channel
+            let cancellable = channel.$isPlaying.sink { [weak self] _ in
+                self?.updateOverallPlayingStatus()
+            }
+            channelCancellables.append(cancellable)
+
+            // Install tap on the sourceNode's output
+            // Bus 0 is typically the output bus for a source node.
+            channel.sourceNode.installTap(onBus: 0, bufferSize: 1024, format: processingFormat) { [weak channel] (buffer, time) in
+                guard let strongChannel = channel, strongChannel.isPlaying else {
+                    // If channel is not playing, ensure its power is set to minimum
+                    // This might be redundant if isPlaying.didSet handles it, but good for safety from tap perspective.
+                    if strongChannel?.averagePower != -160.0 {
+                         DispatchQueue.main.async { strongChannel?.averagePower = -160.0 }
+                    }
+                    return
+                }
+
+                let frameLength = Int(buffer.frameLength)
+                guard let floatData = buffer.floatChannelData?[0] else { return }
+
+                var sumOfSquares: Float = 0.0
+                for i in 0..<frameLength {
+                    sumOfSquares += floatData[i] * floatData[i]
+                }
+                let rms = sqrt(sumOfSquares / Float(frameLength))
+
+                var dbPower: Float
+                if rms > 0.0 {
+                    dbPower = 20 * log10(rms)
+                } else {
+                    dbPower = -160.0 // Or some other floor value for silence
+                }
+
+                // Ensure gain is factored in, as tap is on sourceNode before mixer connections might apply gain.
+                // However, our sourceNode's render block already applies gain.
+                // So, the tapped audio implicitly includes gain.
+
+                DispatchQueue.main.async {
+                    strongChannel.averagePower = dbPower
+                }
+            }
         }
+        updateOverallPlayingStatus() // Set initial state
 
         do {
             try engine.start()
         } catch {
             print("❌ Audio engine failed to start: \(error)")
         }
+    }
+
+    private func updateOverallPlayingStatus() {
+        let currentlyPlaying = channels.contains { $0.isPlaying }
+        if self.isAnyChannelPlaying != currentlyPlaying {
+            self.isAnyChannelPlaying = currentlyPlaying
+        }
+    }
+
+    // Call this method if you need to clean up, e.g., if engine can be stopped/reconfigured
+    func cleanup() {
+        channelCancellables.forEach { $0.cancel() }
+        channelCancellables.removeAll()
+        for channel in channels {
+            channel.sourceNode.removeTap(onBus: 0)
+        }
+        // engine.stop() if needed
     }
 
     func setWaveform(_ wf: Waveform, for index: Int) {

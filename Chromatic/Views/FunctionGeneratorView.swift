@@ -14,9 +14,16 @@ struct FunctionGeneratorView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                Text("🔊 4-Channel Function Generator")
-                    .font(.title2)
-                    .padding(.top)
+                HStack {
+                    Text("🔊 4-Channel Function Generator")
+                        .font(.title2)
+                    Spacer()
+                    Image(systemName: "power.circle.fill") // Example Icon
+                        .foregroundColor(engine.isAnyChannelPlaying ? .green : .gray)
+                        .font(.title2) // Match title font size
+                }
+                .padding(.top)
+                .padding(.horizontal) // Ensure icon also gets horizontal padding if title did
 
                 ForEach(Array(engine.channels.enumerated()), id: \.1.id) { idx, currentChannel in
                     ChannelView(channel: currentChannel, channelIndex: idx, engine: engine)
@@ -32,6 +39,22 @@ struct FunctionGeneratorView: View {
 
 struct FunctionGeneratorView_Previews: PreviewProvider {
     static var previews: some View {
-        FunctionGeneratorView()
+        // Preview with no channels playing
+        let engineNotPlaying = FunctionGeneratorEngine(channelsCount: 2)
+
+        // Preview with one channel playing
+        let enginePlaying = FunctionGeneratorEngine(channelsCount: 2)
+        if !enginePlaying.channels.isEmpty {
+            enginePlaying.channels[0].isPlaying = true
+            // The engine's isAnyChannelPlaying should update automatically due to Combine publisher
+        }
+
+        return Group {
+            FunctionGeneratorView(engine: engineNotPlaying)
+                .previewDisplayName("All Channels Off")
+
+            FunctionGeneratorView(engine: enginePlaying)
+                .previewDisplayName("One Channel On")
+        }
     }
 }
