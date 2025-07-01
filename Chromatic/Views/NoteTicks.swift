@@ -5,7 +5,7 @@ struct NoteTicks: View {
     let showFrequencyText: Bool
 
     var body: some View {
-        NoteDistanceMarkers()
+        NoteDistanceMarkers(tunerData: tunerData)
             .overlay(
                 CurrentNoteMarker(
                     frequency: tunerData.pitch,
