@@ -13,13 +13,15 @@ enum Waveform: String, CaseIterable, Identifiable {
 }
 
 /// Single oscillator channel
-class Channel: Identifiable {
+class Channel: ObservableObject, Identifiable { // Conforms to ObservableObject
     let id = UUID()
-    var waveform: Waveform = .sine
-    var frequency: Double = 440.0    // Hz
-    var selectedPitch: Pitch? = nil  // Add this line
-    var gain: Float = 0.5            // 0.0–1.0
-    var isPlaying: Bool = false      // Start/Stop flag
+    @Published var waveform: Waveform = .sine
+    @Published var frequency: Double = 440.0    // Hz
+    @Published var selectedPitch: Pitch? = nil
+    @Published var gain: Float = 0.5            // 0.0–1.0
+    @Published var isPlaying: Bool = false      // Start/Stop flag
+
+    // phase should not be @Published as it changes rapidly and is an internal rendering detail.
     fileprivate var phase: Double = 0.0
     var sourceNode: AVAudioSourceNode!  // initialized in init()
 
@@ -34,14 +36,17 @@ class Channel: Identifiable {
             guard let self = self else { return noErr }
             let abl = UnsafeMutableAudioBufferListPointer(audioBufferList)
             let sampleRate = format.sampleRate
-            let phaseIncrement = self.frequency / sampleRate
+            // Read self.frequency within the audio rendering block to ensure it uses the latest value.
+            // No need to capture it separately if it's @Published and updated on the main thread.
+            let currentFrequency = self.frequency
+            let phaseIncrement = currentFrequency / sampleRate
             let twoPi = 2.0 * Double.pi
 
             for frame in 0..<Int(frameCount) {
                 // generate raw waveform sample
                 let raw: Float
                 let ph = self.phase
-                switch self.waveform {
+                switch self.waveform { // Read self.waveform
                 case .sine:
                     raw = Float(sin(twoPi * ph))
                 case .square:
@@ -52,8 +57,10 @@ class Channel: Identifiable {
                     raw = Float(1.0 - 4.0 * abs(ph - 0.5))
                 }
                 // apply gain and start/stop
-                let enabled: Float = self.isPlaying ? 1.0 : 0.0
-                let sample = raw * self.gain * enabled
+                let currentGain = self.gain // Read self.gain
+                let currentIsPlaying = self.isPlaying // Read self.isPlaying
+                let enabled: Float = currentIsPlaying ? 1.0 : 0.0
+                let sample = raw * currentGain * enabled
 
                 // write to buffers (mono)
                 for buffer in abl {
@@ -80,7 +87,7 @@ class FunctionGeneratorEngine: ObservableObject {
         let format = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1)!
 
         for _ in 0..<channelsCount {
-            let channel = Channel(format: format)
+            let channel = Channel(format: format) // Channel is now an ObservableObject
             channels.append(channel)
             engine.attach(channel.sourceNode)
             engine.connect(channel.sourceNode, to: engine.mainMixerNode, format: format)
@@ -93,18 +100,22 @@ class FunctionGeneratorEngine: ObservableObject {
         }
     }
 
+    // The setters in FunctionGeneratorEngine will now trigger @Published updates
+    // on the Channel objects themselves if their properties change,
+    // which SwiftUI views observing those Channel objects will pick up.
+
     func setWaveform(_ wf: Waveform, for index: Int) {
         guard channels.indices.contains(index) else { return }
-        channels[index].waveform = wf
+        channels[index].waveform = wf // This assignment now publishes changes from Channel
     }
 
     func setFrequency(_ freq: Double, for index: Int) {
         guard channels.indices.contains(index) else { return }
-        channels[index].frequency = freq
+        channels[index].frequency = freq // This assignment now publishes changes from Channel
     }
 
     func setGain(_ gain: Float, for index: Int) {
         guard channels.indices.contains(index) else { return }
-        channels[index].gain = gain
+        channels[index].gain = gain // This assignment now publishes changes from Channel
     }
 }
