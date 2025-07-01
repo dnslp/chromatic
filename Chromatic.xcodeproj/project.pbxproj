@@ -65,6 +65,8 @@
 		BEED700D2E14526400037881 /* FunctionGeneratorEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEED700B2E14526400037881 /* FunctionGeneratorEngine.swift */; };
 		BEED700F2E14528D00037881 /* FunctionGeneratorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEED700E2E14528D00037881 /* FunctionGeneratorView.swift */; };
 		BEED70102E14528D00037881 /* FunctionGeneratorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEED700E2E14528D00037881 /* FunctionGeneratorView.swift */; };
+		BEED70182E1462D300037881 /* Pitch.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEED70172E1462D300037881 /* Pitch.swift */; };
+		BEED70192E1462D300037881 /* Pitch.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEED70172E1462D300037881 /* Pitch.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -140,6 +142,7 @@
 		BEED70082E144B9A00037881 /* MixerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MixerView.swift; sourceTree = "<group>"; };
 		BEED700B2E14526400037881 /* FunctionGeneratorEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionGeneratorEngine.swift; sourceTree = "<group>"; };
 		BEED700E2E14528D00037881 /* FunctionGeneratorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionGeneratorView.swift; sourceTree = "<group>"; };
+		BEED70172E1462D300037881 /* Pitch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Pitch.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -294,6 +297,7 @@
 				8FB571DA25B73E9A007C28BC /* ScaleNote.swift */,
 				8FB571DB25B73E9A007C28BC /* TunerData.swift */,
 				BEED6ED72E143F3A00037881 /* Audio */,
+				BEED70172E1462D300037881 /* Pitch.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -508,6 +512,7 @@
 				8F3ECD272682838D00415B9F /* CurrentNoteMarker.swift in Sources */,
 				8F44F80126939F13007DBE1E /* Color+MusicalDistance.swift in Sources */,
 				8F3ECD2C268284AC00415B9F /* ChromaticApp.swift in Sources */,
+				BEED70192E1462D300037881 /* Pitch.swift in Sources */,
 				BEED70072E144B7D00037881 /* MixerEngine.swift in Sources */,
 				8F3ECD212682834700415B9F /* Frequency.swift in Sources */,
 				8F3ECD232682837800415B9F /* Alignment.swift in Sources */,
@@ -541,6 +546,7 @@
 				BEED6E952E143B3E00037881 /* PlaylistManager.swift in Sources */,
 				8F2D9755269390D800B512D0 /* MicrophoneAccessAlert.swift in Sources */,
 				8FB571E925B73E9A007C28BC /* Alignment.swift in Sources */,
+				BEED70182E1462D300037881 /* Pitch.swift in Sources */,
 				8FB571E325B73E9A007C28BC /* ScaleNote.swift in Sources */,
 				8FB571E125B73E9A007C28BC /* Frequency.swift in Sources */,
 				BEED70062E144B7D00037881 /* MixerEngine.swift in Sources */,
