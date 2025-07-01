@@ -9,7 +9,7 @@ struct MatchedNoteView: View {
             HStack(alignment: .lastTextBaseline) {
                 MainNoteView(note: note)
                     .animation(nil, value: note) // Don't animate text frame
-                    .animatingPerceptibleForegroundColor(isPerceptible: match.distance.isPerceptible)
+                    .animatingMusicalDistanceForegroundColor(distance: match.distance)
                 Text(String(describing: match.octave))
                     .alignmentGuide(.octaveCenter) { dimensions in
                         dimensions[HorizontalAlignment.center]
@@ -24,13 +24,18 @@ struct MatchedNoteView: View {
                     // TODO: Avoid hardcoding size
                     .font(.system(size: 50, design: .rounded))
                     .baselineOffset(-30) // TODO: Find a better way to align top of text - FB9267771
-                    .animatingPerceptibleForegroundColor(isPerceptible: match.distance.isPerceptible)
+                    .animatingMusicalDistanceForegroundColor(distance: match.distance)
                     .alignmentGuide(.octaveCenter) { dimensions in
                         dimensions[HorizontalAlignment.center]
                     }
             }
         }
-        .animation(.easeInOut, value: match.distance.isPerceptible)
+        .padding(EdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12)) // Add some padding around the text
+        .background(
+            RoundedRectangle(cornerRadius: 10)
+                .fill(backgroundColorForDistance(match.distance))
+        )
+        .animation(.easeInOut, value: match.distance.cents) // Animate based on the cents value
         .onTapGesture {
             modifierPreference = modifierPreference.toggled
         }
@@ -54,13 +59,41 @@ struct MatchedNoteView: View {
             String(preferredName.suffix(1)) :
             nil
     }
+
+    private func backgroundColorForDistance(_ distance: Frequency.MusicalDistance) -> Color {
+        let distanceCents = abs(distance.cents)
+        // Using the same thresholds as the text color for consistency
+        let greenThreshold: Float = 5.0
+        let yellowThreshold: Float = 15.0
+
+        if distanceCents <= greenThreshold {
+            return Color.imperceptibleMusicalDistance.opacity(0.15) // Subtle background
+        } else if distanceCents <= yellowThreshold {
+            return Color.slightlyPerceptibleMusicalDistance.opacity(0.15)
+        } else {
+            return Color.perceptibleMusicalDistance.opacity(0.15)
+        }
+    }
 }
 
 private extension View {
-    @ViewBuilder
-    func animatingPerceptibleForegroundColor(isPerceptible: Bool) -> some View {
-        self
-            .foregroundColor(isPerceptible ? .perceptibleMusicalDistance : .imperceptibleMusicalDistance)
+    // Removed @ViewBuilder as it's not needed for this type of modifier
+    // and was likely causing the buildExpression error.
+    func animatingMusicalDistanceForegroundColor(distance: Frequency.MusicalDistance) -> some View {
+        let distanceCents = abs(distance.cents)
+        // Thresholds can be adjusted here if needed, using similar values to NoteDistanceMarkers for consistency
+        let greenThreshold: Float = 5.0 // Slightly wider than markers for more stable text color
+        let yellowThreshold: Float = 15.0
+
+        let newColor: Color
+        if distanceCents <= greenThreshold {
+            newColor = .imperceptibleMusicalDistance
+        } else if distanceCents <= yellowThreshold {
+            newColor = .slightlyPerceptibleMusicalDistance
+        } else {
+            newColor = .perceptibleMusicalDistance
+        }
+        return self.foregroundColor(newColor) // Explicit return
     }
 }
 
