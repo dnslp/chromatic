@@ -11,11 +11,9 @@ struct ChromaticApp: App {
             TabView {
                 TunerScreen()
                     .tabItem { Label("Tuner", systemImage: "tuningfork") }
-
                 PlayerView(audioPlayer: audioPlayer)
                     .tabItem { Label("Player", systemImage: "music.note") }
-
-                FunctionGeneratorView()
+                FunctionGeneratorView(engine: FunctionGeneratorEngine())
                     .tabItem { Label("Func Gen", systemImage: "waveform.path") }
             }
             .onAppear {
