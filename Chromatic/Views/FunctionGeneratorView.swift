@@ -31,14 +31,18 @@ struct FunctionGeneratorView: View {
                         .pickerStyle(SegmentedPickerStyle())
 
                         Picker("Pitch", selection: Binding(
-                            get: { channel.selectedPitch ?? pitchFrequencies.first(where: { $0.name == "A4" })! },
-                            set: {
-                                engine.channels[idx].selectedPitch = $0
-                                engine.setFrequency($0.frequency, for: idx)
+                            get: { channel.selectedPitch }, // Bind directly to the optional
+                            set: { selectedPitchFromPicker in
+                                // User selection from Picker will always be a non-nil Pitch.
+                                // Binding is to Pitch? so type is Pitch?, but practically it's Pitch here.
+                                if let definitePitch = selectedPitchFromPicker {
+                                    engine.channels[idx].selectedPitch = definitePitch
+                                    engine.setFrequency(definitePitch.frequency, for: idx)
+                                }
                             }
                         )) {
                             ForEach(pitchFrequencies) { pitch in
-                                Text(pitch.name).tag(pitch)
+                                Text(pitch.name).tag(pitch as Pitch?) // Tag as Pitch? to match selection type
                             }
                         }
 
@@ -47,14 +51,32 @@ struct FunctionGeneratorView: View {
                             Slider(
                                 value: Binding(
                                     get: { channel.frequency },
-                                    set: {
-                                        engine.setFrequency($0, for: idx)
-                                        // Update selectedPitch to nil if frequency is manually changed
-                                        // Or, find the closest pitch and set it
-                                        if let matchedPitch = pitchFrequencies.first(where: { abs($0.frequency - channel.frequency) < 0.01 }) {
-                                            engine.channels[idx].selectedPitch = matchedPitch
+                                    set: { newFrequencyValue in
+                                        engine.setFrequency(newFrequencyValue, for: idx)
+
+                                        // Find the closest pitch to the newFrequencyValue.
+                                        var closestPitchCandidate: Pitch? = nil
+                                        var minDifference = Double.infinity
+
+                                        for p in pitchFrequencies {
+                                            let diff = abs(p.frequency - newFrequencyValue)
+                                            if diff < minDifference {
+                                                minDifference = diff
+                                                closestPitchCandidate = p
+                                            }
+                                        }
+
+                                        // If a closest pitch is found and it's within tolerance, update selectedPitch.
+                                        // Otherwise, set selectedPitch to nil.
+                                        let tolerance = 0.5 // Hz (slider steps by 1 Hz)
+                                        if let matched = closestPitchCandidate, minDifference < tolerance {
+                                            if engine.channels[idx].selectedPitch?.id != matched.id {
+                                                engine.channels[idx].selectedPitch = matched
+                                            }
                                         } else {
-                                            engine.channels[idx].selectedPitch = nil
+                                            if engine.channels[idx].selectedPitch != nil {
+                                                engine.channels[idx].selectedPitch = nil
+                                            }
                                         }
                                     }
                                 ),
