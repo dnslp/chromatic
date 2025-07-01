@@ -31,14 +31,16 @@ struct FunctionGeneratorView: View {
                         .pickerStyle(SegmentedPickerStyle())
 
                         Picker("Pitch", selection: Binding(
-                            get: { channel.selectedPitch ?? pitchFrequencies.first(where: { $0.name == "A4" })! },
-                            set: { newPitch in
-                                engine.channels[idx].selectedPitch = newPitch
-                                // The frequency will be updated automatically by the Channel's didSet for selectedPitch
+                            get: { channel.selectedPitch?.name ?? (pitchFrequencies.first(where: { $0.name == "A4" })?.name ?? pitchFrequencies.first!.name) },
+                            set: { selectedName in
+                                if let newPitch = pitchFrequencies.first(where: { $0.name == selectedName }) {
+                                    engine.channels[idx].selectedPitch = newPitch
+                                    // The frequency will be updated automatically by the Channel's didSet for selectedPitch
+                                }
                             }
                         )) {
                             ForEach(pitchFrequencies) { pitch in
-                                Text(pitch.name).tag(pitch)
+                                Text(pitch.name).tag(pitch.name) // Tag with pitch.name (String)
                             }
                         }
 
