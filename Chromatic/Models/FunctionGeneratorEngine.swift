@@ -17,12 +17,19 @@ class Channel: Identifiable {
     let id = UUID()
     var waveform: Waveform = .sine
     var frequency: Double = 440.0    // Hz
+    var selectedPitch: Pitch? = nil  // Add this line
     var gain: Float = 0.5            // 0.0–1.0
     var isPlaying: Bool = false      // Start/Stop flag
     fileprivate var phase: Double = 0.0
     var sourceNode: AVAudioSourceNode!  // initialized in init()
 
     init(format: AVAudioFormat) {
+        // Initialize selectedPitch with a default value if needed, e.g., A4
+        if let defaultPitch = pitchFrequencies.first(where: { $0.name == "A4" }) {
+            self.selectedPitch = defaultPitch
+            self.frequency = defaultPitch.frequency
+        }
+
         sourceNode = AVAudioSourceNode(format: format) { [weak self] _, _, frameCount, audioBufferList -> OSStatus in
             guard let self = self else { return noErr }
             let abl = UnsafeMutableAudioBufferListPointer(audioBufferList)

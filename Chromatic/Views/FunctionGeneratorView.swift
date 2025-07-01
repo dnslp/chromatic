@@ -30,12 +30,33 @@ struct FunctionGeneratorView: View {
                         }
                         .pickerStyle(SegmentedPickerStyle())
 
+                        Picker("Pitch", selection: Binding(
+                            get: { channel.selectedPitch ?? pitchFrequencies.first(where: { $0.name == "A4" })! },
+                            set: {
+                                engine.channels[idx].selectedPitch = $0
+                                engine.setFrequency($0.frequency, for: idx)
+                            }
+                        )) {
+                            ForEach(pitchFrequencies) { pitch in
+                                Text(pitch.name).tag(pitch)
+                            }
+                        }
+
                         VStack(alignment: .leading) {
-                            Text("Freq: \(Int(channel.frequency)) Hz")
+                            Text("Freq: \(Int(channel.frequency)) Hz (\(channel.selectedPitch?.name ?? "N/A"))")
                             Slider(
                                 value: Binding(
                                     get: { channel.frequency },
-                                    set: { engine.setFrequency($0, for: idx) }
+                                    set: {
+                                        engine.setFrequency($0, for: idx)
+                                        // Update selectedPitch to nil if frequency is manually changed
+                                        // Or, find the closest pitch and set it
+                                        if let matchedPitch = pitchFrequencies.first(where: { abs($0.frequency - channel.frequency) < 0.01 }) {
+                                            engine.channels[idx].selectedPitch = matchedPitch
+                                        } else {
+                                            engine.channels[idx].selectedPitch = nil
+                                        }
+                                    }
                                 ),
                                 in: 20...5000,
                                 step: 1
