@@ -77,22 +77,23 @@ struct MatchedNoteView: View {
 }
 
 private extension View {
-    @ViewBuilder
+    // Removed @ViewBuilder as it's not needed for this type of modifier
+    // and was likely causing the buildExpression error.
     func animatingMusicalDistanceForegroundColor(distance: Frequency.MusicalDistance) -> some View {
         let distanceCents = abs(distance.cents)
         // Thresholds can be adjusted here if needed, using similar values to NoteDistanceMarkers for consistency
         let greenThreshold: Float = 5.0 // Slightly wider than markers for more stable text color
         let yellowThreshold: Float = 15.0
 
-        let color: Color
+        let newColor: Color
         if distanceCents <= greenThreshold {
-            color = .imperceptibleMusicalDistance
+            newColor = .imperceptibleMusicalDistance
         } else if distanceCents <= yellowThreshold {
-            color = .slightlyPerceptibleMusicalDistance
+            newColor = .slightlyPerceptibleMusicalDistance
         } else {
-            color = .perceptibleMusicalDistance
+            newColor = .perceptibleMusicalDistance
         }
-        self.foregroundColor(color)
+        return self.foregroundColor(newColor) // Explicit return
     }
 }
 
