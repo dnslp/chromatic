@@ -33,9 +33,26 @@ class Channel: ObservableObject, Identifiable { // Conforms to ObservableObject
         }
     }
 
-    // Helper function to find a pitch within tolerance
+    // Helper function to find a pitch within tolerance (used for snapping)
     private static func findPitch(for frequency: Double, in pitches: [Pitch], tolerance: Double) -> Pitch? {
         return pitches.first(where: { abs($0.frequency - frequency) < tolerance })
+    }
+
+    // Helper function to find the absolute closest pitch (used for cents calculation)
+    private static func findAbsoluteClosestPitch(to frequency: Double, in pitches: [Pitch]) -> Pitch? {
+        guard !pitches.isEmpty else { return nil }
+
+        var closestPitch = pitches[0]
+        var smallestDifference = abs(pitches[0].frequency - frequency)
+
+        for i in 1..<pitches.count {
+            let difference = abs(pitches[i].frequency - frequency)
+            if difference < smallestDifference {
+                smallestDifference = difference
+                closestPitch = pitches[i]
+            }
+        }
+        return closestPitch
     }
 
     @Published var selectedPitch: Pitch? = nil {
@@ -54,6 +71,30 @@ class Channel: ObservableObject, Identifiable { // Conforms to ObservableObject
     @Published var isPlaying: Bool = false      // Start/Stop flag
     fileprivate var phase: Double = 0.0 // Not @Published as it's internal to audio rendering
     var sourceNode: AVAudioSourceNode!  // initialized in init(), not UI state
+
+    var currentDisplayPitchName: String { // This was added in a previous step, ensure it's correctly placed
+        selectedPitch?.name ?? (pitchFrequencies.first(where: { $0.name == "A4" })?.name ?? pitchFrequencies.first?.name ?? "N/A")
+    }
+
+    var closestPitchAndDeviation: (closestPitch: Pitch, deviationInCents: Double)? {
+        guard let closestPitchFound = Channel.findAbsoluteClosestPitch(to: self.frequency, in: pitchFrequencies) else {
+            return nil // Should not happen if pitchFrequencies is not empty
+        }
+
+        // Prevent division by zero or log of non-positive number.
+        // Pitch frequencies should always be positive.
+        guard closestPitchFound.frequency > 0 && self.frequency > 0 else {
+            // If frequencies are identical (e.g. both zero, though invalid), cents is 0.
+            if self.frequency == closestPitchFound.frequency {
+                 return (closestPitch: closestPitchFound, deviationInCents: 0.0)
+            }
+            // Otherwise, cannot calculate cents for non-positive frequencies.
+            return nil
+        }
+
+        let cents = 1200.0 * Darwin.log2(self.frequency / closestPitchFound.frequency)
+        return (closestPitch: closestPitchFound, deviationInCents: cents)
+    }
 
     init(format: AVAudioFormat) {
         // Initialize selectedPitch and frequency with a default value, e.g., A4

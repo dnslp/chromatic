@@ -44,7 +44,18 @@ struct ChannelView: View {
             }
 
             VStack(alignment: .leading) {
-                Text("Freq: \(Int(channel.frequency)) Hz (\(channel.selectedPitch?.name ?? "N/A"))")
+                // Updated Text label to display pitch and cents deviation
+                if let selectedPitch = channel.selectedPitch {
+                    // Snapped to a pitch or very close (within 0.5 Hz tolerance)
+                    Text("\(selectedPitch.name) (\(Int(channel.frequency)) Hz)")
+                } else if let pitchInfo = channel.closestPitchAndDeviation {
+                    let sign = pitchInfo.deviationInCents >= 0 ? "+" : ""
+                    let formattedCents = String(format: "%.1f", pitchInfo.deviationInCents)
+                    Text("\(pitchInfo.closestPitch.name) \(sign)\(formattedCents) cents (\(Int(channel.frequency)) Hz)")
+                } else {
+                    // Fallback if no pitch info can be determined (e.g., pitchFrequencies is empty)
+                    Text("Freq: \(Int(channel.frequency)) Hz (N/A)")
+                }
                 Slider(
                     value: Binding(
                         get: { channel.frequency },
