@@ -33,7 +33,7 @@ struct PlayerView: View {
                 }
                 .padding(.horizontal)
             }
-            .frame(maxHeight: 200)
+            .frame(maxHeight: 500)
 
             Spacer()
 
