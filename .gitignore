@@ -4,3 +4,9 @@
 
 # Xcode user interface state
 **/xcuserdata/**/*.xcuserdatad/UserInterfaceState.xcuserstate
+
+# macOS Finder metadata
+**/.DS_Store
+
+# Xcode per-user interface state
+**/xcuserdata/**/*.xcuserdatad/UserInterfaceState.xcuserstate
