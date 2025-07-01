@@ -9,7 +9,7 @@
 import SwiftUI
 
 struct FunctionGeneratorView: View {
-    @ObservedObject var engine = FunctionGeneratorEngine()
+    @StateObject var engine = FunctionGeneratorEngine() // Changed to @StateObject
 
     var body: some View {
         ScrollView {
