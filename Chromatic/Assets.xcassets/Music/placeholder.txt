@@ -1,0 +1,6 @@
+Please add your .mp3 or .wav song files to this directory.
+Make sure to add this "Music" folder to your app's target in Xcode under "Build Phases" -> "Copy Bundle Resources".
+
+For example, if you add "song1.mp3" here, the PlaylistManager will attempt to load it.
+
+This placeholder is here because the AI agent cannot directly add binary audio files.

@@ -57,11 +57,60 @@ struct TunerView: View {
             Text("Amplitude: \(String(format: "%.2f", tunerData.amplitude))")
                 .padding()
 
+            // Playlist Controls
+            if let playlistManager = tunerData.playlistManager {
+                PlaylistControlsView(playlistManager: playlistManager)
+                    .padding()
+            }
+
             Spacer()
         }
 #endif
     }
 }
+
+// New struct for Playlist Controls
+struct PlaylistControlsView: View {
+    @ObservedObject var playlistManager: PlaylistManager
+
+    var body: some View {
+        VStack {
+            if let title = playlistManager.currentSongTitle {
+                Text("Now Playing: \(title)")
+                    .font(.caption)
+                    .padding(.bottom, 2)
+            } else {
+                Text("No song loaded")
+                    .font(.caption)
+                    .padding(.bottom, 2)
+            }
+            HStack {
+                Button(action: { playlistManager.previousSong() }) {
+                    Image(systemName: "backward.fill")
+                }
+                .disabled(playlistManager.songs.isEmpty)
+
+                Button(action: {
+                    if playlistManager.isPlaying {
+                        playlistManager.pause()
+                    } else {
+                        playlistManager.play()
+                    }
+                }) {
+                    Image(systemName: playlistManager.isPlaying ? "pause.fill" : "play.fill")
+                }
+                .disabled(playlistManager.songs.isEmpty)
+
+                Button(action: { playlistManager.nextSong() }) {
+                    Image(systemName: "forward.fill")
+                }
+                .disabled(playlistManager.songs.isEmpty)
+            }
+            .font(.title2) // Adjust icon size
+        }
+    }
+}
+
 
 struct TunerView_Previews: PreviewProvider {
     static var previews: some View {
