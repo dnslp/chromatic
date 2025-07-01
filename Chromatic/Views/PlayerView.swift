@@ -2,9 +2,13 @@
 // SwiftUI playlist + playback controls
 
 import SwiftUI
+import MicrophonePitchDetector
 
 struct PlayerView: View {
     @ObservedObject var audioPlayer: AudioPlayer
+    @ObservedObject var pitchDetector: MicrophonePitchDetector
+    @Binding var modifierPreference: ModifierPreference
+    @Binding var selectedTransposition: Int
 
     var body: some View {
         VStack {
@@ -37,6 +41,17 @@ struct PlayerView: View {
 
             Spacer()
 
+            // MiniTunerView will be added here later
+            MiniTunerView(
+                tunerData: TunerData(pitch: pitchDetector.pitch, amplitude: pitchDetector.amplitude),
+                modifierPreference: $modifierPreference,
+                selectedTransposition: $selectedTransposition
+            )
+            .opacity(pitchDetector.didReceiveAudio ? 1 : 0.5) // Mirror opacity behavior from TunerScreen
+            .animation(.easeInOut, value: pitchDetector.didReceiveAudio) // Mirror animation
+
+            Spacer()
+
             HStack(spacing: 50) {
                 Button(action: { audioPlayer.previous() }) {
                     Image(systemName: "backward.fill")
@@ -62,6 +77,11 @@ struct PlayerView: View {
 
 struct PlayerView_Previews: PreviewProvider {
     static var previews: some View {
-        PlayerView(audioPlayer: AudioPlayer())
+        PlayerView(
+            audioPlayer: AudioPlayer(),
+            pitchDetector: MicrophonePitchDetector(),
+            modifierPreference: .constant(.preferSharps),
+            selectedTransposition: .constant(0)
+        )
     }
 }
