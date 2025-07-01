@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -53,6 +53,10 @@
 		8FE56CDD25BE05D20038664C /* TranspositionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FE56CDC25BE05D20038664C /* TranspositionTests.swift */; };
 		BEED6E942E143B3E00037881 /* PlaylistManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEED6E932E143B3B00037881 /* PlaylistManager.swift */; };
 		BEED6E952E143B3E00037881 /* PlaylistManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEED6E932E143B3B00037881 /* PlaylistManager.swift */; };
+		BEED6ED22E143EEB00037881 /* AudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEED6ED12E143EDF00037881 /* AudioPlayer.swift */; };
+		BEED6ED32E143EEB00037881 /* AudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEED6ED12E143EDF00037881 /* AudioPlayer.swift */; };
+		BEED6ED52E143F0400037881 /* PlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEED6ED42E143F0100037881 /* PlayerView.swift */; };
+		BEED6ED62E143F0400037881 /* PlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEED6ED42E143F0100037881 /* PlayerView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -122,7 +126,13 @@
 		8FE56CDC25BE05D20038664C /* TranspositionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranspositionTests.swift; sourceTree = "<group>"; };
 		8FE56CDE25BE05D20038664C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BEED6E932E143B3B00037881 /* PlaylistManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistManager.swift; sourceTree = "<group>"; };
+		BEED6ED12E143EDF00037881 /* AudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayer.swift; sourceTree = "<group>"; };
+		BEED6ED42E143F0100037881 /* PlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		BEED6ED72E143F3A00037881 /* Audio */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Audio; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		8F3ECD002682821E00415B9F /* Frameworks */ = {
@@ -244,6 +254,7 @@
 		8FB571D425B722F2007C28BC /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				BEED6ED42E143F0100037881 /* PlayerView.swift */,
 				8FB571EF25B73ECE007C28BC /* CurrentNoteMarker.swift */,
 				8F2D9754269390D800B512D0 /* MicrophoneAccessAlert.swift */,
 				8FB571F025B73ECE007C28BC /* MainNoteView.swift */,
@@ -260,11 +271,13 @@
 		8FB571D725B73E9A007C28BC /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				BEED6ED12E143EDF00037881 /* AudioPlayer.swift */,
 				BEED6E932E143B3B00037881 /* PlaylistManager.swift */,
 				8FB571D925B73E9A007C28BC /* Frequency.swift */,
 				8FB571D825B73E9A007C28BC /* ModifierPreference.swift */,
 				8FB571DA25B73E9A007C28BC /* ScaleNote.swift */,
 				8FB571DB25B73E9A007C28BC /* TunerData.swift */,
+				BEED6ED72E143F3A00037881 /* Audio */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -329,6 +342,9 @@
 			);
 			dependencies = (
 			);
+			fileSystemSynchronizedGroups = (
+				BEED6ED72E143F3A00037881 /* Audio */,
+			);
 			name = "Chromatic WatchKit Extension";
 			packageProductDependencies = (
 				8F3ECD2D268287AA00415B9F /* MicrophonePitchDetector */,
@@ -348,6 +364,9 @@
 			buildRules = (
 			);
 			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				BEED6ED72E143F3A00037881 /* Audio */,
 			);
 			name = Chromatic;
 			packageProductDependencies = (
@@ -478,11 +497,13 @@
 				8F3ECD2A2682838D00415B9F /* TunerView.swift in Sources */,
 				8F3ECD262682838D00415B9F /* MatchedNoteView.swift in Sources */,
 				8F3ECD282682838D00415B9F /* MainNoteView.swift in Sources */,
+				BEED6ED32E143EEB00037881 /* AudioPlayer.swift in Sources */,
 				8F3ECD202682834700415B9F /* TunerData.swift in Sources */,
 				8F2D975326938B0500B512D0 /* TunerScreen.swift in Sources */,
 				8F2D9757269390D800B512D0 /* MicrophoneAccessAlert.swift in Sources */,
 				8F2D975B2693930000B512D0 /* NoteTicks.swift in Sources */,
 				8F3ECD1F2682834700415B9F /* ModifierPreference.swift in Sources */,
+				BEED6ED52E143F0400037881 /* PlayerView.swift in Sources */,
 				BEED6E942E143B3E00037881 /* PlaylistManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -494,6 +515,7 @@
 				8FB571E525B73E9A007C28BC /* TunerData.swift in Sources */,
 				8FB571F525B73ECF007C28BC /* CurrentNoteMarker.swift in Sources */,
 				8FB571F925B73ECF007C28BC /* MatchedNoteView.swift in Sources */,
+				BEED6ED62E143F0400037881 /* PlayerView.swift in Sources */,
 				BEED6E952E143B3E00037881 /* PlaylistManager.swift in Sources */,
 				8F2D9755269390D800B512D0 /* MicrophoneAccessAlert.swift in Sources */,
 				8FB571E925B73E9A007C28BC /* Alignment.swift in Sources */,
@@ -503,6 +525,7 @@
 				8FB571FF25B73ECF007C28BC /* TunerView.swift in Sources */,
 				8F2D975126938AF900B512D0 /* TunerScreen.swift in Sources */,
 				8FB571BD25B72147007C28BC /* ChromaticApp.swift in Sources */,
+				BEED6ED22E143EEB00037881 /* AudioPlayer.swift in Sources */,
 				8FB571DF25B73E9A007C28BC /* ModifierPreference.swift in Sources */,
 				8FB571F725B73ECF007C28BC /* MainNoteView.swift in Sources */,
 				8F693E3925B87DB20054DB16 /* TranspositionMenu.swift in Sources */,
