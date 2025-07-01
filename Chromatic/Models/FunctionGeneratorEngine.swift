@@ -18,19 +18,26 @@ class Channel: ObservableObject, Identifiable { // Conforms to ObservableObject
     @Published var waveform: Waveform = .sine
     @Published var frequency: Double = 440.0 { // Hz
         didSet {
-            // Automatically update selectedPitch when frequency changes.
-            // Allow a small tolerance for matching.
-            if let matchedPitch = pitchFrequencies.first(where: { abs($0.frequency - frequency) < 0.5 }) {
-                if selectedPitch?.name != matchedPitch.name { // Avoid redundant updates if pitch is already correct
-                    self.selectedPitch = matchedPitch
+            let newMatchedPitch = Channel.findPitch(for: frequency, in: pitchFrequencies, tolerance: 0.5)
+
+            if let currentMatchedPitch = newMatchedPitch { // A pitch was found within tolerance
+                if self.selectedPitch?.name != currentMatchedPitch.name { // Only update if different name
+                    self.selectedPitch = currentMatchedPitch
                 }
-            } else {
-                if selectedPitch != nil { // Only set to nil if it wasn't already nil
+                // If names are the same, selectedPitch is not changed, preserving the instance if it was already correct.
+            } else { // No pitch matched
+                if self.selectedPitch != nil { // Only set to nil if it wasn't already nil
                     self.selectedPitch = nil
                 }
             }
         }
     }
+
+    // Helper function to find a pitch within tolerance
+    private static func findPitch(for frequency: Double, in pitches: [Pitch], tolerance: Double) -> Pitch? {
+        return pitches.first(where: { abs($0.frequency - frequency) < tolerance })
+    }
+
     @Published var selectedPitch: Pitch? = nil {
         didSet {
             // Automatically update frequency when selectedPitch changes,
