@@ -81,30 +81,85 @@ class PlaylistManager: ObservableObject {
         }
     }
 
-    private func loadPlaylist() {
-        // For now, let's assume some dummy audio files in the bundle
-        // In a real app, you'd load these from user's library or a server
-        let song1URL = Bundle.main.url(forResource: "song1", withExtension: "mp3")
-        let song2URL = Bundle.main.url(forResource: "song2", withExtension: "m4a") // Example with different extension
-
-        var validURLs: [URL] = []
-        if let url1 = song1URL {
-            validURLs.append(url1)
-        } else {
-            print("Warning: song1.mp3 not found in bundle.")
+    private func extractFrequency(from filename: String) -> Double? {
+        // Filename example: G3-196Hz-60BPM.mp3 or Eb2-77.782Hz-60BPM.wav
+        let components = filename.split(separator: "-")
+        if components.count > 1 {
+            let frequencyComponent = String(components[1]) // e.g., "196Hz" or "77.782Hz"
+            if let hzRange = frequencyComponent.range(of: "Hz", options: .caseInsensitive) {
+                let numberPart = String(frequencyComponent[..<hzRange.lowerBound])
+                return Double(numberPart)
+            }
         }
-        if let url2 = song2URL {
-            validURLs.append(url2)
-        } else {
-            print("Warning: song2.m4a not found in bundle.")
+        print("Warning: Could not extract frequency from filename: \(filename)")
+        return nil // Return nil if frequency cannot be extracted
+    }
+
+    private func loadPlaylist() {
+        var filesWithFrequency: [(url: URL, frequency: Double)] = []
+        let fileManager = FileManager.default
+        let bundleURL = Bundle.main.bundleURL
+        // Construct the path to the "Chromatic/Models/Audio" directory relative to the bundle root.
+        // This assumes the "Audio" folder within "Models" is copied into the app bundle resources.
+        // You might need to adjust this if your project structure or build phases are different.
+        // A common practice is to have a "Sounds" or "AudioFiles" group in Xcode that gets copied.
+        // For this example, let's assume "Chromatic/Models/Audio" is correctly placed in bundle.
+
+        // First, try to access "Chromatic/Models/Audio" directly if it's a bundle resource path
+        var audioFilesDirectoryURL = bundleURL.appendingPathComponent("Chromatic/Models/Audio")
+
+        // Fallback: If "Chromatic/Models/Audio" is not found (e.g. if bundle structure is flatter),
+        // try accessing "Audio" directly, assuming it might be copied to the bundle root.
+        if !fileManager.fileExists(atPath: audioFilesDirectoryURL.path) {
+            print("Did not find audio at \(audioFilesDirectoryURL.path), trying bundleURL.appendingPathComponent(\"Audio\")")
+            audioFilesDirectoryURL = bundleURL.appendingPathComponent("Audio") // Common for resource folders
         }
         
-        self.playlist = validURLs
+        // Further Fallback: If still not found, try resourcesPath which might be where loose files go.
+         if !fileManager.fileExists(atPath: audioFilesDirectoryURL.path), let resourcesPath = Bundle.main.resourcePath {
+             audioFilesDirectoryURL = URL(fileURLWithPath: resourcesPath) // Search entire resourcesPath
+             print("Still not found, trying resourcesPath: \(audioFilesDirectoryURL.path)")
+         }
+
+
+        do {
+            let directoryContents = try fileManager.contentsOfDirectory(at: audioFilesDirectoryURL, includingPropertiesForKeys: nil, options: [])
+            let audioExtensions = ["mp3", "wav", "m4a"] // Add other extensions if needed
+
+            for url in directoryContents {
+                if audioExtensions.contains(url.pathExtension.lowercased()) {
+                    let filename = url.deletingPathExtension().lastPathComponent
+                    if let frequency = extractFrequency(from: filename) {
+                        filesWithFrequency.append((url: url, frequency: frequency))
+                    } else {
+                        // Optionally handle files that don't match the naming convention
+                        // For now, they are just ignored by the sorting logic if frequency is nil
+                        print("Could not parse frequency for \(filename), it will not be sorted by frequency.")
+                        // To include them unsorted (e.g. at the end), assign a very high default frequency:
+                        // filesWithFrequency.append((url: url, frequency: Double.greatestFiniteMagnitude))
+                    }
+                }
+            }
+
+            // Sort by frequency in ascending order
+            filesWithFrequency.sort { $0.frequency < $1.frequency }
+
+            // Populate the playlist with sorted URLs
+            self.playlist = filesWithFrequency.map { $0.url }
+
+            print("Sorted playlist:")
+            for fileTuple in filesWithFrequency {
+                print("- \(fileTuple.url.lastPathComponent) (Frequency: \(fileTuple.frequency))")
+            }
+
+        } catch {
+            print("Error loading audio files from \(audioFilesDirectoryURL.path): \(error.localizedDescription)")
+        }
 
         if !playlist.isEmpty {
             prepareTrack(at: 0)
         } else {
-            print("Playlist is empty. No tracks to play.")
+            print("Playlist is empty. No tracks to play. Check audio files path and content.")
         }
     }
 
