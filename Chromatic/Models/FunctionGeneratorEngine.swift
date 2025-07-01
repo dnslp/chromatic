@@ -16,19 +16,43 @@ enum Waveform: String, CaseIterable, Identifiable {
 class Channel: Identifiable {
     let id = UUID()
     var waveform: Waveform = .sine
-    var frequency: Double = 440.0    // Hz
-    var selectedPitch: Pitch? = nil  // Add this line
+    var frequency: Double = 440.0 { // Hz
+        didSet {
+            // Automatically update selectedPitch when frequency changes.
+            // Allow a small tolerance for matching.
+            if let matchedPitch = pitchFrequencies.first(where: { abs($0.frequency - frequency) < 0.5 }) {
+                if selectedPitch?.name != matchedPitch.name { // Avoid redundant updates if pitch is already correct
+                    self.selectedPitch = matchedPitch
+                }
+            } else {
+                if selectedPitch != nil { // Only set to nil if it wasn't already nil
+                    self.selectedPitch = nil
+                }
+            }
+        }
+    }
+    var selectedPitch: Pitch? = nil {
+        didSet {
+            // Automatically update frequency when selectedPitch changes,
+            // but only if the new pitch is different from the old one,
+            // and its frequency is different from the current frequency.
+            if let newPitch = selectedPitch, oldValue?.name != newPitch.name, abs(newPitch.frequency - frequency) > 0.001 {
+                self.frequency = newPitch.frequency
+            }
+        }
+    }
     var gain: Float = 0.5            // 0.0–1.0
     var isPlaying: Bool = false      // Start/Stop flag
     fileprivate var phase: Double = 0.0
     var sourceNode: AVAudioSourceNode!  // initialized in init()
 
     init(format: AVAudioFormat) {
-        // Initialize selectedPitch with a default value if needed, e.g., A4
-        if let defaultPitch = pitchFrequencies.first(where: { $0.name == "A4" }) {
-            self.selectedPitch = defaultPitch
-            self.frequency = defaultPitch.frequency
-        }
+        // Initialize selectedPitch and frequency with a default value, e.g., A4
+        let defaultPitch = pitchFrequencies.first(where: { $0.name == "A4" }) ?? pitchFrequencies.first!
+        self.selectedPitch = defaultPitch
+        self.frequency = defaultPitch.frequency
+        // Note: The didSet for selectedPitch will set frequency, so explicit frequency set here might be redundant
+        // but it's fine as a clear initialization.
 
         sourceNode = AVAudioSourceNode(format: format) { [weak self] _, _, frameCount, audioBufferList -> OSStatus in
             guard let self = self else { return noErr }
