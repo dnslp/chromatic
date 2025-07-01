@@ -13,10 +13,10 @@ enum Waveform: String, CaseIterable, Identifiable {
 }
 
 /// Single oscillator channel
-class Channel: Identifiable {
+class Channel: ObservableObject, Identifiable { // Conforms to ObservableObject
     let id = UUID()
-    var waveform: Waveform = .sine
-    var frequency: Double = 440.0 { // Hz
+    @Published var waveform: Waveform = .sine
+    @Published var frequency: Double = 440.0 { // Hz
         didSet {
             // Automatically update selectedPitch when frequency changes.
             // Allow a small tolerance for matching.
@@ -31,20 +31,22 @@ class Channel: Identifiable {
             }
         }
     }
-    var selectedPitch: Pitch? = nil {
+    @Published var selectedPitch: Pitch? = nil {
         didSet {
             // Automatically update frequency when selectedPitch changes,
             // but only if the new pitch is different from the old one,
             // and its frequency is different from the current frequency.
+            // This check `abs(newPitch.frequency - frequency) > 0.001` is important to prevent loops
+            // if frequency's didSet also tries to update selectedPitch.
             if let newPitch = selectedPitch, oldValue?.name != newPitch.name, abs(newPitch.frequency - frequency) > 0.001 {
                 self.frequency = newPitch.frequency
             }
         }
     }
-    var gain: Float = 0.5            // 0.0–1.0
-    var isPlaying: Bool = false      // Start/Stop flag
-    fileprivate var phase: Double = 0.0
-    var sourceNode: AVAudioSourceNode!  // initialized in init()
+    @Published var gain: Float = 0.5            // 0.0–1.0
+    @Published var isPlaying: Bool = false      // Start/Stop flag
+    fileprivate var phase: Double = 0.0 // Not @Published as it's internal to audio rendering
+    var sourceNode: AVAudioSourceNode!  // initialized in init(), not UI state
 
     init(format: AVAudioFormat) {
         // Initialize selectedPitch and frequency with a default value, e.g., A4
