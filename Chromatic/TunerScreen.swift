@@ -2,11 +2,9 @@ import MicrophonePitchDetector
 import SwiftUI
 
 struct TunerScreen: View {
-    @ObservedObject private var pitchDetector = MicrophonePitchDetector()
-    @AppStorage("modifierPreference")
-    private var modifierPreference = ModifierPreference.preferSharps
-    @AppStorage("selectedTransposition")
-    private var selectedTransposition = 0
+    @ObservedObject var pitchDetector: MicrophonePitchDetector
+    @Binding var modifierPreference: ModifierPreference
+    @Binding var selectedTransposition: Int
 
     var body: some View {
         TunerView(
@@ -32,6 +30,10 @@ struct TunerScreen: View {
 
 struct TunerScreen_Previews: PreviewProvider {
     static var previews: some View {
-        TunerScreen()
+        TunerScreen(
+            pitchDetector: MicrophonePitchDetector(),
+            modifierPreference: .constant(.preferSharps),
+            selectedTransposition: .constant(0)
+        )
     }
 }
