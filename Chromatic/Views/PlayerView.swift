@@ -2,9 +2,11 @@
 // SwiftUI playlist + playback controls
 
 import SwiftUI
+import MicrophonePitchDetector // Import to use MicrophonePitchDetector
 
 struct PlayerView: View {
     @ObservedObject var audioPlayer: AudioPlayer
+    @ObservedObject var pitchDetector: MicrophonePitchDetector // Add pitchDetector
 
     var body: some View {
         VStack {
@@ -35,7 +37,12 @@ struct PlayerView: View {
             }
             .frame(maxHeight: 500)
 
-            Spacer()
+            Spacer() // Pushes MiniTunerView and controls to the bottom
+
+            // Add MiniTunerView here
+            MiniTunerView(pitchDetector: pitchDetector)
+                .padding(.horizontal) // Add some horizontal padding
+                .padding(.bottom, 10) // Space before playback controls
 
             HStack(spacing: 50) {
                 Button(action: { audioPlayer.previous() }) {
@@ -57,11 +64,14 @@ struct PlayerView: View {
             }
             .padding(.bottom, 30)
         }
+        // The .task for activating pitchDetector is in MiniTunerView itself,
+        // so it will activate when this view appears if not already active.
     }
 }
 
 struct PlayerView_Previews: PreviewProvider {
     static var previews: some View {
-        PlayerView(audioPlayer: AudioPlayer())
+        // Provide both dependencies for the preview
+        PlayerView(audioPlayer: AudioPlayer(), pitchDetector: MicrophonePitchDetector())
     }
 }
