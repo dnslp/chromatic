@@ -63,8 +63,6 @@
 		BEED6ED62E143F0400037881 /* PlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEED6ED42E143F0100037881 /* PlayerView.swift */; };
 		BEED70062E144B7D00037881 /* MixerEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEED70052E144B7B00037881 /* MixerEngine.swift */; };
 		BEED70072E144B7D00037881 /* MixerEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEED70052E144B7B00037881 /* MixerEngine.swift */; };
-		BEED70092E144B9A00037881 /* MixerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEED70082E144B9A00037881 /* MixerView.swift */; };
-		BEED700A2E144B9A00037881 /* MixerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEED70082E144B9A00037881 /* MixerView.swift */; };
 		BEED700C2E14526400037881 /* FunctionGeneratorEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEED700B2E14526400037881 /* FunctionGeneratorEngine.swift */; };
 		BEED700D2E14526400037881 /* FunctionGeneratorEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEED700B2E14526400037881 /* FunctionGeneratorEngine.swift */; };
 		BEED700F2E14528D00037881 /* FunctionGeneratorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEED700E2E14528D00037881 /* FunctionGeneratorView.swift */; };
@@ -145,7 +143,6 @@
 		BEED6ED12E143EDF00037881 /* AudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayer.swift; sourceTree = "<group>"; };
 		BEED6ED42E143F0100037881 /* PlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerView.swift; sourceTree = "<group>"; };
 		BEED70052E144B7B00037881 /* MixerEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MixerEngine.swift; sourceTree = "<group>"; };
-		BEED70082E144B9A00037881 /* MixerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MixerView.swift; sourceTree = "<group>"; };
 		BEED700B2E14526400037881 /* FunctionGeneratorEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionGeneratorEngine.swift; sourceTree = "<group>"; };
 		BEED700E2E14528D00037881 /* FunctionGeneratorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionGeneratorView.swift; sourceTree = "<group>"; };
 		BEED70172E1462D300037881 /* Pitch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Pitch.swift; sourceTree = "<group>"; };
@@ -277,7 +274,6 @@
 			children = (
 				BE8D45592E14A192003CC475 /* MiniTunerView.swift */,
 				BEED700E2E14528D00037881 /* FunctionGeneratorView.swift */,
-				BEED70082E144B9A00037881 /* MixerView.swift */,
 				BEED6ED42E143F0100037881 /* PlayerView.swift */,
 				8FB571EF25B73ECE007C28BC /* CurrentNoteMarker.swift */,
 				8F2D9754269390D800B512D0 /* MicrophoneAccessAlert.swift */,
@@ -539,7 +535,6 @@
 				BEED6E942E143B3E00037881 /* PlaylistManager.swift in Sources */,
 				BE83AB472E1499D300F695B6 /* ChannelView.swift in Sources */,
 				BE8D455A2E14A192003CC475 /* MiniTunerView.swift in Sources */,
-				BEED70092E144B9A00037881 /* MixerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -547,7 +542,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BEED700A2E144B9A00037881 /* MixerView.swift in Sources */,
 				8FB571E525B73E9A007C28BC /* TunerData.swift in Sources */,
 				8FB571F525B73ECF007C28BC /* CurrentNoteMarker.swift in Sources */,
 				BEED700D2E14526400037881 /* FunctionGeneratorEngine.swift in Sources */,
