@@ -21,13 +21,7 @@ public final class PitchTracker {
         var amplitude = 0.0
 
         let floatBuffer = UnsafeBufferPointer(start: floatData[0], count: Int(buffer.frameLength))
-        for float in floatBuffer {
-            ptrack.compute(
-                bufferValue: float,
-                pitch: &pitch,
-                amplitude: &amplitude
-            )
-        }
+        ptrack.computeBlock(buffer: floatBuffer, pitch: &pitch, amplitude: &amplitude)
 
         if amplitude > amplitudeThreshold, pitch > 0 {
             return (pitch: pitch, amplitude: amplitude)

@@ -101,6 +101,12 @@ public struct ZenPTrack {
 
         cnt = pos
     }
+
+    public mutating func computeBlock(buffer: UnsafeBufferPointer<Float>, pitch: inout Double, amplitude: inout Double) {
+        for value in buffer {
+            compute(bufferValue: value, pitch: &pitch, amplitude: &amplitude)
+        }
+    }
 }
 
 private let partialonset = [
