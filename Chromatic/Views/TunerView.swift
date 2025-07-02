@@ -18,6 +18,23 @@ struct TunerView: View {
     private let menuHeight: CGFloat = 44
     private let contentSpacing: CGFloat = 8
 
+
+    struct PulsingCircle: View {
+        /// Expected 0…1
+        var amplitude: Double
+        /// Maximum extra scale (e.g. 0.5 = up to 150%)
+        var maxScale: CGFloat = 0.5
+
+        var body: some View {
+            Circle()
+                .fill(Color.accentColor.opacity(0.4))
+                .frame(width: 100, height: 100)
+                .scaleEffect(1 + CGFloat(amplitude) * maxScale)
+                .animation(.easeOut(duration: 0.2), value: amplitude)
+                .shadow(radius: CGFloat(amplitude) * 10)
+        }
+    }
+
     var body: some View {
         Group {
 #if os(watchOS)
@@ -62,8 +79,18 @@ struct TunerView: View {
 
                 NoteTicks(tunerData: tunerData, showFrequencyText: true)
 
-                Text("Amplitude: \(String(format: "%.2f", tunerData.amplitude))")
-                    .font(.caption)
+                VStack(spacing: 16) {
+                  // … your existing note display, ticks, etc. …
+
+                  // Pulsing Circle
+                  PulsingCircle(amplitude: tunerData.amplitude)
+                    .padding(.top, 8)
+
+                  // (Optional) numeric read-out below
+                  Text("Level: \(tunerData.amplitude, specifier: "%.2f")")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                }
 
                 Spacer(minLength: 0)
             }
