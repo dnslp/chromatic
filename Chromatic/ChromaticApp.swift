@@ -53,6 +53,8 @@ struct ChromaticApp: App {
 #endif
         try? session.setActive(true)
 #endif
+        // Ensure the pitch detector's input is attached before starting
+        pitchDetector.prepareInput()
         do {
             try sharedEngine.start()
         } catch {

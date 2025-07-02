@@ -18,6 +18,13 @@ public final class MicrophonePitchDetector: ObservableObject {
         self.engine = engine
     }
 
+    /// Attach the input mixer to the underlying audio engine without starting
+    /// pitch detection. Call this before the shared engine is started so
+    /// subsequent connections succeed.
+    public func prepareInput() {
+        _ = engine.inputMixer
+    }
+
     @MainActor
     public func activate() async throws {
         guard !isRunning else { return }
@@ -43,7 +50,6 @@ public final class MicrophonePitchDetector: ObservableObject {
         })
 
         isRunning = true
-        try engine.start()
         tracker.start()
     }
 }
