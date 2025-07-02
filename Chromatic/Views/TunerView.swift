@@ -63,7 +63,7 @@ struct TunerView: View {
                 NoteTicks(tunerData: tunerData, showFrequencyText: true)
 
                 VStack(alignment: .center, spacing: 4) { // Center align for better visual balance with the bar
-                    Text("Pitch: \(String(format: "%.2f", tunerData.pitch.hertz)) Hz")
+                    Text("Pitch: \(String(format: "%.2f", tunerData.pitch.measurement.value)) Hz")
                         .font(.caption)
                     // AmplitudeBarView integrated here
                     AmplitudeBarView(amplitude: tunerData.amplitude)
