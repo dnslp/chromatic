@@ -51,6 +51,12 @@
 		8FB571FF25B73ECF007C28BC /* TunerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FB571F425B73ECF007C28BC /* TunerView.swift */; };
 		8FD5D594267849EF00E5577D /* MicrophonePitchDetector in Frameworks */ = {isa = PBXBuildFile; productRef = 8FD5D593267849EF00E5577D /* MicrophonePitchDetector */; };
 		8FE56CDD25BE05D20038664C /* TranspositionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FE56CDC25BE05D20038664C /* TranspositionTests.swift */; };
+		BE1512912E15F6A600BB9EC2 /* ConcentricCircleVisualizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE15128E2E15F6A600BB9EC2 /* ConcentricCircleVisualizer.swift */; };
+		BE1512922E15F6A600BB9EC2 /* EQBarsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE15128F2E15F6A600BB9EC2 /* EQBarsView.swift */; };
+		BE1512932E15F6A600BB9EC2 /* PitchLineVisualizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE1512902E15F6A600BB9EC2 /* PitchLineVisualizer.swift */; };
+		BE1512942E15F6A600BB9EC2 /* ConcentricCircleVisualizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE15128E2E15F6A600BB9EC2 /* ConcentricCircleVisualizer.swift */; };
+		BE1512952E15F6A600BB9EC2 /* EQBarsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE15128F2E15F6A600BB9EC2 /* EQBarsView.swift */; };
+		BE1512962E15F6A600BB9EC2 /* PitchLineVisualizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE1512902E15F6A600BB9EC2 /* PitchLineVisualizer.swift */; };
 		BE83AB472E1499D300F695B6 /* ChannelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE83AB462E1499D300F695B6 /* ChannelView.swift */; };
 		BE83AB482E1499D300F695B6 /* ChannelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE83AB462E1499D300F695B6 /* ChannelView.swift */; };
 		BE8D455A2E14A192003CC475 /* MiniTunerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE8D45592E14A192003CC475 /* MiniTunerView.swift */; };
@@ -137,6 +143,9 @@
 		8FE56CDA25BE05D20038664C /* ChromaticTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ChromaticTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8FE56CDC25BE05D20038664C /* TranspositionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranspositionTests.swift; sourceTree = "<group>"; };
 		8FE56CDE25BE05D20038664C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		BE15128E2E15F6A600BB9EC2 /* ConcentricCircleVisualizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConcentricCircleVisualizer.swift; sourceTree = "<group>"; };
+		BE15128F2E15F6A600BB9EC2 /* EQBarsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EQBarsView.swift; sourceTree = "<group>"; };
+		BE1512902E15F6A600BB9EC2 /* PitchLineVisualizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchLineVisualizer.swift; sourceTree = "<group>"; };
 		BE83AB462E1499D300F695B6 /* ChannelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelView.swift; sourceTree = "<group>"; };
 		BE8D45592E14A192003CC475 /* MiniTunerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiniTunerView.swift; sourceTree = "<group>"; };
 		BEED6E932E143B3B00037881 /* PlaylistManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistManager.swift; sourceTree = "<group>"; };
@@ -285,6 +294,9 @@
 				8F2D97582693930000B512D0 /* NoteTicks.swift */,
 				8F693E3825B87DB20054DB16 /* TranspositionMenu.swift */,
 				BE83AB462E1499D300F695B6 /* ChannelView.swift */,
+				BE15128E2E15F6A600BB9EC2 /* ConcentricCircleVisualizer.swift */,
+				BE15128F2E15F6A600BB9EC2 /* EQBarsView.swift */,
+				BE1512902E15F6A600BB9EC2 /* PitchLineVisualizer.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -520,6 +532,9 @@
 				BEED70072E144B7D00037881 /* MixerEngine.swift in Sources */,
 				8F3ECD212682834700415B9F /* Frequency.swift in Sources */,
 				8F3ECD232682837800415B9F /* Alignment.swift in Sources */,
+				BE1512912E15F6A600BB9EC2 /* ConcentricCircleVisualizer.swift in Sources */,
+				BE1512922E15F6A600BB9EC2 /* EQBarsView.swift in Sources */,
+				BE1512932E15F6A600BB9EC2 /* PitchLineVisualizer.swift in Sources */,
 				8F3ECD2A2682838D00415B9F /* TunerView.swift in Sources */,
 				8F3ECD262682838D00415B9F /* MatchedNoteView.swift in Sources */,
 				8F3ECD282682838D00415B9F /* MainNoteView.swift in Sources */,
@@ -560,6 +575,9 @@
 				8F2D975126938AF900B512D0 /* TunerScreen.swift in Sources */,
 				8FB571BD25B72147007C28BC /* ChromaticApp.swift in Sources */,
 				BEED6ED22E143EEB00037881 /* AudioPlayer.swift in Sources */,
+				BE1512942E15F6A600BB9EC2 /* ConcentricCircleVisualizer.swift in Sources */,
+				BE1512952E15F6A600BB9EC2 /* EQBarsView.swift in Sources */,
+				BE1512962E15F6A600BB9EC2 /* PitchLineVisualizer.swift in Sources */,
 				8FB571DF25B73E9A007C28BC /* ModifierPreference.swift in Sources */,
 				8FB571F725B73ECF007C28BC /* MainNoteView.swift in Sources */,
 				8F693E3925B87DB20054DB16 /* TranspositionMenu.swift in Sources */,
