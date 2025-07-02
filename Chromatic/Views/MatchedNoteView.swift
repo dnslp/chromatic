@@ -61,18 +61,8 @@ struct MatchedNoteView: View {
     }
 
     private func backgroundColorForDistance(_ distance: Frequency.MusicalDistance) -> Color {
-        let distanceCents = abs(distance.cents)
-        // Using the same thresholds as the text color for consistency
-        let greenThreshold: Float = 5.0
-        let yellowThreshold: Float = 15.0
-
-        if distanceCents <= greenThreshold {
-            return Color.imperceptibleMusicalDistance.opacity(0.15) // Subtle background
-        } else if distanceCents <= yellowThreshold {
-            return Color.slightlyPerceptibleMusicalDistance.opacity(0.15)
-        } else {
-            return Color.perceptibleMusicalDistance.opacity(0.15)
-        }
+        // Using the centralized color logic and applying opacity
+        return Color.color(for: distance).opacity(0.15)
     }
 }
 
@@ -80,20 +70,8 @@ private extension View {
     // Removed @ViewBuilder as it's not needed for this type of modifier
     // and was likely causing the buildExpression error.
     func animatingMusicalDistanceForegroundColor(distance: Frequency.MusicalDistance) -> some View {
-        let distanceCents = abs(distance.cents)
-        // Thresholds can be adjusted here if needed, using similar values to NoteDistanceMarkers for consistency
-        let greenThreshold: Float = 5.0 // Slightly wider than markers for more stable text color
-        let yellowThreshold: Float = 15.0
-
-        let newColor: Color
-        if distanceCents <= greenThreshold {
-            newColor = .imperceptibleMusicalDistance
-        } else if distanceCents <= yellowThreshold {
-            newColor = .slightlyPerceptibleMusicalDistance
-        } else {
-            newColor = .perceptibleMusicalDistance
-        }
-        return self.foregroundColor(newColor) // Explicit return
+        // Using the centralized color logic
+        return self.foregroundColor(Color.color(for: distance))
     }
 }
 
