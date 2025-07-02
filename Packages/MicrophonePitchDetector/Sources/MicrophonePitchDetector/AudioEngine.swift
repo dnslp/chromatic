@@ -18,7 +18,7 @@ extension AVAudioMixerNode {
 }
 
 /// AudioKit's wrapper for AVAudioEngine
-final class AudioEngine {
+public final class AudioEngine {
     /// Internal AVAudioEngine
     let avEngine: AVAudioEngine
 
@@ -45,12 +45,12 @@ final class AudioEngine {
     }
 
     /// Initialize with an optional external AVAudioEngine
-    init(avAudioEngine: AVAudioEngine = AVAudioEngine()) {
+    public init(avAudioEngine: AVAudioEngine = AVAudioEngine()) {
         self.avEngine = avAudioEngine
     }
 
     /// Start the engine
-    func start() throws {
+    public func start() throws {
         try avEngine.start()
     }
 
