@@ -57,14 +57,14 @@ struct TunerView: View {
                 // Centered note info
                 VStack(spacing: contentSpacing) {
                     MatchedNoteView(match: match, modifierPreference: modifierPreference)
-                        .padding(.top, 200)
+                        .padding(.top, 100)
 
                     MatchedNoteFrequency(frequency: tunerData.closestNote.frequency)
                         .padding(.bottom, 50)
 
                     // Main tick view with stable height
-                    NoteTicks(tunerData: tunerData, showFrequencyText: false)
-                            .frame(height: 100)
+                    NoteTicks(tunerData: tunerData, showFrequencyText: true)
+                        .frame(height: noteTicksHeight)
                         .padding(.vertical, 2)
                 }
                 .frame(maxWidth: .infinity)
@@ -72,17 +72,11 @@ struct TunerView: View {
                 .padding(.top, 60)
 
                 Spacer(minLength: 24)
-                Text(tunerData.closestNote.frequency.localizedString())
-                    .font(.system(size: 24, weight: .bold, design: .rounded))
-                    .foregroundColor(.secondary)
-                    .frame(maxWidth: .infinity)
-                    .multilineTextAlignment(.center)
-                    .padding(.top, 50)
 
                 // Amplitude bar, always fixed at bottom
                 HStack(spacing: 8) {
                     Text("Level")
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .font(.caption2)
                         .foregroundColor(.secondary)
 
                     GeometryReader { geo in
@@ -114,7 +108,7 @@ struct TunerView: View {
                 .background(Color(.systemBackground).opacity(0.85))
                 .cornerRadius(8)
                 .shadow(radius: 2, y: -1)
-                .padding(.top, 60)
+                .padding(.top, 80)
             }
             .frame(height: nonWatchHeight)
             .background(

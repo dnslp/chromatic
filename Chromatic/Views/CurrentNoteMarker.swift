@@ -7,10 +7,10 @@ struct CurrentNoteMarker: View {
 
     // Marker constants for stable layout
     private let markerWidth: CGFloat = 15
-    private let markerHeight: CGFloat = 140
-    private let labelHeight: CGFloat = 16
+    private let markerHeight: CGFloat = 120
+    private let labelHeight: CGFloat = 1
     private let totalWidth: CGFloat = 36  // marker + fudge for text
-    private let totalHeight: CGFloat = 50
+    private let totalHeight: CGFloat = 100
 
     var body: some View {
         GeometryReader { geometry in
@@ -27,13 +27,7 @@ struct CurrentNoteMarker: View {
                         .foregroundColor(
                             distance.isPerceptible ? .perceptibleMusicalDistance : .imperceptibleMusicalDistance
                         )
-                    // Frequency label is always present, just hidden when not needed
-//                    Text(frequency.localizedString())
-//                        .font(.caption2)
-//                        .foregroundColor(.secondary)
-//                        .frame(width: 100, height: labelHeight)
-//                        .opacity(showFrequencyText ? 1 : 0)
-//                        .padding(.top, 80)
+
 //                    
                 }
                 .frame(width: totalWidth)
@@ -45,6 +39,14 @@ struct CurrentNoteMarker: View {
                 .animation(.easeInOut(duration: 0.12), value: distance.cents)
             }
             .frame(height: totalHeight)
+            // Frequency label is always present, just hidden when not needed
+            Text(frequency.localizedString())
+                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .foregroundColor(.secondary)
+                .frame(maxWidth: .infinity)           // Take the full horizontal space
+                .multilineTextAlignment(.center)      // Center the text horizontally
+                .padding(.top, 140)                     // Space above, adjust as needed
+
         }
         .frame(height: 60) // Always the same, matches totalHeight above
         .alignmentGuide(.noteTickCenter) { $0[VerticalAlignment.center] }
