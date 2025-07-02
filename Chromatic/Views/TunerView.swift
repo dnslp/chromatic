@@ -15,9 +15,11 @@ struct TunerView: View {
 
     // Layout constants
     private let watchHeight: CGFloat = 150
-    private let nonWatchHeight: CGFloat = 300
+    private let nonWatchHeight: CGFloat = 320
     private let menuHeight: CGFloat = 44
     private let contentSpacing: CGFloat = 8
+    private let noteTicksHeight: CGFloat = 100
+    private let amplitudeBarHeight: CGFloat = 32
 
     var body: some View {
         Group {
@@ -41,38 +43,53 @@ struct TunerView: View {
             .frame(height: watchHeight)
             .fixedSize()
         #else
-            ZStack(alignment: .bottom) {
-                // Top layer: tuning UI
-                VStack(alignment: .noteCenter, spacing: contentSpacing) {
-                    HStack {
-                        if !hidesTranspositionMenu {
-                            TranspositionMenu(selectedTransposition: $selectedTransposition)
-                                .padding(.leading)
-                        }
-                        Spacer()
+            VStack(spacing: 0) {
+                // Header / Menu
+                HStack {
+                    if !hidesTranspositionMenu {
+                        TranspositionMenu(selectedTransposition: $selectedTransposition)
+                            .padding(.leading, 8)
                     }
-                    .frame(height: menuHeight)
-
-                    MatchedNoteView(match: match, modifierPreference: modifierPreference)
-
-                    MatchedNoteFrequency(frequency: tunerData.closestNote.frequency)
-
-                    NoteTicks(tunerData: tunerData, showFrequencyText: true)
-
                     Spacer()
                 }
+                .frame(height: menuHeight)
 
-                // Bottom layer: fixed amplitude bar
+                // Centered note info
+                VStack(spacing: contentSpacing) {
+                    MatchedNoteView(match: match, modifierPreference: modifierPreference)
+                        .padding(.top, 200)
+
+                    MatchedNoteFrequency(frequency: tunerData.closestNote.frequency)
+                        .padding(.bottom, 50)
+
+                    // Main tick view with stable height
+                    NoteTicks(tunerData: tunerData, showFrequencyText: false)
+                            .frame(height: 100)
+                        .padding(.vertical, 2)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 12)
+                .padding(.top, 60)
+
+                Spacer(minLength: 24)
+                Text(tunerData.closestNote.frequency.localizedString())
+                    .font(.system(size: 24, weight: .bold, design: .rounded))
+                    .foregroundColor(.secondary)
+                    .frame(maxWidth: .infinity)
+                    .multilineTextAlignment(.center)
+                    .padding(.top, 50)
+
+                // Amplitude bar, always fixed at bottom
                 HStack(spacing: 8) {
                     Text("Level")
-                        .font(.caption2)
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
                         .foregroundColor(.secondary)
 
                     GeometryReader { geo in
                         ZStack(alignment: .leading) {
                             Capsule()
                                 .frame(height: 6)
-                                .foregroundColor(Color.secondary.opacity(0.2))
+                                .foregroundColor(Color.secondary.opacity(0.14))
 
                             Capsule()
                                 .frame(
@@ -92,10 +109,20 @@ struct TunerView: View {
                     .frame(height: 6)
                     .frame(maxWidth: .infinity)
                 }
-                .padding(.horizontal)
-                .frame(height: 20)
+                .padding(.horizontal, 16)
+                .frame(height: amplitudeBarHeight)
+                .background(Color(.systemBackground).opacity(0.85))
+                .cornerRadius(8)
+                .shadow(radius: 2, y: -1)
+                .padding(.top, 60)
             }
             .frame(height: nonWatchHeight)
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(Color(.systemBackground).opacity(0.94))
+                    .shadow(color: Color.black.opacity(0.05), radius: 16, y: 4)
+            )
+            .padding(.horizontal, 8)
         #endif
         }
         .frame(maxHeight: .infinity, alignment: .top)
@@ -109,7 +136,7 @@ struct TunerView_Previews: PreviewProvider {
             modifierPreference: ModifierPreference.preferSharps,
             selectedTransposition: 0
         )
-        .previewLayout(PreviewLayout.sizeThatFits)
+        .previewLayout(.sizeThatFits)
         .padding()
     }
 }

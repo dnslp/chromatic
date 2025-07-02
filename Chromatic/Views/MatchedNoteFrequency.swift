@@ -5,7 +5,7 @@ struct MatchedNoteFrequency: View {
 
     var body: some View {
         Text(frequency.localizedString())
-            .foregroundColor(.secondary)
+            .foregroundColor(.secondary).font(.system(size: 24, weight: .bold, design: .rounded))
     }
 }
 

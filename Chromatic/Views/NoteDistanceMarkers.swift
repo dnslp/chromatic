@@ -7,8 +7,8 @@ struct NoteDistanceMarkers: View {
         HStack {
             ForEach(0..<25) { index in
                 Rectangle()
-                    .frame(width: 1, height: tickSize(forIndex: index).height)
-                    .cornerRadius(1)
+                    .frame(width: 2, height: tickSize(forIndex: index).height)
+                    .cornerRadius(2)
                     .foregroundColor(colorForTick(atIndex: index))
                     .animation(.easeInOut, value: tunerData.closestNote.distance.cents) // Animate based on cents
                     .inExpandingRectangle()

@@ -274,8 +274,8 @@
 			children = (
 				BE8D45592E14A192003CC475 /* MiniTunerView.swift */,
 				BEED700E2E14528D00037881 /* FunctionGeneratorView.swift */,
-				BEED6ED42E143F0100037881 /* PlayerView.swift */,
 				8FB571EF25B73ECE007C28BC /* CurrentNoteMarker.swift */,
+				BEED6ED42E143F0100037881 /* PlayerView.swift */,
 				8F2D9754269390D800B512D0 /* MicrophoneAccessAlert.swift */,
 				8FB571F025B73ECE007C28BC /* MainNoteView.swift */,
 				8FB571F225B73ECF007C28BC /* MatchedNoteFrequency.swift */,

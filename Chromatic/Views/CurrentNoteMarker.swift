@@ -1,45 +1,52 @@
 import SwiftUI
 
-/// Marks the current detected note position in the tick view
 struct CurrentNoteMarker: View {
     let frequency: Frequency
     let distance: Frequency.MusicalDistance
     let showFrequencyText: Bool
 
-    // Fixed dimensions
-    private let tickHeight: CGFloat = NoteTickSize.large.height
-    private let textHeight: CGFloat = 20
-    private var totalHeight: CGFloat {
-        tickHeight + (showFrequencyText ? textHeight + 4 : 0)
-    }
+    // Marker constants for stable layout
+    private let markerWidth: CGFloat = 15
+    private let markerHeight: CGFloat = 140
+    private let labelHeight: CGFloat = 16
+    private let totalWidth: CGFloat = 36  // marker + fudge for text
+    private let totalHeight: CGFloat = 50
 
     var body: some View {
-        GeometryReader { geo in
-            ZStack {
-                // Marker line
-                Rectangle()
-                    .fill(distance.isPerceptible ? Color.perceptibleMusicalDistance : Color.imperceptibleMusicalDistance)
-                    .frame(width: 4, height: tickHeight)
-                    .position(
-                        x: geo.size.width/2 + (CGFloat(distance.cents)/50) * (geo.size.width/2),
-                        y: tickHeight/2
-                    )
-
-                // Optional frequency text
-                if showFrequencyText {
-                    Text(frequency.localizedString())
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .frame(width: geo.size.width)
-                        .position(
-                            x: geo.size.width/2 + (CGFloat(distance.cents)/50) * (geo.size.width/2),
-                            y: tickHeight + textHeight/2 + 4
+        GeometryReader { geometry in
+            // Overlay marker at the horizontal offset, *not* affecting the layout of the parent
+            ZStack(alignment: .topLeading) {
+                // This is an invisible bar that "reserves" the space so the parent never resizes
+                Color.clear
+                    .frame(width: geometry.size.width, height: totalHeight)
+                // The moving marker
+                VStack(spacing: 0) {
+                    Rectangle()
+                        .frame(width: markerWidth, height: markerHeight)
+                        .cornerRadius(markerWidth / 2)
+                        .foregroundColor(
+                            distance.isPerceptible ? .perceptibleMusicalDistance : .imperceptibleMusicalDistance
                         )
+                    // Frequency label is always present, just hidden when not needed
+//                    Text(frequency.localizedString())
+//                        .font(.caption2)
+//                        .foregroundColor(.secondary)
+//                        .frame(width: 100, height: labelHeight)
+//                        .opacity(showFrequencyText ? 1 : 0)
+//                        .padding(.top, 80)
+//                    
                 }
+                .frame(width: totalWidth)
+                // The magic: move only this view left/right, don't shift parent/container
+                .position(
+                    x: (geometry.size.width / 2) * CGFloat(distance.cents / 50) + geometry.size.width / 2,
+                    y: totalHeight / 2
+                )
+                .animation(.easeInOut(duration: 0.12), value: distance.cents)
             }
+            .frame(height: totalHeight)
         }
-        .frame(height: totalHeight)
-        .fixedSize(horizontal: false, vertical: true)
+        .frame(height: 60) // Always the same, matches totalHeight above
         .alignmentGuide(.noteTickCenter) { $0[VerticalAlignment.center] }
     }
 }
@@ -51,6 +58,6 @@ struct CurrentNoteMarker_Previews: PreviewProvider {
             distance: Frequency.MusicalDistance(cents: 25),
             showFrequencyText: true
         )
-        .previewLayout(.fixed(width: 300, height: 200))
+        .previewLayout(.fixed(width: 300, height: 300))
     }
 }
