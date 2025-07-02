@@ -56,7 +56,11 @@ final class AudioEngine {
     /// Configures the audio session
     func configureSession() throws {
         let session = AVAudioSession.sharedInstance()
-        let bufferDuration = 7 / AVAudioFormat.stereo.sampleRate
+        // Use a slightly larger IO buffer to avoid clicks when other audio
+        // engines (like the function generator) are active. 256 frames at the
+        // current sample rate gives a stable ~5–6 ms buffer on most devices.
+        let preferredFrames: Double = 256
+        let bufferDuration = preferredFrames / AVAudioFormat.stereo.sampleRate
 #if !os(watchOS)
         try session.setPreferredIOBufferDuration(bufferDuration)
         try session.setCategory(.playAndRecord, options: [.defaultToSpeaker, .mixWithOthers])
