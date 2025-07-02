@@ -12,13 +12,14 @@ struct ChromaticApp: App {
 
     var body: some Scene {
         WindowGroup {
+            
             TabView {
                 TunerScreen(pitchDetector: pitchDetector, modifierPreference: $modifierPreference, selectedTransposition: $selectedTransposition).tabItem { Label("Tuner", systemImage: "tuningfork") }
                 PlayerView(audioPlayer: audioPlayer, pitchDetector: pitchDetector, modifierPreference: $modifierPreference, selectedTransposition: $selectedTransposition)
                     .tabItem { Label("Player", systemImage: "music.note") }
 //                FunctionGeneratorView(engine: FunctionGeneratorEngine())
 //                    .tabItem { Label("Func Gen", systemImage: "waveform.path") }
-            }
+            }.preferredColorScheme(.dark)
             .onAppear {
                 #if os(iOS)
                 UIApplication.shared.isIdleTimerDisabled = true
