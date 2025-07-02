@@ -62,8 +62,15 @@ struct TunerView: View {
 
                 NoteTicks(tunerData: tunerData, showFrequencyText: true)
 
-                Text("Amplitude: \(String(format: "%.2f", tunerData.amplitude))")
-                    .font(.caption)
+                VStack(alignment: .center, spacing: 4) { // Center align for better visual balance with the bar
+                    Text("Pitch: \(String(format: "%.2f", tunerData.pitch.hertz)) Hz")
+                        .font(.caption)
+                    // AmplitudeBarView integrated here
+                    AmplitudeBarView(amplitude: tunerData.amplitude)
+                        .padding(.vertical) // Add some vertical padding
+                    DurationProgressView(duration: tunerData.durationInPitchThreshold)
+                }
+                .padding(.top)
 
                 Spacer(minLength: 0)
             }
@@ -79,7 +86,7 @@ struct TunerView: View {
 struct TunerView_Previews: PreviewProvider {
     static var previews: some View {
         TunerView(
-            tunerData: TunerData(pitch: 440, amplitude: 0.5),
+            tunerData: TunerData(pitch: 440, amplitude: 0.5, durationInPitchThreshold: 0.2),
             modifierPreference: .preferSharps,
             selectedTransposition: 0
         )

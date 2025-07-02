@@ -24,6 +24,7 @@ struct ChromaticApp: App {
                 UIApplication.shared.isIdleTimerDisabled = true
                 #endif
             }
+            .preferredColorScheme(.dark) // Set default color scheme to dark
         }
     }
 }
