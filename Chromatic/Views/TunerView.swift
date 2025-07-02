@@ -1,9 +1,12 @@
 import SwiftUI
 
 struct TunerView: View {
-    let tunerData: TunerData
+    @Binding var tunerData: TunerData // Changed to @Binding
     @State var modifierPreference: ModifierPreference
     @State var selectedTransposition: Int
+
+    // State for statistics
+    @State private var statistics: (min: Double, max: Double, avg: Double)? = nil
 
     private var match: ScaleNote.Match {
         tunerData.closestNote
@@ -14,7 +17,7 @@ struct TunerView: View {
 
     // Layout constants
     private let watchHeight: CGFloat = 150
-    private let nonWatchHeight: CGFloat = 460
+    private let nonWatchHeight: CGFloat = 560 // Increased height to accommodate new UI
     private let menuHeight: CGFloat = 44
     private let contentSpacing: CGFloat = 8
     private let noteTicksHeight: CGFloat = 100
@@ -116,6 +119,56 @@ struct TunerView: View {
                 .cornerRadius(8)
                 .shadow(radius: 2, y: -1)
                 .padding(.top, 0)
+
+                // Recording and Statistics Section
+                VStack {
+                    HStack {
+                        Button(action: {
+                            if tunerData.isRecording {
+                                tunerData.stopRecording()
+                                statistics = tunerData.calculateStatistics()
+                            } else {
+                                tunerData.startRecording()
+                                statistics = nil // Clear previous stats
+                            }
+                        }) {
+                            Text(tunerData.isRecording ? "Stop Recording" : "Start Recording")
+                                .padding(.horizontal)
+                                .padding(.vertical, 8)
+                                .background(tunerData.isRecording ? Color.red : Color.green)
+                                .foregroundColor(.white)
+                                .cornerRadius(8)
+                        }
+
+                        Button(action: {
+                            tunerData.clearRecording()
+                            statistics = nil
+                        }) {
+                            Text("Clear Data")
+                                .padding(.horizontal)
+                                .padding(.vertical, 8)
+                                .background(Color.gray)
+                                .foregroundColor(.white)
+                                .cornerRadius(8)
+                        }
+                    }
+                    .padding(.top, 8)
+
+                    if let stats = statistics {
+                        HStack {
+                            Text(String(format: "Min: %.2f Hz", stats.min))
+                            Spacer()
+                            Text(String(format: "Max: %.2f Hz", stats.max))
+                            Spacer()
+                            Text(String(format: "Avg: %.2f Hz", stats.avg))
+                        }
+                        .padding(.horizontal)
+                        .padding(.top, 8)
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 16)
+
             }
             .frame(height: nonWatchHeight)
             .background(
@@ -133,7 +186,7 @@ struct TunerView: View {
 struct TunerView_Previews: PreviewProvider {
     static var previews: some View {
         TunerView(
-            tunerData: TunerData(pitch: 440, amplitude: 0.5),
+            tunerData: .constant(TunerData(pitch: 440, amplitude: 0.5)),
             modifierPreference: ModifierPreference.preferSharps,
             selectedTransposition: 0
         )
