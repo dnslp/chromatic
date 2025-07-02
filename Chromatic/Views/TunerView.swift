@@ -1,66 +1,5 @@
 import SwiftUI
 
-/// Visualizer showing concentric circles filling based on pitch accuracy
-struct ConcentricCircleVisualizer: View {
-    let distance: Double        // Pitch deviation in cents
-    let maxDistance: Double     // Max cents for full scale
-    let tunerData: TunerData    // For dynamic styling
-
-    private var percent: Double {
-        max(0, 1 - abs(distance) / maxDistance)
-    }
-
-    private var fillColor: Color {
-        let d = abs(distance)
-        if d < 5 { return .green }
-        else if d < 25 { return .yellow }
-        else { return .red }
-    }
-
-    var body: some View {
-        ZStack {
-            Circle()
-                .stroke(lineWidth: 20 * tunerData.amplitude)
-                .foregroundColor(.secondary)
-                .frame(width: 100, height: 100)
-            Circle()
-                .frame(width: 100, height: 100)
-                .scaleEffect(CGFloat(percent))
-                .foregroundColor(fillColor.opacity(0.6))
-                .animation(.easeInOut(duration: 0.2), value: percent)
-        }
-    }
-}
-
-/// Visualizer showing current input pitch position on a horizontal line (55–1100 Hz)
-struct PitchLineVisualizer: View {
-    let tunerData: TunerData
-    let frequency: Frequency
-    let minHz: Double = 55
-    let maxHz: Double = 440
-
-    private var percent: Double {
-        let hz = frequency.measurement.value
-      return min(max((hz - minHz)/(maxHz - minHz), 0), 1)
-    }
-
-    var body: some View {
-        GeometryReader { geo in
-            ZStack(alignment: .leading) {
-                Capsule()
-                    .frame(height: 4)
-                    .foregroundColor(.secondary)
-                Circle()
-                    .frame(width: 16, height: 16)
-                    .offset(x: CGFloat(percent) * (geo.size.width - 16))
-                    .foregroundColor(.accentColor)
-                    .animation(.easeInOut(duration: 0.2), value: percent)
-            }
-        }
-        .frame(height: 20)
-    }
-}
-
 struct TunerView: View {
     let tunerData: TunerData
     @State var modifierPreference: ModifierPreference
@@ -145,23 +84,12 @@ struct TunerView: View {
                     .padding(.bottom, 16)
 
                 // EQ bars
-                HStack(alignment: .bottom, spacing: 22) {
-                    ForEach(0..<eqBarCount, id: \.self) { i in
-                        let d = abs(match.distance.cents)
-                        let c: Color = d < 5 ? .green : (d < 25 ? .yellow : .red)
-                        let center = Double(eqBarCount - 1) / 2
-                        let factor = 1.5 - abs(Double(i) - center) / center
-                        let height = eqMaxHeight * CGFloat(tunerData.amplitude) * CGFloat(factor)
-                        Capsule()
-                            .frame(width: 8, height: height)
-                            .foregroundColor(c)
-                            .animation(.easeInOut(duration: 0.2), value: tunerData.amplitude)
-                    }
-                }
-                .frame(height: eqMaxHeight)
-                .frame(maxWidth: .infinity)
-                .padding(.horizontal, 25)
-                .padding(.bottom, 35)
+                EQBarsView(
+                    match: match,
+                    tunerData: tunerData,
+                    eqBarCount: eqBarCount,
+                    eqMaxHeight: eqMaxHeight
+                )
 
                 // Amplitude bar
                 HStack(spacing: 8) {
