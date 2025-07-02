@@ -16,8 +16,8 @@ struct ChromaticApp: App {
                 TunerScreen(pitchDetector: pitchDetector, modifierPreference: $modifierPreference, selectedTransposition: $selectedTransposition).tabItem { Label("Tuner", systemImage: "tuningfork") }
                 PlayerView(audioPlayer: audioPlayer, pitchDetector: pitchDetector, modifierPreference: $modifierPreference, selectedTransposition: $selectedTransposition)
                     .tabItem { Label("Player", systemImage: "music.note") }
-                FunctionGeneratorView(engine: FunctionGeneratorEngine())
-                    .tabItem { Label("Func Gen", systemImage: "waveform.path") }
+//                FunctionGeneratorView(engine: FunctionGeneratorEngine())
+//                    .tabItem { Label("Func Gen", systemImage: "waveform.path") }
             }
             .onAppear {
                 #if os(iOS)

@@ -1,5 +1,5 @@
 // AudioPlayer.swift
-// WAV-file player for SwiftUI with folder-detection and fade in/out
+// WAV/MP3-file player for SwiftUI with folder-detection and fade in/out
 
 import Foundation
 import AVFoundation
@@ -20,10 +20,12 @@ class AudioPlayer: ObservableObject {
     private let stepInterval: TimeInterval = 0.05
 
     init() {
+        configureAudioSession()
         // Attempt multiple subdirectory locations
         let subs = ["Audio", "Models/Audio", nil]
         for sub in subs {
-            if let urls = Bundle.main.urls(forResourcesWithExtension: "mp3", subdirectory: sub), !urls.isEmpty {
+            if let urls = Bundle.main.urls(forResourcesWithExtension: "mp3", subdirectory: sub),
+               !urls.isEmpty {
                 songURLs = urls.sorted { $0.lastPathComponent < $1.lastPathComponent }
                 break
             }
@@ -40,6 +42,16 @@ class AudioPlayer: ObservableObject {
         }
     }
 
+    private func configureAudioSession() {
+        let session = AVAudioSession.sharedInstance()
+        do {
+            try session.setCategory(.playback, mode: .default, options: [])
+            try session.setActive(true)
+        } catch {
+            print("⚠️ AVAudioSession setup failed: \(error)")
+        }
+    }
+
     private func loadSong() {
         guard !songURLs.isEmpty else { return }
         let url = songURLs[currentIndex]
@@ -53,9 +65,10 @@ class AudioPlayer: ObservableObject {
         }
     }
 
-    // Select a track directly
     func select(at index: Int) {
-        guard index != currentIndex, index >= 0, index < songURLs.count else { return }
+        guard index != currentIndex,
+              index >= 0,
+              index < songURLs.count else { return }
         fadeOut {
             self.currentIndex = index
             self.currentSong = self.songList[index]
@@ -65,6 +78,7 @@ class AudioPlayer: ObservableObject {
     }
 
     func play() {
+        configureAudioSession()  // ensure session active before playing
         guard player != nil, !isPlaying else { return }
         fadeIn()
     }
@@ -106,7 +120,10 @@ class AudioPlayer: ObservableObject {
     }
 
     private func fadeOut(completion: @escaping () -> Void = {}) {
-        guard let player = player, isPlaying else { completion(); return }
+        guard let player = player, isPlaying else {
+            completion()
+            return
+        }
         fadeTimer?.invalidate()
         let step = Float(stepInterval / fadeDuration)
         var vol = player.volume
