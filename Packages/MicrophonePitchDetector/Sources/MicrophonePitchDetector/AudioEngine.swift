@@ -70,7 +70,7 @@ public final class AudioEngine {
     private func createEngineMixer(input: Mixer) {
         let mixer = Mixer()
         avEngine.attach(mixer.auMixer)
-        avEngine.connect(mixer.auMixer, to: avEngine.outputNode, format: .stereo)
+        avEngine.connect(mixer.auMixer, to: avEngine.mainMixerNode, format: .stereo)
         mixer.addInput(input)
     }
 }

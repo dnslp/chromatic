@@ -49,13 +49,10 @@ class PlaylistManager: ObservableObject {
         }
         engine.connect(audioPlayerNode, to: playlistMixer, format: commonFormat)
 
-        // Connect our playlistMixer to the engine's output node
-        let outputNode = engine.outputNode
-        // Use a common format for the connection to the output node,
-        // or the output node's input format for bus 0.
-        let mixerConnectionFormat = outputNode.inputFormat(forBus: 0)
-        engine.connect(playlistMixer, to: outputNode, format: mixerConnectionFormat)
-        print("PlaylistManager: Connected audioPlayerNode -> playlistMixer -> outputNode.")
+        // Connect our playlistMixer to the shared engine's main mixer
+        let mixerConnectionFormat = engine.mainMixerNode.outputFormat(forBus: 0)
+        engine.connect(playlistMixer, to: engine.mainMixerNode, format: mixerConnectionFormat)
+        print("PlaylistManager: Connected audioPlayerNode -> playlistMixer -> mainMixerNode.")
 
         // Ensure the engine is running. The MicrophonePitchDetector should have started it.
         if !engine.isRunning {
