@@ -5,7 +5,7 @@ import WatchKit
 #endif
 
 public final class MicrophonePitchDetector: ObservableObject {
-    private let engine = AudioEngine()
+    private let engine: AudioEngine
     private var isRunning = false
     private var tracker: PitchTap!
 
@@ -14,7 +14,9 @@ public final class MicrophonePitchDetector: ObservableObject {
     @Published public var didReceiveAudio = false
     @Published public var showMicrophoneAccessAlert = false
 
-    public init() {}
+    public init(engine: AudioEngine = AudioEngine()) {
+        self.engine = engine
+    }
 
     @MainActor
     public func activate() async throws {
@@ -29,9 +31,6 @@ public final class MicrophonePitchDetector: ObservableObject {
     }
 
     private func setUpPitchTracking() async throws {
-#if !os(macOS)
-        try engine.configureSession()
-#endif
         tracker = PitchTap(engine.inputMixer, handler: { pitch, amplitude in
             Task { @MainActor in
                 self.pitch = pitch

@@ -12,7 +12,7 @@
 import SwiftUI
 
 struct MixerView: View {
-    @ObservedObject var mixer = MixerEngine()
+    @ObservedObject var mixer: MixerEngine
     @State private var filePickerIndex: Int? = nil
 
     var body: some View {
@@ -69,6 +69,6 @@ struct MixerView: View {
 
 struct MixerView_Previews: PreviewProvider {
     static var previews: some View {
-        MixerView()
+        MixerView(mixer: MixerEngine(engine: AVAudioEngine()))
     }
 }

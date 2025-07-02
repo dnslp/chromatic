@@ -16,10 +16,11 @@ class MixerEngine: ObservableObject {
     }
 
     @Published var tracks: [Track] = []
-    private let engine = AVAudioEngine()
+    private let engine: AVAudioEngine
     private let mainMixer = AVAudioMixerNode()
 
-    init(numberOfTracks: Int = 4) {
+    init(engine: AVAudioEngine, numberOfTracks: Int = 4) {
+        self.engine = engine
         // Attach main mixer
         engine.attach(mainMixer)
         engine.connect(mainMixer, to: engine.mainMixerNode, format: nil)
@@ -32,11 +33,6 @@ class MixerEngine: ObservableObject {
             tracks.append(Track(playerNode: node))
         }
 
-        do {
-            try engine.start()
-        } catch {
-            print("❌ Mixer engine start error: \(error)")
-        }
     }
 
     /// Load an audio file into a track

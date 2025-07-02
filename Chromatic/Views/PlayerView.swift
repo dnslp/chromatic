@@ -80,7 +80,7 @@ struct PlayerView_Previews: PreviewProvider {
     static var previews: some View {
         PlayerView(
             audioPlayer: AudioPlayer(),
-            pitchDetector: MicrophonePitchDetector(),
+            pitchDetector: MicrophonePitchDetector(engine: AudioEngine()),
             modifierPreference: .constant(.preferSharps),
             selectedTransposition: .constant(0)
         )

@@ -31,7 +31,7 @@ struct TunerScreen: View {
 struct TunerScreen_Previews: PreviewProvider {
     static var previews: some View {
         TunerScreen(
-            pitchDetector: MicrophonePitchDetector(),
+            pitchDetector: MicrophonePitchDetector(engine: AudioEngine()),
             modifierPreference: .constant(.preferSharps),
             selectedTransposition: .constant(0)
         )

@@ -9,7 +9,7 @@
 import SwiftUI
 
 struct FunctionGeneratorView: View {
-    @StateObject var engine = FunctionGeneratorEngine() // Changed to @StateObject
+    @ObservedObject var engine: FunctionGeneratorEngine
 
     var body: some View {
         ScrollView {
@@ -32,6 +32,6 @@ struct FunctionGeneratorView: View {
 
 struct FunctionGeneratorView_Previews: PreviewProvider {
     static var previews: some View {
-        FunctionGeneratorView()
+        FunctionGeneratorView(engine: FunctionGeneratorEngine(engine: AVAudioEngine()))
     }
 }

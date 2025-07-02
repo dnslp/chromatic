@@ -147,9 +147,10 @@ class Channel: ObservableObject, Identifiable { // Conforms to ObservableObject
 /// Engine managing four oscillators
 class FunctionGeneratorEngine: ObservableObject {
     @Published var channels: [Channel] = []
-    private let engine = AVAudioEngine()
+    private let engine: AVAudioEngine
 
-    init(channelsCount: Int = 4) {
+    init(engine: AVAudioEngine, channelsCount: Int = 4) {
+        self.engine = engine
         let sampleRate = engine.outputNode.outputFormat(forBus: 0).sampleRate
         let format = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1)!
 
@@ -160,11 +161,6 @@ class FunctionGeneratorEngine: ObservableObject {
             engine.connect(channel.sourceNode, to: engine.mainMixerNode, format: format)
         }
 
-        do {
-            try engine.start()
-        } catch {
-            print("❌ Audio engine failed to start: \(error)")
-        }
     }
 
     func setWaveform(_ wf: Waveform, for index: Int) {
