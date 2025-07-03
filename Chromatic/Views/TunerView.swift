@@ -45,6 +45,7 @@ struct TunerView: View {
             .frame(height: watchHeight)
             .fixedSize()
         #else
+            
             VStack(spacing: 0) {
                 // Header/Menu
                 HStack {
@@ -55,45 +56,6 @@ struct TunerView: View {
                     Spacer()
                 }
                 .frame(height: menuHeight)
-
-                // Note display
-                VStack(spacing: contentSpacing) {
-                    MatchedNoteView(match: match, modifierPreference: modifierPreference)
-                        .padding(.top, 100)
-                    MatchedNoteFrequency(frequency: tunerData.closestNote.frequency)
-                        .padding(.bottom, 50)
-                    NoteTicks(tunerData: tunerData, showFrequencyText: true)
-                        .frame(height: noteTicksHeight)
-                        .padding(.vertical, 2)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.horizontal, 12)
-                .padding(.top, 60)
-
-                Spacer(minLength: 24)
-
-                // Concentric tuner
-                ConcentricCircleVisualizer(
-                    distance: Double(match.distance.cents),
-                    maxDistance: maxCentDistance,
-                    tunerData: tunerData
-                )
-                .frame(width: 100, height: 100)
-                .padding(.bottom, 16)
-
-                // Pitch-on-line visualizer
-                PitchLineVisualizer(tunerData: tunerData, frequency: tunerData.pitch)
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 16)
-
-                // EQ bars
-                EQBarsView(
-                    match: match,
-                    tunerData: tunerData,
-                    eqBarCount: eqBarCount,
-                    eqMaxHeight: eqMaxHeight
-                )
-
                 // Amplitude bar
                 HStack(spacing: 8) {
                     Text("Level").font(.caption2).foregroundColor(.secondary)
@@ -118,8 +80,31 @@ struct TunerView: View {
                 .background(Color(.systemBackground).opacity(0.85))
                 .cornerRadius(8)
                 .shadow(radius: 2, y: -1)
-                .padding(.top, 0)
+//                .padding(.top, 0)
+                // Note display
+                VStack(spacing: contentSpacing) {
+                    MatchedNoteView(match: match, modifierPreference: modifierPreference)
+                        .padding(.top, 100)
+                    MatchedNoteFrequency(frequency: tunerData.closestNote.frequency)
+                        .padding(.bottom, 50)
+                    NoteTicks(tunerData: tunerData, showFrequencyText: true)
+                        .frame(height: noteTicksHeight)
+                        .padding(.vertical, 2)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 12)
+                .padding(.top, 60)
 
+                Spacer(minLength: 24)
+
+                // Concentric tuner
+                ConcentricCircleVisualizer(
+                    distance: Double(match.distance.cents),
+                    maxDistance: maxCentDistance,
+                    tunerData: tunerData
+                )
+                .frame(width: 100, height: 100)
+                .padding(.bottom, 16)
                 // Recording and Statistics Section
                 VStack {
                     HStack {
@@ -168,6 +153,22 @@ struct TunerView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 16)
+                // Pitch-on-line visualizer
+                PitchLineVisualizer(tunerData: tunerData, frequency: tunerData.pitch)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 16)
+
+                // EQ bars
+                EQBarsView(
+                    match: match,
+                    tunerData: tunerData,
+                    eqBarCount: eqBarCount,
+                    eqMaxHeight: eqMaxHeight
+                )
+
+
+
+
 
             }
             .frame(height: nonWatchHeight)

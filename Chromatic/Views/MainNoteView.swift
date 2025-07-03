@@ -5,7 +5,7 @@ struct MainNoteView: View {
 
     var body: some View {
         Text(note)
-            .font(.system(size: 160, design: .rounded))
+            .font(.system(size: 100, design: .rounded))
             .bold()
             .alignmentGuide(.noteCenter) { dimensions in
                 dimensions[HorizontalAlignment.center]
