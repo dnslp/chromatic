@@ -15,7 +15,7 @@ struct MatchedNoteView: View {
                         dimensions[HorizontalAlignment.center]
                     }
                     // TODO: Avoid hardcoding size
-                    .font(.system(size: 40, design: .rounded))
+                    .font(.system(size: 20, design: .rounded))
                     .foregroundColor(.secondary)
             }
 
@@ -30,7 +30,7 @@ struct MatchedNoteView: View {
                     }
             }
         }
-        .padding(EdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12)) // Add some padding around the text
+        .padding(EdgeInsets(top: 8, leading: 15, bottom: 8, trailing: 15)) // Add some padding around the text
         .background(
             RoundedRectangle(cornerRadius: 10)
                 .fill(backgroundColorForDistance(match.distance))
