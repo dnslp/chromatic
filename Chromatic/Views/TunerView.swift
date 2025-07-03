@@ -56,6 +56,8 @@ struct TunerView: View {
                     Spacer()
                 }
                 .frame(height: menuHeight)
+        
+                  .padding(.horizontal)
                 // Amplitude bar
                 HStack(spacing: 8) {
                     Text("Level").font(.caption2).foregroundColor(.secondary)
@@ -81,6 +83,7 @@ struct TunerView: View {
                 .cornerRadius(8)
                 .shadow(radius: 2, y: -1)
 //                .padding(.top, 0)
+       
                 // Note display
                 VStack(spacing: contentSpacing) {
                     MatchedNoteView(match: match, modifierPreference: modifierPreference)
@@ -96,7 +99,9 @@ struct TunerView: View {
                 .padding(.top, 60)
 
                 Spacer(minLength: 24)
-
+ 
+                HarmonicGraphView(tunerData: tunerData)
+                  .frame(height: 80)
                 // Concentric tuner
                 ConcentricCircleVisualizer(
                     distance: Double(match.distance.cents),
