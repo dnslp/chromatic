@@ -140,12 +140,10 @@ struct TunerView: View {
                     .padding(.top, 8)
 
                     if let stats = statistics {
-                        HStack {
-                            Text(String(format: "Min: %.2f Hz", stats.min))
-                            Spacer()
-                            Text(String(format: "Max: %.2f Hz", stats.max))
-                            Spacer()
-                            Text(String(format: "Avg: %.2f Hz", stats.avg))
+                        VStack(alignment: .leading) { // Changed to VStack for better layout
+                            Text(String(format: "Min: %.2f Hz (%@)", stats.min, formatPitchAndCents(frequency: stats.min)))
+                            Text(String(format: "Max: %.2f Hz (%@)", stats.max, formatPitchAndCents(frequency: stats.max)))
+                            Text(String(format: "Avg: %.2f Hz (%@)", stats.avg, formatPitchAndCents(frequency: stats.avg)))
                         }
                         .padding(.horizontal)
                         .padding(.top, 8)
@@ -181,6 +179,16 @@ struct TunerView: View {
         #endif
         }
         .frame(maxHeight: .infinity, alignment: .top)
+    }
+
+    private func formatPitchAndCents(frequency: Double) -> String {
+        let freq = Frequency(floatLiteral: frequency)
+        let match = ScaleNote.closestNote(to: freq)
+        let cents = match.distance.cents
+        let centsString = String(format: "%+.0f cents", cents)
+        // Use the first name from the `names` array, and append the octave.
+        let pitchName = "\(match.note.names.first ?? "")\(match.octave)"
+        return "\(pitchName) \(centsString)"
     }
 }
 
