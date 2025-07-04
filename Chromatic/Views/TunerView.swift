@@ -1,12 +1,16 @@
 import SwiftUI
+import AVFoundation     // NEW
 
 struct TunerView: View {
-    @Binding var tunerData: TunerData // Changed to @Binding
+    @Binding var tunerData: TunerData
     @State var modifierPreference: ModifierPreference
     @State var selectedTransposition: Int
 
-    // State for statistics
-    @State private var statistics: (min: Double, max: Double, avg: Double)? = nil
+    // NEW – mic-mute toggle
+    @State private var micMuted = false
+
+    // Statistics for the recording feature
+    @State private var statistics: (min: Double, max: Double, avg: Double)?
 
     private var match: ScaleNote.Match {
         tunerData.closestNote
@@ -17,7 +21,7 @@ struct TunerView: View {
 
     // Layout constants
     private let watchHeight: CGFloat = 150
-    private let nonWatchHeight: CGFloat = 560 // Increased height to accommodate new UI
+    private let nonWatchHeight: CGFloat = 560
     private let menuHeight: CGFloat = 44
     private let contentSpacing: CGFloat = 8
     private let noteTicksHeight: CGFloat = 100
@@ -31,6 +35,7 @@ struct TunerView: View {
     var body: some View {
         Group {
         #if os(watchOS)
+            // —— watchOS layout unchanged ——
             ZStack(alignment: Alignment(horizontal: .noteCenter, vertical: .noteTickCenter)) {
                 NoteTicks(tunerData: tunerData, showFrequencyText: false)
                 MatchedNoteView(match: match, modifierPreference: modifierPreference)
@@ -38,38 +43,35 @@ struct TunerView: View {
                     .focusEffect(.none)
                     .focusStyle(.plain)
                     .digitalCrownRotation(
-                        Binding(get: { Float(selectedTransposition) }, set: { selectedTransposition = Int($0) }),
+                        Binding(get: { Float(selectedTransposition) },
+                                set: { selectedTransposition = Int($0) }),
                         from: 0, through: Float(ScaleNote.allCases.count - 1), by: 1
                     )
             }
             .frame(height: watchHeight)
             .fixedSize()
         #else
-            
             VStack(spacing: 0) {
-                // Header/Menu
-                HStack {
-                    if !hidesTranspositionMenu {
-                        TranspositionMenu(selectedTransposition: $selectedTransposition)
-                            .padding(.leading, 8)
-                    }
-                    Spacer()
-                }
-                .frame(height: menuHeight)
-        
-                  .padding(.horizontal)
-                // Amplitude bar
+                // ────────── HEADER / MENU ──────────
+ 
+
+                // ────────── AMPLITUDE BAR ──────────
                 HStack(spacing: 8) {
-                    Text("Level").font(.caption2).foregroundColor(.secondary)
+                    Text("Level")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
                     GeometryReader { geo in
                         ZStack(alignment: .leading) {
                             Capsule()
                                 .frame(height: 6)
                                 .foregroundColor(Color.secondary.opacity(0.14))
                             Capsule()
-                                .frame(width: geo.size.width * CGFloat(tunerData.amplitude), height: 6)
+                                .frame(width: geo.size.width * CGFloat(micMuted ? 0 : tunerData.amplitude),
+                                       height: 6)
                                 .foregroundColor(
-                                    Color(hue: 0.1 - 0.1 * tunerData.amplitude, saturation: 0.9, brightness: 0.9)
+                                    Color(hue: 0.1 - 0.1 * tunerData.amplitude,
+                                          saturation: 0.9,
+                                          brightness: 0.9)
                                 )
                                 .animation(.easeInOut, value: tunerData.amplitude)
                         }
@@ -82,9 +84,9 @@ struct TunerView: View {
                 .background(Color(.systemBackground).opacity(0.85))
                 .cornerRadius(8)
                 .shadow(radius: 2, y: -1)
-//                .padding(.top, 0)
-       
-                // Note display
+                
+
+                // ────────── NOTE DISPLAY ──────────
                 VStack(spacing: contentSpacing) {
                     MatchedNoteView(match: match, modifierPreference: modifierPreference)
                         .padding(.top, 100)
@@ -98,11 +100,9 @@ struct TunerView: View {
                 .padding(.horizontal, 12)
                 .padding(.top, 60)
 
-                Spacer(minLength: 24)
- 
-                HarmonicGraphView(tunerData: tunerData)
-                  .frame(height: 80)
-                // Concentric tuner
+                Spacer(minLength: 30)
+
+                // ────────── VISUALIZERS ──────────
                 ConcentricCircleVisualizer(
                     distance: Double(match.distance.cents),
                     maxDistance: maxCentDistance,
@@ -110,7 +110,11 @@ struct TunerView: View {
                 )
                 .frame(width: 100, height: 100)
                 .padding(.bottom, 16)
-                // Recording and Statistics Section
+
+                HarmonicGraphView(tunerData: tunerData)
+                    .frame(height: 30)
+
+                // ────────── RECORD / STATS ──────────
                 VStack {
                     HStack {
                         Button(action: {
@@ -119,7 +123,7 @@ struct TunerView: View {
                                 statistics = tunerData.calculateStatistics()
                             } else {
                                 tunerData.startRecording()
-                                statistics = nil // Clear previous stats
+                                statistics = nil
                             }
                         }) {
                             Text(tunerData.isRecording ? "Stop Recording" : "Start Recording")
@@ -145,10 +149,13 @@ struct TunerView: View {
                     .padding(.top, 8)
 
                     if let stats = statistics {
-                        VStack(alignment: .leading) { // Changed to VStack for better layout
-                            Text(String(format: "Min: %.2f Hz (%@)", stats.min, formatPitchAndCents(frequency: stats.min)))
-                            Text(String(format: "Max: %.2f Hz (%@)", stats.max, formatPitchAndCents(frequency: stats.max)))
-                            Text(String(format: "Avg: %.2f Hz (%@)", stats.avg, formatPitchAndCents(frequency: stats.avg)))
+                        VStack(alignment: .leading) {
+                            Text(String(format: "Min: %.2f Hz (%@)", stats.min,
+                                        formatPitchAndCents(frequency: stats.min)))
+                            Text(String(format: "Max: %.2f Hz (%@)", stats.max,
+                                        formatPitchAndCents(frequency: stats.max)))
+                            Text(String(format: "Avg: %.2f Hz (%@)", stats.avg,
+                                        formatPitchAndCents(frequency: stats.avg)))
                         }
                         .padding(.horizontal)
                         .padding(.top, 8)
@@ -156,23 +163,35 @@ struct TunerView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 16)
-                // Pitch-on-line visualizer
+
                 PitchLineVisualizer(tunerData: tunerData, frequency: tunerData.pitch)
                     .padding(.horizontal, 16)
                     .padding(.bottom, 16)
 
-                // EQ bars
-                EQBarsView(
-                    match: match,
-                    tunerData: tunerData,
-                    eqBarCount: eqBarCount,
-                    eqMaxHeight: eqMaxHeight
-                )
-
-
-
-
-
+//                EQBarsView(
+//                    match: match,
+//                    tunerData: tunerData,
+//                    eqBarCount: eqBarCount,
+//                    eqMaxHeight: eqMaxHeight
+//                )
+                HStack {
+                    if !hidesTranspositionMenu {
+                        TranspositionMenu(selectedTransposition: $selectedTransposition)
+                            .padding(.leading, 8)
+                    }
+                    Spacer()
+//                    // NEW: mic-mute button
+//                    Button(action: toggleMicMute) {
+//                        Image(systemName: micMuted ? "mic.slash.fill" : "mic.fill")
+//                            .imageScale(.large)
+//                            .padding(6)
+//                            .background(Color(.secondarySystemBackground))
+//                            .clipShape(Circle())
+//                            .accessibilityLabel(micMuted ? "Un-mute microphone" : "Mute microphone")
+//                    }
+//                    .padding(.trailing, 8)
+                }
+                .frame(height: menuHeight)
             }
             .frame(height: nonWatchHeight)
             .background(
@@ -186,12 +205,30 @@ struct TunerView: View {
         .frame(maxHeight: .infinity, alignment: .top)
     }
 
+    // MARK: - Mic control helpers
+    private func toggleMicMute() {
+        micMuted ? unmuteMicrophone() : muteMicrophone()
+        micMuted.toggle()
+    }
+
+    private func muteMicrophone() {
+        let session = AVAudioSession.sharedInstance()
+        guard session.isInputGainSettable else { return }           // some devices don’t allow it
+        try? session.setInputGain(0)                                // mute
+    }
+
+    private func unmuteMicrophone() {
+        let session = AVAudioSession.sharedInstance()
+        guard session.isInputGainSettable else { return }
+        try? session.setInputGain(1)                                // back to full
+    }
+
+    // MARK: - Utility
     private func formatPitchAndCents(frequency: Double) -> String {
         let freq = Frequency(floatLiteral: frequency)
         let match = ScaleNote.closestNote(to: freq)
         let cents = match.distance.cents
         let centsString = String(format: "%+.0f cents", cents)
-        // Use the first name from the `names` array, and append the octave.
         let pitchName = "\(match.note.names.first ?? "")\(match.octave)"
         return "\(pitchName) \(centsString)"
     }
@@ -201,7 +238,7 @@ struct TunerView_Previews: PreviewProvider {
     static var previews: some View {
         TunerView(
             tunerData: .constant(TunerData(pitch: 440, amplitude: 0.5)),
-            modifierPreference: ModifierPreference.preferSharps,
+            modifierPreference: .preferSharps,
             selectedTransposition: 0
         )
         .previewLayout(.sizeThatFits)
