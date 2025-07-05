@@ -5,6 +5,8 @@ struct TunerView: View {
     @Binding var tunerData: TunerData
     @State var modifierPreference: ModifierPreference
     @State var selectedTransposition: Int
+    
+    
 
     // NEW – mic-mute toggle
     @State private var micMuted = false
@@ -51,147 +53,133 @@ struct TunerView: View {
             .frame(height: watchHeight)
             .fixedSize()
         #else
-            VStack(spacing: 0) {
-                // ────────── HEADER / MENU ──────────
- 
-
-                // ────────── AMPLITUDE BAR ──────────
-                HStack(spacing: 8) {
-                    Text("Level")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                    GeometryReader { geo in
-                        ZStack(alignment: .leading) {
-                            Capsule()
-                                .frame(height: 6)
-                                .foregroundColor(Color.secondary.opacity(0.14))
-                            Capsule()
-                                .frame(width: geo.size.width * CGFloat(micMuted ? 0 : tunerData.amplitude),
-                                       height: 6)
-                                .foregroundColor(
-                                    Color(hue: 0.1 - 0.1 * tunerData.amplitude,
-                                          saturation: 0.9,
-                                          brightness: 0.9)
-                                )
-                                .animation(.easeInOut, value: tunerData.amplitude)
-                        }
-                    }
-                    .frame(height: 6)
-                    .frame(maxWidth: .infinity)
-                }
-                .padding(.horizontal, 16)
-                .frame(height: amplitudeBarHeight)
-                .background(Color(.systemBackground).opacity(0.85))
-                .cornerRadius(8)
-                .shadow(radius: 2, y: -1)
-                
-
-                // ────────── NOTE DISPLAY ──────────
-                VStack(spacing: contentSpacing) {
-                    MatchedNoteView(match: match, modifierPreference: modifierPreference)
-                        .padding(.top, 100)
-                    MatchedNoteFrequency(frequency: tunerData.closestNote.frequency)
-                        .padding(.bottom, 50)
-                    NoteTicks(tunerData: tunerData, showFrequencyText: true)
-                        .frame(height: noteTicksHeight)
-                        .padding(.vertical, 2)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.horizontal, 12)
-                .padding(.top, 60)
-
-                Spacer(minLength: 30)
-
-                // ────────── VISUALIZERS ──────────
-                ConcentricCircleVisualizer(
-                    distance: Double(match.distance.cents),
-                    maxDistance: maxCentDistance,
-                    tunerData: tunerData
-                )
-                .frame(width: 100, height: 100)
-                .padding(.bottom, 20)
-
-                HarmonicGraphView(tunerData: tunerData)
-                    .frame(height: 30)
-
-                // ────────── RECORD / STATS ──────────
-                VStack {
-                    HStack {
-                        Button(action: {
-                            if tunerData.isRecording {
-                                tunerData.stopRecording()
-                                statistics = tunerData.calculateStatistics()
-                            } else {
-                                tunerData.startRecording()
-                                statistics = nil
-                            }
-                        }) {
-                            Text(tunerData.isRecording ? "Stop Recording" : "Start Recording")
-                                .padding(.horizontal)
-                                .padding(.vertical, 8)
-                                .background(tunerData.isRecording ? Color.red : Color.green)
-                                .foregroundColor(.white)
-                                .cornerRadius(8)
-                        }
-
-                        Button(action: {
-                            tunerData.clearRecording()
-                            statistics = nil
-                        }) {
-                            Text("Clear Data")
-                                .padding(.horizontal)
-                                .padding(.vertical, 8)
-                                .background(Color.gray)
-                                .foregroundColor(.white)
-                                .cornerRadius(8)
-                        }
-                    }
-                    .padding(.top, 8)
-
-                    if let stats = statistics {
-                        VStack(alignment: .leading) {
-                            Text(String(format: "Min: %.2f Hz (%@)", stats.min,
-                                        formatPitchAndCents(frequency: stats.min)))
-                            Text(String(format: "Max: %.2f Hz (%@)", stats.max,
-                                        formatPitchAndCents(frequency: stats.max)))
-                            Text(String(format: "Avg: %.2f Hz (%@)", stats.avg,
-                                        formatPitchAndCents(frequency: stats.avg)))
-                        }
-                        .padding(.horizontal)
-                        .padding(.top, 8)
-                    }
-                }
-                .padding(.horizontal, 16)
-                .padding(.bottom, 16)
-
+            HStack(alignment: .center, spacing: 1) {
+                // ────────── VERTICAL VISUALIZER ──────────
                 PitchLineVisualizer(tunerData: tunerData, frequency: tunerData.pitch)
+                    .frame(width: 10)
+                    .padding(.vertical, 16)
+
+                // ────────── MAIN CONTENT ──────────
+                VStack(spacing: 0) {
+                    // ───── AMPLITUDE BAR ─────
+                    HStack(spacing: 8) {
+                        Text("Level")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                        GeometryReader { geo in
+                            ZStack(alignment: .leading) {
+                                Capsule()
+                                    .frame(height: 6)
+                                    .foregroundColor(Color.secondary.opacity(0.14))
+                                Capsule()
+                                    .frame(width: geo.size.width * CGFloat(micMuted ? 0 : tunerData.amplitude),
+                                           height: 6)
+                                    .foregroundColor(
+                                        Color(hue: 0.1 - 0.1 * tunerData.amplitude,
+                                              saturation: 0.9,
+                                              brightness: 0.9)
+                                    )
+                                    .animation(.easeInOut, value: tunerData.amplitude)
+                            }
+                        }
+                        .frame(height: amplitudeBarHeight)
+                        .frame(maxWidth: .infinity)
+                    }
+                    .padding(.horizontal, 16)
+                    .frame(height: amplitudeBarHeight)
+                    .background(Color(.systemBackground).opacity(0.85))
+                    .cornerRadius(8)
+                    .shadow(radius: 2, y: -1)
+                    
+                    // ───── NOTE DISPLAY ─────
+                    VStack(spacing: contentSpacing) {
+                        MatchedNoteView(match: match, modifierPreference: modifierPreference)
+                            .padding(.top, 100)
+                        MatchedNoteFrequency(frequency: tunerData.closestNote.frequency)
+                            .padding(.bottom, 50)
+                        NoteTicks(tunerData: tunerData, showFrequencyText: true)
+                            .frame(height: noteTicksHeight)
+                            .padding(.vertical, 2)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, 12)
+                    .padding(.top, 60)
+
+                    Spacer(minLength: 30)
+
+                    // ───── OTHER VISUALIZERS ─────
+                    ConcentricCircleVisualizer(
+                        distance: Double(match.distance.cents),
+                        maxDistance: maxCentDistance,
+                        tunerData: tunerData
+                    )
+                    .frame(width: 100, height: 100)
+                    .padding(.bottom, 20)
+
+                    HarmonicGraphView(tunerData: tunerData)
+                        .frame(height: 30)
+
+                    // ───── RECORD / STATS ─────
+                    VStack {
+                        HStack {
+                            Button(action: {
+                                if tunerData.isRecording {
+                                    tunerData.stopRecording()
+                                    statistics = tunerData.calculateStatistics()
+                                } else {
+                                    tunerData.startRecording()
+                                    statistics = nil
+                                }
+                            }) {
+                                Text(tunerData.isRecording ? "Stop Recording" : "Start Recording")
+                                    .padding(.horizontal)
+                                    .padding(.vertical, 8)
+                                    .background(tunerData.isRecording ? Color.red : Color.green)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(8)
+                            }
+
+                            Button(action: {
+                                tunerData.clearRecording()
+                                statistics = nil
+                            }) {
+                                Text("Clear Data")
+                                    .padding(.horizontal)
+                                    .padding(.vertical, 8)
+                                    .background(Color.gray)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(8)
+                            }
+                        }
+                        .padding(.top, 8)
+
+                        if let stats = statistics {
+                            VStack(alignment: .leading) {
+                                Text(String(format: "Min: %.2f Hz (%@)", stats.min,
+                                            formatPitchAndCents(frequency: stats.min)))
+                                Text(String(format: "Max: %.2f Hz (%@)", stats.max,
+                                            formatPitchAndCents(frequency: stats.max)))
+                                Text(String(format: "Avg: %.2f Hz (%@)", stats.avg,
+                                            formatPitchAndCents(frequency: stats.avg)))
+                            }
+                            .padding(.horizontal)
+                            .padding(.top, 8)
+                        }
+                    }
                     .padding(.horizontal, 16)
                     .padding(.bottom, 16)
 
-//                EQBarsView(
-//                    match: match,
-//                    tunerData: tunerData,
-//                    eqBarCount: eqBarCount,
-//                    eqMaxHeight: eqMaxHeight
-//                )
-                HStack {
-                    if !hidesTranspositionMenu {
-                        TranspositionMenu(selectedTransposition: $selectedTransposition)
-                            .padding(.leading, 8)
+                    // ───── TRANSPOSE MENU ─────
+                    HStack {
+                        if !hidesTranspositionMenu {
+                            TranspositionMenu(selectedTransposition: $selectedTransposition)
+                                .padding(.leading, 8)
+                        }
+                        Spacer()
                     }
-                    Spacer()
-//                    // NEW: mic-mute button
-//                    Button(action: toggleMicMute) {
-//                        Image(systemName: micMuted ? "mic.slash.fill" : "mic.fill")
-//                            .imageScale(.large)
-//                            .padding(6)
-//                            .background(Color(.secondarySystemBackground))
-//                            .clipShape(Circle())
-//                            .accessibilityLabel(micMuted ? "Un-mute microphone" : "Mute microphone")
-//                    }
-//                    .padding(.trailing, 8)
+                    .frame(height: menuHeight)
                 }
-                .frame(height: menuHeight)
+                .frame(maxWidth: .infinity)
             }
             .frame(height: nonWatchHeight)
             .background(
@@ -213,14 +201,14 @@ struct TunerView: View {
 
     private func muteMicrophone() {
         let session = AVAudioSession.sharedInstance()
-        guard session.isInputGainSettable else { return }           // some devices don’t allow it
-        try? session.setInputGain(0)                                // mute
+        guard session.isInputGainSettable else { return }
+        try? session.setInputGain(0)
     }
 
     private func unmuteMicrophone() {
         let session = AVAudioSession.sharedInstance()
         guard session.isInputGainSettable else { return }
-        try? session.setInputGain(1)                                // back to full
+        try? session.setInputGain(1)
     }
 
     // MARK: - Utility

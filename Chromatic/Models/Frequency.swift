@@ -5,6 +5,12 @@ import Foundation
 struct Frequency: Equatable {
     /// The underlying frequency `Measurement`.
     private(set) var measurement: Measurement<UnitFrequency>
+    
+    func harmonics(count: Int) -> [Frequency] {
+        (1...count).map { i in
+            Frequency(floatLiteral: self.measurement.value * Double(i))
+        }
+    }
 
     /// The distance between frequencies in cents: https://en.wikipedia.org/wiki/Cent_%28music%29
     struct MusicalDistance: Hashable, ExpressibleByFloatLiteral, ExpressibleByIntegerLiteral {

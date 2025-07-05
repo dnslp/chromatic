@@ -72,17 +72,17 @@ struct ConcentricCircleVisualizer: View {
 
                 // Softer, faster red wave
                 WavingCircleBorder(
-                    strength: 3,
-                    frequency: (tunerData.pitch.measurement.value/3),
-                    lineWidth: percent,
+                    strength: 2,
+                    frequency: (tunerData.pitch.measurement.value/10),
+                    lineWidth: 1,
                     color: fillColor.opacity(0.9),
                     animationDuration: 0.45,
                     autoreverses: false
                 )
                 WavingCircleBorder(
-                    strength: 4,
-                    frequency: (tunerData.pitch.measurement.value/2),
-                    lineWidth: percent,
+                    strength: 3,
+                    frequency: (tunerData.pitch.measurement.value/20),
+                    lineWidth: 1,
                     color: fillColor.opacity(0.9),
                     animationDuration: 0.9,
                     autoreverses: false
@@ -108,7 +108,7 @@ struct ConcentricCircleVisualizer_Previews: PreviewProvider {
             ConcentricCircleVisualizer(distance:  20, maxDistance: 50, tunerData: tunerA4)
 
             Text("Slightly Flat (–20¢)")
-            ConcentricCircleVisualizer(distance: -3, maxDistance: 50, tunerData: tunerA4)
+            ConcentricCircleVisualizer(distance: -7, maxDistance: 50, tunerData: tunerA4)
         }
         .padding()
         .previewLayout(.sizeThatFits)
