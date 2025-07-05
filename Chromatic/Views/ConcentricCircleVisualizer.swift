@@ -34,22 +34,42 @@ struct ConcentricCircleVisualizer: View {
         ZStack {
             // 1) Static backdrop ring
             Circle()
-                .stroke(Color.secondary.opacity(0.2), lineWidth: 8)
+                .stroke(Color.secondary.opacity(0.2), lineWidth: CGFloat(4 + 8 * tunerData.amplitude)) // Line width based on amplitude
                 .frame(width: 100, height: 100)
+                .animation(.linear(duration: 0.1), value: tunerData.amplitude)
+
+            // New WavingCircleBorder for amplitude
+            WavingCircleBorder(
+                strength: tunerData.amplitude * 5, // Strength based on amplitude
+                frequency: 20, // A constant frequency for this effect
+                lineWidth: 2,
+                color: fillColor.opacity(0.1 + 0.2 * tunerData.amplitude), // Opacity based on amplitude
+                animationDuration: 1,
+                autoreverses: true
+            )
+            .frame(width: 110, height: 110) // Slightly larger to be behind other elements or distinct
+            .animation(.linear(duration: 0.2), value: tunerData.amplitude)
 
             // 2) Two converging circles
             Group {
                 Circle()
                     .fill(fillColor.opacity(0.5))
                     .frame(width: 100, height: 100)
+                    .scaleEffect(CGFloat(0.8 + 0.2 * percent)) // Scale from 0.8 to 1.0
+                    .blur(radius: CGFloat(5 * (1 - percent))) // Blur from 5 to 0
                     .offset(x: -startOffset)
-                    .animation(.interactiveSpring(response: 0.5, dampingFraction: 0.7, blendDuration: 0), value: startOffset)
+                    // Single animation modifier for all changes driven by percent/startOffset
+                    .animation(.interactiveSpring(response: 0.5, dampingFraction: 0.7, blendDuration: 0), value: percent)
+
 
                 Circle()
                     .fill(fillColor.opacity(0.5))
                     .frame(width: 100, height: 100)
+                    .scaleEffect(CGFloat(0.8 + 0.2 * percent)) // Scale from 0.8 to 1.0
+                    .blur(radius: CGFloat(5 * (1 - percent))) // Blur from 5 to 0
                     .offset(x:  startOffset)
-                    .animation(.interactiveSpring(response: 0.5, dampingFraction: 0.7, blendDuration: 0), value: startOffset)
+                    // Single animation modifier for all changes driven by percent/startOffset
+                    .animation(.interactiveSpring(response: 0.5, dampingFraction: 0.7, blendDuration: 0), value: percent)
             }
             .blendMode(.plusLighter)
 
@@ -77,24 +97,24 @@ struct ConcentricCircleVisualizer: View {
             // 4) Glowing accents
             if percent >= 0.8 {
                 WavingCircleBorder(
-                    strength: 1,
+                    strength: isAtFundamental ? 10 : 1, // Further increased strength for exaggeration
                     frequency: tunerData.pitch.measurement.value/100,
-                    lineWidth: isAtFundamental ? 10 : 3,
-                    color: isAtFundamental ? .white : fillColor.opacity(0.9),
+                    lineWidth: isAtFundamental ? 20 : 3, // Further increased lineWidth for exaggeration
+                    color: isAtFundamental ? .yellow : fillColor.opacity(0.9),
                     animationDuration: 1,
                     autoreverses: false
                 )
-                .animation(.easeOut(duration: 0.45), value: percent)
+                .animation(.easeOut(duration: 0.45), value: isAtFundamental)
 
                 WavingCircleBorder(
-                    strength: isAtFundamental ? 3 : 1,
+                    strength: isAtFundamental ? 15 : 1, // Further increased strength for exaggeration
                     frequency: tunerData.pitch.measurement.value/20,
-                    lineWidth: isAtFundamental ? 10 : 3,
-                    color: isAtFundamental ? .white : fillColor.opacity(0.9),
+                    lineWidth: isAtFundamental ? 20 : 3, // Further increased lineWidth for exaggeration
+                    color: isAtFundamental ? .yellow : fillColor.opacity(0.9),
                     animationDuration: 0.9,
                     autoreverses: false
                 )
-                .animation(.easeOut(duration: 0.9), value: percent)
+                .animation(.easeOut(duration: 0.9), value: isAtFundamental)
             }
         }
         .compositingGroup()
