@@ -10,7 +10,7 @@ struct NoteDistanceMarkers: View {
                     .frame(width: 2, height: tickSize(forIndex: index).height)
                     .cornerRadius(2)
                     .foregroundColor(colorForTick(atIndex: index))
-                    .animation(.easeInOut, value: tunerData.closestNote.distance.cents) // Animate based on cents
+                    .animation(.easeInOut, value: tunerData.closestNote.distance.cents)
                     .inExpandingRectangle()
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -21,41 +21,24 @@ struct NoteDistanceMarkers: View {
     }
 
     private func colorForTick(atIndex index: Int) -> Color {
-        let currentPitchActualDistanceCents = Double(tunerData.closestNote.distance.cents) // Use .cents and cast to Double
-        let tickPositionInCents = Double(index - 12) // This is already a Double representing cents offset
-
-        // Thresholds (as Doubles for comparison with Double types)
-        let greenZoneHalfWidth: Double = 2.5
-        let yellowZoneHalfWidth: Double = 7.5
-
-        let diffFromActualPitch = tickPositionInCents - currentPitchActualDistanceCents
-
-        if currentPitchActualDistanceCents > greenZoneHalfWidth && tickPositionInCents < 0 {
-            return .secondary
-        }
-        if currentPitchActualDistanceCents < -greenZoneHalfWidth && tickPositionInCents > 0 {
-            return .secondary
+        let currentError = Double(tunerData.closestNote.distance.cents)
+        // Only color when the overall error is within ±10 cents
+        guard abs(currentError) <= 10 else {
+            return Color.secondary.opacity(0.9)
         }
 
-        let isTickOnCorrectSideOrPitchInTune: Bool =
-            (currentPitchActualDistanceCents >= 0 && tickPositionInCents >= -greenZoneHalfWidth) ||
-            (currentPitchActualDistanceCents <= 0 && tickPositionInCents <= greenZoneHalfWidth) ||
-            abs(currentPitchActualDistanceCents) <= greenZoneHalfWidth
+        // Compute the “ideal” frequency this tick represents:
+        let baseHz   = tunerData.closestNote.frequency.measurement.value
+        let centsOff = Double(index - 12)
+        let tickHz   = baseHz * pow(2, centsOff / 1200)
 
-        if isTickOnCorrectSideOrPitchInTune {
-            if abs(diffFromActualPitch) <= greenZoneHalfWidth {
-                return .imperceptibleMusicalDistance
-            } else if abs(diffFromActualPitch) <= yellowZoneHalfWidth {
-                return .slightlyPerceptibleMusicalDistance
-            } else {
-                // Only color red if it's not "behind" the current pitch direction when pitch is far off
-                if !((currentPitchActualDistanceCents > yellowZoneHalfWidth && tickPositionInCents < currentPitchActualDistanceCents) ||
-                     (currentPitchActualDistanceCents < -yellowZoneHalfWidth && tickPositionInCents > currentPitchActualDistanceCents)) {
-                    return .perceptibleMusicalDistance
-                }
-            }
-        }
-        return .secondary
+        // Turn that into a MIDI-style semitone index:
+        let midiFloat = 69 + 12 * log2(tickHz / 440)
+        let semitone  = (Int(round(midiFloat)) % 12 + 12) % 12
+
+        // Map semitone → hue (0…1) and return full-saturation, full-brightness color
+        let hue = Double(semitone) / 12.0
+        return Color(hue: hue, saturation: 1, brightness: 1)
     }
 
     private func tickSize(forIndex index: Int) -> NoteTickSize {
@@ -115,9 +98,9 @@ enum NoteTickSize {
 
     var height: CGFloat {
         switch self {
-        case .small:  return 60
-        case .medium: return 100
-        case .large:  return 180
+        case .small:  return 30
+        case .medium: return 90
+        case .large:  return 115
         case .custom(let h): return h
         }
     }

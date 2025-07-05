@@ -65,6 +65,8 @@
 		BEDD824B2E16B6E300C46430 /* HarmonicGraphView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEDD82492E16B6E300C46430 /* HarmonicGraphView.swift */; };
 		BEDD824D2E16BD5D00C46430 /* HarmonicMeshView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEDD824C2E16BD5D00C46430 /* HarmonicMeshView.swift */; };
 		BEDD824E2E16BD5D00C46430 /* HarmonicMeshView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEDD824C2E16BD5D00C46430 /* HarmonicMeshView.swift */; };
+		BEDD83042E18A99500C46430 /* CircleWave.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEDD83032E18A99500C46430 /* CircleWave.swift */; };
+		BEDD83052E18A99500C46430 /* CircleWave.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEDD83032E18A99500C46430 /* CircleWave.swift */; };
 		BEED6E942E143B3E00037881 /* PlaylistManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEED6E932E143B3B00037881 /* PlaylistManager.swift */; };
 		BEED6E952E143B3E00037881 /* PlaylistManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEED6E932E143B3B00037881 /* PlaylistManager.swift */; };
 		BEED6ED22E143EEB00037881 /* AudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEED6ED12E143EDF00037881 /* AudioPlayer.swift */; };
@@ -154,6 +156,7 @@
 		BE8D45592E14A192003CC475 /* MiniTunerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiniTunerView.swift; sourceTree = "<group>"; };
 		BEDD82492E16B6E300C46430 /* HarmonicGraphView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HarmonicGraphView.swift; sourceTree = "<group>"; };
 		BEDD824C2E16BD5D00C46430 /* HarmonicMeshView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HarmonicMeshView.swift; sourceTree = "<group>"; };
+		BEDD83032E18A99500C46430 /* CircleWave.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleWave.swift; sourceTree = "<group>"; };
 		BEED6E932E143B3B00037881 /* PlaylistManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistManager.swift; sourceTree = "<group>"; };
 		BEED6ED12E143EDF00037881 /* AudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayer.swift; sourceTree = "<group>"; };
 		BEED6ED42E143F0100037881 /* PlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerView.swift; sourceTree = "<group>"; };
@@ -287,6 +290,7 @@
 		8FB571D425B722F2007C28BC /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				BEDD83032E18A99500C46430 /* CircleWave.swift */,
 				BEDD824C2E16BD5D00C46430 /* HarmonicMeshView.swift */,
 				BEDD82492E16B6E300C46430 /* HarmonicGraphView.swift */,
 				BE8D45592E14A192003CC475 /* MiniTunerView.swift */,
@@ -551,6 +555,7 @@
 				BEED700C2E14526400037881 /* FunctionGeneratorEngine.swift in Sources */,
 				BEED6ED32E143EEB00037881 /* AudioPlayer.swift in Sources */,
 				8F3ECD202682834700415B9F /* TunerData.swift in Sources */,
+				BEDD83042E18A99500C46430 /* CircleWave.swift in Sources */,
 				8F2D975326938B0500B512D0 /* TunerScreen.swift in Sources */,
 				8F2D9757269390D800B512D0 /* MicrophoneAccessAlert.swift in Sources */,
 				BEED700F2E14528D00037881 /* FunctionGeneratorView.swift in Sources */,
@@ -583,6 +588,7 @@
 				8FB571E125B73E9A007C28BC /* Frequency.swift in Sources */,
 				BEED70062E144B7D00037881 /* MixerEngine.swift in Sources */,
 				8FB571FD25B73ECF007C28BC /* NoteDistanceMarkers.swift in Sources */,
+				BEDD83052E18A99500C46430 /* CircleWave.swift in Sources */,
 				8FB571FF25B73ECF007C28BC /* TunerView.swift in Sources */,
 				8F2D975126938AF900B512D0 /* TunerScreen.swift in Sources */,
 				8FB571BD25B72147007C28BC /* ChromaticApp.swift in Sources */,
