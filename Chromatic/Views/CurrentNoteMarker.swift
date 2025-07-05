@@ -1,15 +1,16 @@
 import SwiftUI
 
+/// A horizontal marker bar that moves vertically over a vertical tick stack.
 struct CurrentNoteMarker: View {
     let frequency: Frequency
     let distance: Frequency.MusicalDistance
     let showFrequencyText: Bool
 
-    // Base constants
-    private let baseWidth: CGFloat   = 30    // your “ideal” width when perfectly in tune
-    private let baseHeight: CGFloat  = 120
-    private let totalWidth: CGFloat  = 36
-    private let totalHeight: CGFloat = 100
+    // Base constants for the horizontal bar
+    private let baseLength: CGFloat    = 100   // Length across ticks when perfectly in tune
+    private let baseThickness: CGFloat = 15     // Thickness when perfectly in tune
+    private let totalWidth: CGFloat    = 120   // Overall view width
+    private let maxDistance: Double    = 50    // Max cents to map to extremes
 
     // Animation driver for the glow
     @State private var glowOn = false
@@ -26,97 +27,104 @@ struct CurrentNoteMarker: View {
     private var glowColor: Color {
         let cents = abs(Double(distance.cents))
         switch cents {
-        case ...5:   return fillColor
-        case ...15:  return fillColor.opacity(0.7)
+        case ...5:   return fillColor.opacity(0.8)
+        case ...15:  return fillColor.opacity(0.6)
+        case ...30:  return fillColor.opacity(0.2)
         default:     return .white
         }
     }
 
-    // MARK: 3) New dynamicWidth that shrinks out-of-tune
-    private var dynamicWidth: CGFloat {
-        // at 0¢ → factor = 1.0; at 50¢ → factor = 0.5
-        let error = min(abs(Double(distance.cents)), 50)
-        let factor = 1 - 0.5 * (error / 18)
-        return baseWidth * CGFloat(factor)
+    // MARK: 3) Compute dynamic thickness that shrinks out-of-tune
+    private var dynamicThickness: CGFloat {
+        let error = min(abs(Double(distance.cents)), maxDistance)
+        let factor = 1 - 0.5 * (error / maxDistance)
+        return baseThickness * CGFloat(factor)
+    }
+
+    // MARK: 4) Exaggerated vertical position mapping ±50c to full height
+    private var verticalPercent: CGFloat {
+        // Clamp error
+        let error = min(max(Double(distance.cents), -maxDistance), maxDistance)
+        let normalized = error / maxDistance            // -1 ... +1
+        // Map to 0 ... 1, with -1→1 (bottom), +1→0 (top)
+        return CGFloat(0.5 - (normalized * 0.5))
     }
 
     var body: some View {
         GeometryReader { geo in
-            ZStack(alignment: .topLeading) {
+            ZStack {
+                // Invisible expander
                 Color.clear
-                    .frame(width: geo.size.width, height: totalHeight)
+                    .frame(width: totalWidth, height: geo.size.height)
 
-                VStack(spacing: 4) {
-                    Rectangle()
-                        .frame(width: dynamicWidth, height: baseHeight)
-                        .cornerRadius(dynamicWidth / 2)
-                        .foregroundColor(fillColor.opacity(distance.isPerceptible ? 1 : 0.6))
-                        // glow shadow
-                        .shadow(color: glowColor.opacity(glowOn ? 0.9 : 0.3),
-                                radius: glowOn ? 20 : 10)
-                        .animation(.easeInOut(duration: 0.9), value: distance.cents)
-                        .onAppear {
-                            withAnimation(
-                                .easeInOut(duration: 1.0)
-                                    .repeatForever(autoreverses: true)
-                            ) {
-                                glowOn.toggle()
-                            }
+                // Horizontal marker bar
+                Rectangle()
+                    .frame(width: baseLength, height: dynamicThickness)
+                    .cornerRadius(dynamicThickness / 2)
+                    .foregroundColor(fillColor.opacity(distance.isPerceptible ? 1 : 0.6))
+                    .shadow(
+                        color: glowColor.opacity(glowOn ? 1.0 : 0.3),
+                        radius: glowOn ? 20 : 10
+                    )
+                    .animation(.easeInOut(duration: 0.9), value: distance.cents)
+                    .onAppear {
+                        withAnimation(
+                            .easeInOut(duration: 1.0)
+                                .repeatForever(autoreverses: true)
+                        ) {
+                            glowOn.toggle()
                         }
-
-//                    if distance.cents > 1 {
-//                        Image(systemName: "arrowtriangle.right.fill")
-//                            .foregroundColor(glowColor)
-//                            .shadow(color: glowColor.opacity(glowOn ? 0.9 : 0.3),
-//                                    radius: glowOn ? 10 : 2)
-//                    } else if distance.cents < -1 {
-//                        Image(systemName: "arrowtriangle.left.fill")
-//                            .foregroundColor(glowColor)
-//                            .shadow(color: glowColor.opacity(glowOn ? 0.9 : 0.3),
-//                                    radius: glowOn ? 10 : 2)
-//                    }
-                }
-                .frame(width: totalWidth)
-                .position(
-                    x: geo.size.width/2 + CGFloat(distance.cents/50)*geo.size.width/2,
-                    y: totalHeight/2
-                )
+                    }
+                    .position(
+                        x: totalWidth / 2,
+                        y: geo.size.height * verticalPercent
+                    )
             }
 
+            // Optional frequency text below marker
             if showFrequencyText {
                 Text(frequency.localizedString())
-                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity)
                     .multilineTextAlignment(.center)
-                    .padding(.top, totalHeight + 8)
+                    .offset(y: geo.size.height + 8)
             }
         }
-        .frame(height: totalHeight + (showFrequencyText ? 30 : 0))
-        .alignmentGuide(.noteTickCenter) { $0[VerticalAlignment.center] }
+        .frame(
+            width: totalWidth,
+            height: baseThickness + (showFrequencyText ? 30 : 0)
+        )
+        .alignmentGuide(.noteTickCenter) { d in d[HorizontalAlignment.center] }
     }
 }
 
 struct CurrentNoteMarker_Previews: PreviewProvider {
     static var previews: some View {
-        let makeDistance: (Double) -> Frequency.MusicalDistance = { Frequency.MusicalDistance(cents: Float($0)) }
+        let makeDist: (Double) -> Frequency.MusicalDistance = { Frequency.MusicalDistance(cents: Float($0)) }
         Group {
-            CurrentNoteMarker(frequency: Frequency(floatLiteral: 440),
-                              distance: makeDistance(0),
-                              showFrequencyText: true)
-                .previewDisplayName("In Tune")
+            CurrentNoteMarker(
+                frequency: Frequency(floatLiteral: 440),
+                distance: makeDist(0),
+                showFrequencyText: true
+            )
+            .previewDisplayName("In Tune")
 
-            CurrentNoteMarker(frequency: Frequency(floatLiteral: 442),
-                              distance: makeDistance(30),
-                              showFrequencyText: true)
-                .previewDisplayName("Sharp")
+            CurrentNoteMarker(
+                frequency: Frequency(floatLiteral: 442),
+                distance: makeDist(30),
+                showFrequencyText: true
+            )
+            .previewDisplayName("Sharp +30c")
 
-            CurrentNoteMarker(frequency: Frequency(floatLiteral: 437),
-                              distance: makeDistance(-15),
-                              showFrequencyText: true)
-                .previewDisplayName("Flat")
+            CurrentNoteMarker(
+                frequency: Frequency(floatLiteral: 437),
+                distance: makeDist(-30),
+                showFrequencyText: true
+            )
+            .previewDisplayName("Flat -30c")
         }
-        .previewLayout(.fixed(width: 300, height: 200))
-        .background(Color(UIColor.systemBackground))
+        .frame(width: 200, height: 300)
+        .background(Color.gray.opacity(0.1))
     }
 }

@@ -6,7 +6,7 @@ struct TunerView: View {
     @State var modifierPreference: ModifierPreference
     @State var selectedTransposition: Int
     
-    
+    @State private var userF0: Double = 77.78
 
     // NEW – mic-mute toggle
     @State private var micMuted = false
@@ -55,10 +55,10 @@ struct TunerView: View {
         #else
             HStack(alignment: .center, spacing: 1) {
                 // ────────── VERTICAL VISUALIZER ──────────
-                PitchLineVisualizer(tunerData: tunerData, frequency: tunerData.pitch)
+                PitchLineVisualizer(tunerData: tunerData, frequency: tunerData.pitch, fundamental: Frequency(floatLiteral: userF0))
                     .frame(width: 10)
                     .padding(.vertical, 16)
-
+          
                 // ────────── MAIN CONTENT ──────────
                 VStack(spacing: 0) {
                     // ───── AMPLITUDE BAR ─────
@@ -94,7 +94,7 @@ struct TunerView: View {
                     // ───── NOTE DISPLAY ─────
                     VStack(spacing: contentSpacing) {
                         MatchedNoteView(match: match, modifierPreference: modifierPreference)
-                            .padding(.top, 100)
+                            .padding(.top, 50)
                         MatchedNoteFrequency(frequency: tunerData.closestNote.frequency)
                             .padding(.bottom, 50)
                         NoteTicks(tunerData: tunerData, showFrequencyText: true)
@@ -103,15 +103,17 @@ struct TunerView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.horizontal, 12)
-                    .padding(.top, 60)
+                    .padding(.top, 40)
 
-                    Spacer(minLength: 30)
+                    Spacer(minLength: 40)
 
                     // ───── OTHER VISUALIZERS ─────
                     ConcentricCircleVisualizer(
                         distance: Double(match.distance.cents),
                         maxDistance: maxCentDistance,
-                        tunerData: tunerData
+                        tunerData: tunerData,
+                        fundamentalHz: userF0
+       
                     )
                     .frame(width: 100, height: 100)
                     .padding(.bottom, 20)
@@ -171,6 +173,7 @@ struct TunerView: View {
 
                     // ───── TRANSPOSE MENU ─────
                     HStack {
+                        F0SelectorView(f0Hz: $userF0)
                         if !hidesTranspositionMenu {
                             TranspositionMenu(selectedTransposition: $selectedTransposition)
                                 .padding(.leading, 8)
@@ -225,7 +228,7 @@ struct TunerView: View {
 struct TunerView_Previews: PreviewProvider {
     static var previews: some View {
         TunerView(
-            tunerData: .constant(TunerData(pitch: 440, amplitude: 0.5)),
+            tunerData: .constant(TunerData(pitch: 428, amplitude: 0.5)),
             modifierPreference: .preferSharps,
             selectedTransposition: 0
         )

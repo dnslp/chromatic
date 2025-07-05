@@ -1,31 +1,33 @@
 import SwiftUI
-import Foundation
-
-
 
 struct ConcentricCircleVisualizer: View {
-    let distance: Double       // Pitch deviation in cents
-    let maxDistance: Double    // Full-scale error for 0…1 percent
+    let distance: Double
+    let maxDistance: Double
     let tunerData: TunerData
+    let fundamentalHz: Double?  // optional user-defined fundamental frequency in Hz
 
 
-
-    /// 0…1 how “in tune” you are
     private var percent: Double {
         max(0, 1 - abs(distance) / maxDistance)
     }
 
-    /// Color hue based on semitone (C→B)
     private var fillColor: Color {
         let hz   = tunerData.pitch.measurement.value
         let midi = 69 + 12 * log2(hz / 440)
         let idx  = (Int(round(midi)) % 12 + 12) % 12
         return Color(hue: Double(idx)/12.0, saturation: 1, brightness: 1)
     }
+    
+    /// Check if live pitch is within ±5 cents of fundamental
+    private var isAtFundamental: Bool {
+        guard let f0 = fundamentalHz else { return false }
+        let ratio = tunerData.pitch.measurement.value / f0
+        let cents = 1200 * log2(ratio)
+        return abs(cents) < 10
+    }
 
-    /// How far apart to start the circles (they converge as percent→1)
     private var startOffset: CGFloat {
-        CGFloat((1 - percent) * 50)  // max ±50 points
+        CGFloat((1 - percent) * 30)
     }
 
     var body: some View {
@@ -35,65 +37,69 @@ struct ConcentricCircleVisualizer: View {
                 .stroke(Color.secondary.opacity(0.2), lineWidth: 8)
                 .frame(width: 100, height: 100)
 
-            // 2) Two additive‐blend circles converging toward center
-            ZStack {
+            // 2) Two converging circles
+            Group {
                 Circle()
                     .fill(fillColor.opacity(0.5))
                     .frame(width: 100, height: 100)
                     .offset(x: -startOffset)
+                    .animation(.interactiveSpring(response: 0.5, dampingFraction: 0.7, blendDuration: 0), value: startOffset)
+
                 Circle()
                     .fill(fillColor.opacity(0.5))
                     .frame(width: 100, height: 100)
                     .offset(x:  startOffset)
-                WavingCircleBorder(
-                    strength: 4,
-                    frequency: tunerData.pitch.measurement.value,
-                    lineWidth: 0.5 - percent,
-                    color: fillColor.opacity(0.3),
-                    animationDuration: 0.9,
-                    autoreverses: false
-                )
-                WavingCircleBorder(
-                    strength: 9,
-                    frequency: tunerData.pitch.measurement.value,
-                    lineWidth: 1 - percent,
-                    color: fillColor.opacity(0.3),
-                    animationDuration: 2,
-                    autoreverses: false
-                )
+                    .animation(.interactiveSpring(response: 0.5, dampingFraction: 0.7, blendDuration: 0), value: startOffset)
             }
             .blendMode(.plusLighter)
-            .animation(.easeInOut(duration: 0.5), value: percent)
 
-            // 3) Glowing border when within ±10 cents (percent ≥ .8)
+            // 3) Waving borders
+            WavingCircleBorder(
+                strength: 4,
+                frequency: tunerData.pitch.measurement.value,
+                lineWidth: 0.5 - percent,
+                color: fillColor.opacity(0.3),
+                animationDuration: 0.5,
+                autoreverses: false
+            )
+            .animation(.spring(response: 0.6, dampingFraction: 0.8), value: percent)
+
+            WavingCircleBorder(
+                strength: 9,
+                frequency: tunerData.pitch.measurement.value,
+                lineWidth: 1 - percent,
+                color: fillColor.opacity(0.3),
+                animationDuration: 0.2,
+                autoreverses: false
+            )
+            .animation(.spring(response: 1.2, dampingFraction: 0.6), value: percent)
+
+            // 4) Glowing accents
             if percent >= 0.8 {
-                // Default green 110×110 waving border
-       
-
-                // Softer, faster red wave
                 WavingCircleBorder(
-                    strength: 2,
-                    frequency: (tunerData.pitch.measurement.value/10),
-                    lineWidth: 1,
-                    color: fillColor.opacity(0.9),
-                    animationDuration: 0.45,
+                    strength: 1,
+                    frequency: tunerData.pitch.measurement.value/100,
+                    lineWidth: isAtFundamental ? 10 : 3,
+                    color: isAtFundamental ? .white : fillColor.opacity(0.9),
+                    animationDuration: 1,
                     autoreverses: false
                 )
+                .animation(.easeOut(duration: 0.45), value: percent)
+
                 WavingCircleBorder(
-                    strength: 3,
-                    frequency: (tunerData.pitch.measurement.value/20),
-                    lineWidth: 1,
-                    color: fillColor.opacity(0.9),
+                    strength: isAtFundamental ? 3 : 1,
+                    frequency: tunerData.pitch.measurement.value/20,
+                    lineWidth: isAtFundamental ? 10 : 3,
+                    color: isAtFundamental ? .white : fillColor.opacity(0.9),
                     animationDuration: 0.9,
                     autoreverses: false
                 )
-
+                .animation(.easeOut(duration: 0.9), value: percent)
             }
         }
-        .compositingGroup()  // ensure blendMode works correctly
+        .compositingGroup()
     }
 }
-
 
 struct ConcentricCircleVisualizer_Previews: PreviewProvider {
     static var tunerA4 = TunerData(pitch: 440, amplitude: 0.5)
@@ -102,13 +108,13 @@ struct ConcentricCircleVisualizer_Previews: PreviewProvider {
     static var previews: some View {
         VStack(spacing: 30) {
             Text("In Tune (A4)")
-            ConcentricCircleVisualizer(distance:   0, maxDistance: 50, tunerData: tunerA4)
+            ConcentricCircleVisualizer(distance:   0, maxDistance: 50, tunerData: tunerA4, fundamentalHz: 441)
 
             Text("Slightly Sharp (+20¢)")
-            ConcentricCircleVisualizer(distance:  20, maxDistance: 50, tunerData: tunerA4)
+            ConcentricCircleVisualizer(distance:  20, maxDistance: 50, tunerData: tunerA4, fundamentalHz: 460)
 
-            Text("Slightly Flat (–20¢)")
-            ConcentricCircleVisualizer(distance: -7, maxDistance: 50, tunerData: tunerA4)
+            Text("Slightly Flat (–9¢)")
+            ConcentricCircleVisualizer(distance: -9, maxDistance: 50, tunerData: tunerA4, fundamentalHz: 431)
         }
         .padding()
         .previewLayout(.sizeThatFits)

@@ -1,97 +1,93 @@
 import SwiftUI
 
+/// A vertical stack of distance ticks where each tick is a horizontal bar.
+/// Colors and sizes adjust based on the current pitch error.
 struct NoteDistanceMarkers: View {
     let tunerData: TunerData
 
+    // Configuration
+    private let tickCount = 13
+    private let centerIndex = 12
+    private let maxDistanceCents: Double = 50.0
+    private var centPerTick: Double { maxDistanceCents / Double(centerIndex) }
+
     var body: some View {
-        HStack {
-            ForEach(0..<25) { index in
+        VStack(spacing: 4) {
+            ForEach(0..<tickCount) { index in
                 Rectangle()
-                    .frame(width: 2, height: tickSize(forIndex: index).height)
-                    .cornerRadius(2)
+                    .frame(width: tickWidth(forIndex: index), height: 2)
+                    .cornerRadius(1)
                     .foregroundColor(colorForTick(atIndex: index))
                     .animation(.easeInOut, value: tunerData.closestNote.distance.cents)
                     .inExpandingRectangle()
-                    .fixedSize(horizontal: false, vertical: true)
+                    .fixedSize(horizontal: true, vertical: false)
             }
         }
-        .alignmentGuide(.noteTickCenter) { dimensions in
-            dimensions[VerticalAlignment.center]
+        .alignmentGuide(.noteTickCenter) { d in d[HorizontalAlignment.center] }
+    }
+
+    private func tickWidth(forIndex index: Int) -> CGFloat {
+        let currentError = abs(Double(tunerData.closestNote.distance.cents))
+        let position = index - centerIndex
+
+        // Base size based on distance from center tick
+        let baseSize: NoteTickSize = {
+            switch abs(position) {
+            case 0: return .large
+            case centerIndex/2, centerIndex: return .medium
+            default: return .small
+            }
+        }()
+
+        var width = baseSize.height
+        let inTuneThres: Double = 5
+        let slightlyOffThres: Double = 15
+
+        if position == 0 {
+            // Center tick adjustments
+            if currentError <= inTuneThres {
+                width *= 1.2
+            } else if currentError > slightlyOffThres {
+                width *= 0.8
+            }
+        } else {
+            // Non-center tick adjustments
+            if currentError > slightlyOffThres {
+                let zone = Int(round(currentError / centPerTick))
+                if abs(position - zone) <= 1 {
+                    width *= 1.15
+                }
+            } else if currentError <= inTuneThres {
+                width *= 0.9
+            }
         }
+
+        // Clamp to avoid extremes
+        let minW = NoteTickSize.small.height
+        let maxW = NoteTickSize.large.height * 1.25
+        return max(minW, min(width, maxW))
     }
 
     private func colorForTick(atIndex index: Int) -> Color {
-        let currentError = Double(tunerData.closestNote.distance.cents)
-        // Only color when the overall error is within ±10 cents
-        guard abs(currentError) <= 10 else {
+        let currentError = abs(Double(tunerData.closestNote.distance.cents))
+        guard currentError <= 10 else {
             return Color.secondary.opacity(0.9)
         }
 
-        // Compute the “ideal” frequency this tick represents:
-        let baseHz   = tunerData.closestNote.frequency.measurement.value
-        let centsOff = Double(index - 12)
-        let tickHz   = baseHz * pow(2, centsOff / 1200)
+        // Calculate frequency offset for this tick
+        let baseHz = tunerData.closestNote.frequency.measurement.value
+        let centsOff = Double(index - centerIndex) * centPerTick
+        let tickHz = baseHz * pow(2, centsOff / 1200)
 
-        // Turn that into a MIDI-style semitone index:
+        // Map to hue
         let midiFloat = 69 + 12 * log2(tickHz / 440)
-        let semitone  = (Int(round(midiFloat)) % 12 + 12) % 12
-
-        // Map semitone → hue (0…1) and return full-saturation, full-brightness color
+        let semitone = (Int(round(midiFloat)) % 12 + 12) % 12
         let hue = Double(semitone) / 12.0
         return Color(hue: hue, saturation: 1, brightness: 1)
     }
-
-    private func tickSize(forIndex index: Int) -> NoteTickSize {
-        let currentPitchActualDistanceCents = abs(Double(tunerData.closestNote.distance.cents))
-        let tickPositionRelativeToCenter = index - 12 // 0 for center, negative for flat, positive for sharp
-
-        var baseSize: NoteTickSize
-        switch abs(tickPositionRelativeToCenter) {
-        case 0: // Center tick (index 12)
-            baseSize = .large
-        case 6: // Approx +/- 24 cents if 1 tick = 4 cents (e.g. indices 6 and 18)
-            baseSize = .medium
-        case 12: // End ticks (indices 0 and 24)
-            baseSize = .medium
-        default:
-            baseSize = .small
-        }
-
-        var height = baseSize.height
-
-        // Dynamic adjustments
-        let inTuneThreshold: Double = 5.0
-        let slightlyOffThreshold: Double = 15.0
-
-        if tickPositionRelativeToCenter == 0 { // Center tick adjustments
-            if currentPitchActualDistanceCents <= inTuneThreshold {
-                height *= 1.2 // Boost height when in tune
-            } else if currentPitchActualDistanceCents > slightlyOffThreshold {
-                height *= 0.8 // Reduce height when very out of tune
-            }
-        } else {
-            // For non-center ticks, consider if they are near the current pitch when it's off
-            if currentPitchActualDistanceCents > slightlyOffThreshold {
-                // If this tick is close to where the current out-of-tune pitch is
-                // Example: pitch is +20 cents, tick is at +5 (index 17, assuming 1 tick = 4 cents, so +20 cents)
-                // tickPositionInCents = Double(tickPositionRelativeToCenter) * 4.0 (approx)
-                // For simplicity, let's say if a tick is within +/- 2 ticks of the current "zone" of deviation
-                let pitchZone = Int(round(Double(tunerData.closestNote.distance.cents) / 4.0)) // Approx which tick zone current pitch is in
-                if abs(tickPositionRelativeToCenter - pitchZone) <= 2 {
-                     height *= 1.15 // Slightly boost ticks near the current (very off) pitch
-                }
-            } else if currentPitchActualDistanceCents <= inTuneThreshold {
-                 height *= 0.9 // Slightly reduce other ticks when in tune to emphasize center
-            }
-        }
-
-        // Clamping the height to avoid extreme sizes, min height of small, max of large * 1.2
-        let minHeight = NoteTickSize.small.height
-        let maxHeight = NoteTickSize.large.height * 1.25
-        return .custom(max(minHeight, min(height, maxHeight)))
-    }
 }
 
+/// Tick sizes for notes. `.height` drives the width in the vertical layout.
 enum NoteTickSize {
     case small, medium, large
     case custom(CGFloat)
@@ -107,40 +103,31 @@ enum NoteTickSize {
 }
 
 extension View {
+    /// Wraps in a clear rect to expand hit/test area without affecting layout.
     func inExpandingRectangle() -> some View {
         ZStack {
-            Rectangle()
-                .foregroundColor(.clear)
+            Rectangle().foregroundColor(.clear)
             self
         }
     }
 }
 
+
 struct NoteDistanceMarkers_Previews: PreviewProvider {
     static var previews: some View {
-        // Helper to create TunerData; assumes A4 = 440 Hz for pitch calculations if not perfectly on a note
-        // The TunerData init will calculate the 'closestNote' and its 'distance'
-        let makeTunerData = { (hz: Double) -> TunerData in
+        let makeData = { (hz: Double) -> TunerData in
             TunerData(pitch: hz, amplitude: 0.5)
         }
 
         Group {
-            NoteDistanceMarkers(tunerData: makeTunerData(440.0)) // In tune (A4)
-                .previewDisplayName("In Tune (A4)")
-            NoteDistanceMarkers(tunerData: makeTunerData(443.0)) // Slightly Sharp from A4 (+11.8 cents)
-                .previewDisplayName("Slightly Sharp")
-            NoteDistanceMarkers(tunerData: makeTunerData(452.0)) // Very Sharp from A4 (+47 cents)
-                .previewDisplayName("Very Sharp")
-            NoteDistanceMarkers(tunerData: makeTunerData(437.0)) // Slightly Flat from A4 (-11.9 cents)
-                .previewDisplayName("Slightly Flat")
-            NoteDistanceMarkers(tunerData: makeTunerData(429.0)) // Very Flat from A4 (-43 cents)
-                .previewDisplayName("Very Flat")
-            NoteDistanceMarkers(tunerData: makeTunerData(261.63)) // In tune (C4)
-                .previewDisplayName("In Tune (C4)")
-            NoteDistanceMarkers(tunerData: makeTunerData(263.0)) // Slightly sharp from C4
-                .previewDisplayName("Slightly Sharp (C4)")
+            NoteDistanceMarkers(tunerData: makeData(440))
+                .previewDisplayName("In Tune A4")
+            NoteDistanceMarkers(tunerData: makeData(443))
+                .previewDisplayName("Sharp +11.8c")
+            NoteDistanceMarkers(tunerData: makeData(437))
+                .previewDisplayName("Flat -11.9c")
         }
-        .previewLayout(.fixed(width: 300, height: 200))
+        .previewLayout(.fixed(width: 200, height: 300))
         .background(Color.gray.opacity(0.2))
     }
 }
