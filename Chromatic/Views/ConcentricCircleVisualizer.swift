@@ -97,20 +97,20 @@ struct ConcentricCircleVisualizer: View {
             // 4) Glowing accents
             if percent >= 0.8 {
                 WavingCircleBorder(
-                    strength: isAtFundamental ? 10 : 1, // Further increased strength for exaggeration
+                    strength: isAtFundamental ? 1 : 1, // Further increased strength for exaggeration
                     frequency: tunerData.pitch.measurement.value/100,
-                    lineWidth: isAtFundamental ? 20 : 3, // Further increased lineWidth for exaggeration
-                    color: isAtFundamental ? .yellow : fillColor.opacity(0.9),
+                    lineWidth: isAtFundamental ? 1 : 3, // Further increased lineWidth for exaggeration
+                    color: isAtFundamental ? .white : fillColor.opacity(0.9),
                     animationDuration: 1,
                     autoreverses: false
                 )
                 .animation(.easeOut(duration: 0.45), value: isAtFundamental)
 
                 WavingCircleBorder(
-                    strength: isAtFundamental ? 15 : 1, // Further increased strength for exaggeration
+                    strength: isAtFundamental ? 1 : 1, // Further increased strength for exaggeration
                     frequency: tunerData.pitch.measurement.value/20,
-                    lineWidth: isAtFundamental ? 20 : 3, // Further increased lineWidth for exaggeration
-                    color: isAtFundamental ? .yellow : fillColor.opacity(0.9),
+                    lineWidth: isAtFundamental ? 2 : 3, // Further increased lineWidth for exaggeration
+                    color: isAtFundamental ? .white : fillColor.opacity(0.9),
                     animationDuration: 0.9,
                     autoreverses: false
                 )
