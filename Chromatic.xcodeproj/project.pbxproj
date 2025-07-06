@@ -53,6 +53,13 @@
 		8FE56CDD25BE05D20038664C /* TranspositionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FE56CDC25BE05D20038664C /* TranspositionTests.swift */; };
 		BE0541CC2E19759100E8A38E /* F0SelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE0541CB2E19759100E8A38E /* F0SelectorView.swift */; };
 		BE0541CD2E19759100E8A38E /* F0SelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE0541CB2E19759100E8A38E /* F0SelectorView.swift */; };
+		BE0F246E2E1AE51D003DE109 /* SpectrogramFlatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE0F24692E1AE51D003DE109 /* SpectrogramFlatView.swift */; };
+		BE0F246F2E1AE51D003DE109 /* UIColor+intermediate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE0F246C2E1AE51D003DE109 /* UIColor+intermediate.swift */; };
+		BE0F24702E1AE51D003DE109 /* SpectrogramModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE0F246A2E1AE51D003DE109 /* SpectrogramModel.swift */; };
+		BE0F24712E1AE51D003DE109 /* SpectrogramSlice.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE0F246B2E1AE51D003DE109 /* SpectrogramSlice.swift */; };
+		BE0F24732E1AE569003DE109 /* SpectogramView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE0F24722E1AE569003DE109 /* SpectogramView.swift */; };
+		BE0F24742E1AE569003DE109 /* SpectogramView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE0F24722E1AE569003DE109 /* SpectogramView.swift */; };
+		BE0F24772E1AE592003DE109 /* AudioKit in Frameworks */ = {isa = PBXBuildFile; productRef = BE0F24762E1AE592003DE109 /* AudioKit */; };
 		BE1512912E15F6A600BB9EC2 /* ConcentricCircleVisualizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE15128E2E15F6A600BB9EC2 /* ConcentricCircleVisualizer.swift */; };
 		BE1512922E15F6A600BB9EC2 /* EQBarsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE15128F2E15F6A600BB9EC2 /* EQBarsView.swift */; };
 		BE1512932E15F6A600BB9EC2 /* PitchLineVisualizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE1512902E15F6A600BB9EC2 /* PitchLineVisualizer.swift */; };
@@ -152,6 +159,11 @@
 		8FE56CDC25BE05D20038664C /* TranspositionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranspositionTests.swift; sourceTree = "<group>"; };
 		8FE56CDE25BE05D20038664C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BE0541CB2E19759100E8A38E /* F0SelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = F0SelectorView.swift; sourceTree = "<group>"; };
+		BE0F24692E1AE51D003DE109 /* SpectrogramFlatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpectrogramFlatView.swift; sourceTree = "<group>"; };
+		BE0F246A2E1AE51D003DE109 /* SpectrogramModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpectrogramModel.swift; sourceTree = "<group>"; };
+		BE0F246B2E1AE51D003DE109 /* SpectrogramSlice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpectrogramSlice.swift; sourceTree = "<group>"; };
+		BE0F246C2E1AE51D003DE109 /* UIColor+intermediate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+intermediate.swift"; sourceTree = "<group>"; };
+		BE0F24722E1AE569003DE109 /* SpectogramView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpectogramView.swift; sourceTree = "<group>"; };
 		BE15128E2E15F6A600BB9EC2 /* ConcentricCircleVisualizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConcentricCircleVisualizer.swift; sourceTree = "<group>"; };
 		BE15128F2E15F6A600BB9EC2 /* EQBarsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EQBarsView.swift; sourceTree = "<group>"; };
 		BE1512902E15F6A600BB9EC2 /* PitchLineVisualizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchLineVisualizer.swift; sourceTree = "<group>"; };
@@ -186,6 +198,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BE0F24772E1AE592003DE109 /* AudioKit in Frameworks */,
 				8FD5D594267849EF00E5577D /* MicrophonePitchDetector in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -264,8 +277,10 @@
 				8FB571D725B73E9A007C28BC /* Models */,
 				8FB571AA25B72146007C28BC /* ChromaticApp.swift */,
 				8F2D975026938AF900B512D0 /* TunerScreen.swift */,
+				BE0F24722E1AE569003DE109 /* SpectogramView.swift */,
 				8FB571D425B722F2007C28BC /* Views */,
 				8FB571AC25B72147007C28BC /* Assets.xcassets */,
+				BE0F246D2E1AE51D003DE109 /* SpectrogramFlatView */,
 			);
 			path = Chromatic;
 			sourceTree = "<group>";
@@ -362,6 +377,17 @@
 			path = ChromaticTests;
 			sourceTree = "<group>";
 		};
+		BE0F246D2E1AE51D003DE109 /* SpectrogramFlatView */ = {
+			isa = PBXGroup;
+			children = (
+				BE0F24692E1AE51D003DE109 /* SpectrogramFlatView.swift */,
+				BE0F246A2E1AE51D003DE109 /* SpectrogramModel.swift */,
+				BE0F246B2E1AE51D003DE109 /* SpectrogramSlice.swift */,
+				BE0F246C2E1AE51D003DE109 /* UIColor+intermediate.swift */,
+			);
+			path = SpectrogramFlatView;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -423,6 +449,7 @@
 			name = Chromatic;
 			packageProductDependencies = (
 				8FD5D593267849EF00E5577D /* MicrophonePitchDetector */,
+				BE0F24762E1AE592003DE109 /* AudioKit */,
 			);
 			productName = "Chromatic (iOS)";
 			productReference = 8FB571B125B72147007C28BC /* Chromatic.app */;
@@ -486,6 +513,7 @@
 			mainGroup = 8FB571A425B72146007C28BC;
 			packageReferences = (
 				8F8F67C325C093640024B4CB /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
+				BE0F24752E1AE592003DE109 /* XCRemoteSwiftPackageReference "AudioKit" */,
 			);
 			productRefGroup = 8FB571B225B72147007C28BC /* Products */;
 			projectDirPath = "";
@@ -551,6 +579,7 @@
 				BEDD824B2E16B6E300C46430 /* HarmonicGraphView.swift in Sources */,
 				8F3ECD212682834700415B9F /* Frequency.swift in Sources */,
 				8F3ECD232682837800415B9F /* Alignment.swift in Sources */,
+				BE0F24732E1AE569003DE109 /* SpectogramView.swift in Sources */,
 				BE1512912E15F6A600BB9EC2 /* ConcentricCircleVisualizer.swift in Sources */,
 				BE1512922E15F6A600BB9EC2 /* EQBarsView.swift in Sources */,
 				BE1512932E15F6A600BB9EC2 /* PitchLineVisualizer.swift in Sources */,
@@ -582,11 +611,16 @@
 				8FB571F525B73ECF007C28BC /* CurrentNoteMarker.swift in Sources */,
 				BEED700D2E14526400037881 /* FunctionGeneratorEngine.swift in Sources */,
 				BE8D455B2E14A192003CC475 /* MiniTunerView.swift in Sources */,
+				BE0F24742E1AE569003DE109 /* SpectogramView.swift in Sources */,
 				8FB571F925B73ECF007C28BC /* MatchedNoteView.swift in Sources */,
 				BEED6ED62E143F0400037881 /* PlayerView.swift in Sources */,
 				BEED6E952E143B3E00037881 /* PlaylistManager.swift in Sources */,
 				8F2D9755269390D800B512D0 /* MicrophoneAccessAlert.swift in Sources */,
 				8FB571E925B73E9A007C28BC /* Alignment.swift in Sources */,
+				BE0F246E2E1AE51D003DE109 /* SpectrogramFlatView.swift in Sources */,
+				BE0F246F2E1AE51D003DE109 /* UIColor+intermediate.swift in Sources */,
+				BE0F24702E1AE51D003DE109 /* SpectrogramModel.swift in Sources */,
+				BE0F24712E1AE51D003DE109 /* SpectrogramSlice.swift in Sources */,
 				BEED70182E1462D300037881 /* Pitch.swift in Sources */,
 				BEDD824A2E16B6E300C46430 /* HarmonicGraphView.swift in Sources */,
 				8FB571E325B73E9A007C28BC /* ScaleNote.swift in Sources */,
@@ -1066,6 +1100,14 @@
 				minimumVersion = 1.11.0;
 			};
 		};
+		BE0F24752E1AE592003DE109 /* XCRemoteSwiftPackageReference "AudioKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/AudioKit/AudioKit.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.6.5;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1081,6 +1123,11 @@
 		8FD5D593267849EF00E5577D /* MicrophonePitchDetector */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = MicrophonePitchDetector;
+		};
+		BE0F24762E1AE592003DE109 /* AudioKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BE0F24752E1AE592003DE109 /* XCRemoteSwiftPackageReference "AudioKit" */;
+			productName = AudioKit;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
