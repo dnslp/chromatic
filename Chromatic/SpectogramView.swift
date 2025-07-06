@@ -7,12 +7,16 @@
 
 import SwiftUI
 import AudioKit
+import MicrophonePitchDetector
+
 struct SpectogramView: View {
+    @ObservedObject var pitchDetector: MicrophonePitchDetector
+
     var body: some View {
-        SpectrogramFlatView(node: Mixer())
+        SpectrogramFlatView(node: pitchDetector.inputMixer)
     }
 }
 
 #Preview {
-    SpectogramView()
+    SpectogramView(pitchDetector: MicrophonePitchDetector())
 }

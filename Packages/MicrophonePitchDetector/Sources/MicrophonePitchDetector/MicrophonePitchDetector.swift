@@ -14,6 +14,10 @@ public final class MicrophonePitchDetector: ObservableObject {
     @Published public var didReceiveAudio = false
     @Published public var showMicrophoneAccessAlert = false
 
+    public var inputMixer: Mixer {
+        engine.inputMixer
+    }
+
     public init() {}
 
     @MainActor
@@ -46,5 +50,14 @@ public final class MicrophonePitchDetector: ObservableObject {
         isRunning = true
         try engine.start()
         tracker.start()
+    }
+
+    @MainActor
+    public func deactivate() {
+        guard isRunning else { return }
+        tracker.stop()
+        engine.stop()
+        isRunning = false
+        didReceiveAudio = false // Reset status
     }
 }
