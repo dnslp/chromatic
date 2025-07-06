@@ -8,27 +8,7 @@ struct SessionData: Codable, Identifiable {
     let values: [Double]
 }
 
-struct PitchStatistics: Codable {
-    let min: Double
-    let max: Double
-    let avg: Double
-    let median: Double
-    let stdDev: Double
-    let iqr: Double
-    let rms: Double
-
-    // Assuming PitchStatistics has an initializer like this
-    // If not, we might need to adjust how it's created or stored
-    init(min: Double, max: Double, avg: Double, median: Double, stdDev: Double, iqr: Double, rms: Double) {
-        self.min = min
-        self.max = max
-        self.avg = avg
-        self.median = median
-        self.stdDev = stdDev
-        self.iqr = iqr
-        self.rms = rms
-    }
-}
+// Removed duplicate PitchStatistics struct definition
 
 class SessionStore: ObservableObject {
     @Published var sessions: [SessionData] = []

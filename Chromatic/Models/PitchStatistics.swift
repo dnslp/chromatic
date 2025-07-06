@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - Extended Pitch Statistics Models & Helpers
 /// Encapsulates descriptive statistics for a recording session's pitch data
-struct PitchStatistics {
+struct PitchStatistics: Codable { // Add Codable conformance
     /// Lowest pitch recorded (Hz)
     let min: Double  // reveals bottom range
     /// Highest pitch recorded (Hz)
