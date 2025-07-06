@@ -78,7 +78,7 @@ Steps involved:
 
 import AudioKit
 import SwiftUI
-
+import MicrophonePitchDetector
 #if !os(macOS) || targetEnvironment(macCatalyst)
 
 /// Displays a rolling plot of the frequency spectrum. 

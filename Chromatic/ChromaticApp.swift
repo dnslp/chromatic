@@ -2,6 +2,7 @@
 // Your @main entry, now hosting both tuner and player
 import SwiftUI
 import MicrophonePitchDetector
+import AudioKit
 
 @main
 struct ChromaticApp: App {
@@ -9,6 +10,7 @@ struct ChromaticApp: App {
     @StateObject private var pitchDetector = MicrophonePitchDetector()
     @AppStorage("modifierPreference") private var modifierPreference = ModifierPreference.preferSharps
     @AppStorage("selectedTransposition") private var selectedTransposition = 0
+    
 
     var body: some Scene {
         WindowGroup {
@@ -19,6 +21,7 @@ struct ChromaticApp: App {
                     .tabItem { Label("Player", systemImage: "music.note") }
 //                FunctionGeneratorView(engine: FunctionGeneratorEngine())
 //                    .tabItem { Label("Func Gen", systemImage: "waveform.path") }
+//                SpectogramView().tabItem { Label("Spectrum", systemImage: "waveform") }
             }.preferredColorScheme(.dark)
             .onAppear {
                 #if os(iOS)
