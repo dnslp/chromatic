@@ -76,6 +76,14 @@
 		BEDD824E2E16BD5D00C46430 /* HarmonicMeshView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEDD824C2E16BD5D00C46430 /* HarmonicMeshView.swift */; };
 		BEDD83042E18A99500C46430 /* CircleWave.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEDD83032E18A99500C46430 /* CircleWave.swift */; };
 		BEDD83052E18A99500C46430 /* CircleWave.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEDD83032E18A99500C46430 /* CircleWave.swift */; };
+		BEE6D7EB2E1B264000B3B886 /* SessionStatistics.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEE6D7E92E1B263F00B3B886 /* SessionStatistics.swift */; };
+		BEE6D7EC2E1B264000B3B886 /* PitchStatistics.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEE6D7E82E1B263F00B3B886 /* PitchStatistics.swift */; };
+		BEE6D7ED2E1B264000B3B886 /* TunerData+Statistics.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEE6D7EA2E1B263F00B3B886 /* TunerData+Statistics.swift */; };
+		BEE6D7EE2E1B264000B3B886 /* SessionStatistics.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEE6D7E92E1B263F00B3B886 /* SessionStatistics.swift */; };
+		BEE6D7EF2E1B264000B3B886 /* PitchStatistics.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEE6D7E82E1B263F00B3B886 /* PitchStatistics.swift */; };
+		BEE6D7F02E1B264000B3B886 /* TunerData+Statistics.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEE6D7EA2E1B263F00B3B886 /* TunerData+Statistics.swift */; };
+		BEE6D7F22E1B265600B3B886 /* StatsModalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEE6D7F12E1B265600B3B886 /* StatsModalView.swift */; };
+		BEE6D7F32E1B265600B3B886 /* StatsModalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEE6D7F12E1B265600B3B886 /* StatsModalView.swift */; };
 		BEED6E942E143B3E00037881 /* PlaylistManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEED6E932E143B3B00037881 /* PlaylistManager.swift */; };
 		BEED6E952E143B3E00037881 /* PlaylistManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEED6E932E143B3B00037881 /* PlaylistManager.swift */; };
 		BEED6ED22E143EEB00037881 /* AudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEED6ED12E143EDF00037881 /* AudioPlayer.swift */; };
@@ -172,6 +180,10 @@
 		BEDD82492E16B6E300C46430 /* HarmonicGraphView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HarmonicGraphView.swift; sourceTree = "<group>"; };
 		BEDD824C2E16BD5D00C46430 /* HarmonicMeshView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HarmonicMeshView.swift; sourceTree = "<group>"; };
 		BEDD83032E18A99500C46430 /* CircleWave.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleWave.swift; sourceTree = "<group>"; };
+		BEE6D7E82E1B263F00B3B886 /* PitchStatistics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchStatistics.swift; sourceTree = "<group>"; };
+		BEE6D7E92E1B263F00B3B886 /* SessionStatistics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStatistics.swift; sourceTree = "<group>"; };
+		BEE6D7EA2E1B263F00B3B886 /* TunerData+Statistics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TunerData+Statistics.swift"; sourceTree = "<group>"; };
+		BEE6D7F12E1B265600B3B886 /* StatsModalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsModalView.swift; sourceTree = "<group>"; };
 		BEED6E932E143B3B00037881 /* PlaylistManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistManager.swift; sourceTree = "<group>"; };
 		BEED6ED12E143EDF00037881 /* AudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayer.swift; sourceTree = "<group>"; };
 		BEED6ED42E143F0100037881 /* PlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerView.swift; sourceTree = "<group>"; };
@@ -328,6 +340,7 @@
 				BE15128E2E15F6A600BB9EC2 /* ConcentricCircleVisualizer.swift */,
 				BE15128F2E15F6A600BB9EC2 /* EQBarsView.swift */,
 				BE1512902E15F6A600BB9EC2 /* PitchLineVisualizer.swift */,
+				BEE6D7F12E1B265600B3B886 /* StatsModalView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -345,6 +358,9 @@
 				8FB571DB25B73E9A007C28BC /* TunerData.swift */,
 				BEED6ED72E143F3A00037881 /* Audio */,
 				BEED70172E1462D300037881 /* Pitch.swift */,
+				BEE6D7E82E1B263F00B3B886 /* PitchStatistics.swift */,
+				BEE6D7E92E1B263F00B3B886 /* SessionStatistics.swift */,
+				BEE6D7EA2E1B263F00B3B886 /* TunerData+Statistics.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -573,6 +589,9 @@
 				8F3ECD272682838D00415B9F /* CurrentNoteMarker.swift in Sources */,
 				BEDD824D2E16BD5D00C46430 /* HarmonicMeshView.swift in Sources */,
 				8F44F80126939F13007DBE1E /* Color+MusicalDistance.swift in Sources */,
+				BEE6D7EB2E1B264000B3B886 /* SessionStatistics.swift in Sources */,
+				BEE6D7EC2E1B264000B3B886 /* PitchStatistics.swift in Sources */,
+				BEE6D7ED2E1B264000B3B886 /* TunerData+Statistics.swift in Sources */,
 				8F3ECD2C268284AC00415B9F /* ChromaticApp.swift in Sources */,
 				BEED70192E1462D300037881 /* Pitch.swift in Sources */,
 				BEED70072E144B7D00037881 /* MixerEngine.swift in Sources */,
@@ -586,6 +605,7 @@
 				8F3ECD2A2682838D00415B9F /* TunerView.swift in Sources */,
 				8F3ECD262682838D00415B9F /* MatchedNoteView.swift in Sources */,
 				8F3ECD282682838D00415B9F /* MainNoteView.swift in Sources */,
+				BEE6D7F22E1B265600B3B886 /* StatsModalView.swift in Sources */,
 				BEED700C2E14526400037881 /* FunctionGeneratorEngine.swift in Sources */,
 				BEED6ED32E143EEB00037881 /* AudioPlayer.swift in Sources */,
 				8F3ECD202682834700415B9F /* TunerData.swift in Sources */,
@@ -624,9 +644,13 @@
 				BEED70182E1462D300037881 /* Pitch.swift in Sources */,
 				BEDD824A2E16B6E300C46430 /* HarmonicGraphView.swift in Sources */,
 				8FB571E325B73E9A007C28BC /* ScaleNote.swift in Sources */,
+				BEE6D7F32E1B265600B3B886 /* StatsModalView.swift in Sources */,
 				8FB571E125B73E9A007C28BC /* Frequency.swift in Sources */,
 				BEED70062E144B7D00037881 /* MixerEngine.swift in Sources */,
 				8FB571FD25B73ECF007C28BC /* NoteDistanceMarkers.swift in Sources */,
+				BEE6D7EE2E1B264000B3B886 /* SessionStatistics.swift in Sources */,
+				BEE6D7EF2E1B264000B3B886 /* PitchStatistics.swift in Sources */,
+				BEE6D7F02E1B264000B3B886 /* TunerData+Statistics.swift in Sources */,
 				BEDD83052E18A99500C46430 /* CircleWave.swift in Sources */,
 				8FB571FF25B73ECF007C28BC /* TunerView.swift in Sources */,
 				8F2D975126938AF900B512D0 /* TunerScreen.swift in Sources */,
