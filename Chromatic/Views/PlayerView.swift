@@ -2,25 +2,18 @@
 // SwiftUI playlist + playback controls
 
 import SwiftUI
-import MicrophonePitchDetector
+// import MicrophonePitchDetector // No longer needed
 
 struct PlayerView: View {
     @ObservedObject var audioPlayer: AudioPlayer
-    @ObservedObject var pitchDetector: MicrophonePitchDetector
-    @Binding var modifierPreference: ModifierPreference
-    @Binding var selectedTransposition: Int
+    // @ObservedObject var pitchDetector: MicrophonePitchDetector // No longer needed
+    @Binding var modifierPreference: ModifierPreference // This might also be removable if MiniTunerView is gone
+    @Binding var selectedTransposition: Int // This might also be removable if MiniTunerView is gone
 
     var body: some View {
         VStack {
-            // Mini tuner pinned at the top
-//            MiniTunerView(
-//                tunerData: TunerData(pitch: pitchDetector.pitch, amplitude: pitchDetector.amplitude),
-//                modifierPreference: $modifierPreference,
-//                selectedTransposition: $selectedTransposition
-//            )
-//            .opacity(pitchDetector.didReceiveAudio ? 1 : 0.5) // mirror opacity behavior
-//            .animation(.easeInOut, value: pitchDetector.didReceiveAudio)
-//            .frame(maxWidth: .infinity)
+            // Mini tuner pinned at the top (functionality removed)
+            // Text("MiniTuner Placeholder") // Optional: if you want to signify where it was
 
             Text("📀 Playlist")
                 .font(.headline)
@@ -80,9 +73,9 @@ struct PlayerView_Previews: PreviewProvider {
     static var previews: some View {
         PlayerView(
             audioPlayer: AudioPlayer(),
-            pitchDetector: MicrophonePitchDetector(),
-            modifierPreference: .constant(.preferSharps),
-            selectedTransposition: .constant(0)
+            // pitchDetector: MicrophonePitchDetector(), // No longer needed
+            modifierPreference: .constant(.preferSharps), // Keep for now, but could be removed if not used otherwise
+            selectedTransposition: .constant(0) // Keep for now
         )
         .previewLayout(.sizeThatFits)
         .padding()

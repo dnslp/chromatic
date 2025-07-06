@@ -2,13 +2,13 @@ import MicrophonePitchDetector
 import SwiftUI
 
 struct TunerScreen: View {
-    @ObservedObject var pitchDetector: MicrophonePitchDetector
+    @StateObject private var pitchDetector = MicrophonePitchDetector() // Manages its own instance
     @State private var tunerData: TunerData
     @Binding var modifierPreference: ModifierPreference
     @Binding var selectedTransposition: Int
 
-    init(pitchDetector: MicrophonePitchDetector, modifierPreference: Binding<ModifierPreference>, selectedTransposition: Binding<Int>) {
-        self.pitchDetector = pitchDetector
+    // Updated initializer
+    init(modifierPreference: Binding<ModifierPreference>, selectedTransposition: Binding<Int>) {
         self._tunerData = State(initialValue: TunerData())
         self._modifierPreference = modifierPreference
         self._selectedTransposition = selectedTransposition
@@ -56,10 +56,8 @@ struct TunerScreen: View {
 
 struct TunerScreen_Previews: PreviewProvider {
     static var previews: some View {
-        let pitchDetector = MicrophonePitchDetector()
-        // Manually set a pitch for preview if needed, e.g., pitchDetector.pitch = 440.0
+        // Preview now uses the updated initializer
         return TunerScreen(
-            pitchDetector: pitchDetector,
             modifierPreference: .constant(.preferSharps),
             selectedTransposition: .constant(0)
         )
