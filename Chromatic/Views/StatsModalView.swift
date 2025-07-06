@@ -2,6 +2,7 @@ import SwiftUI
 
 // MARK: - Stats Modal View
 struct StatsModalView: View {
+    @EnvironmentObject var sessionStore: SessionStore
     let statistics: PitchStatistics
     let duration: TimeInterval
     let values: [Double]
@@ -79,7 +80,19 @@ struct StatsModalView: View {
                 }
             }
             .navigationTitle("Session Statistics")
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") {
+                        // Save the session before dismissing
+                        sessionStore.addSession(
+                            duration: duration,
+                            statistics: statistics,
+                            values: values
+                        )
+                        dismiss()
+                    }
+                }
+            }
         }
     }
 }
