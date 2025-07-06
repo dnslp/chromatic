@@ -80,16 +80,34 @@ private struct SessionRowView: View {
         }
     }
 
-    var avgPitchString: String {
-        String(format: "%.2f Hz", session.statistics.avg)
-    }
+    // Format helpers for statistics
+    var stats: PitchStatistics { session.statistics }
+    var minPitch: String { String(format: "%.2f Hz", stats.min) }
+    var maxPitch: String { String(format: "%.2f Hz", stats.max) }
+    var avgPitch: String { String(format: "%.2f Hz", stats.avg) }
+    var medianPitch: String { String(format: "%.2f Hz", stats.median) }
+    var stdDevPitch: String { String(format: "%.2f Hz", stats.stdDev) }
+    var iqrPitch: String { String(format: "%.2f Hz", stats.iqr) }
+    var rmsPitch: String { String(format: "%.2f Hz", stats.rms) }
 
     var body: some View {
-        VStack(alignment: .leading) {
-            Text("Date: \(dateString)")
-            Text("Duration: \(durationString)")
-            Text("Avg Pitch: \(avgPitchString)")
+        VStack(alignment: .leading, spacing: 2) {
+            Text("Date: \(dateString)").bold()
+            Text("Duration: \(durationString)").bold()
+            Divider().padding(.vertical, 2)
+            Group {
+                Text("Min Pitch: \(minPitch)")
+                Text("Max Pitch: \(maxPitch)")
+                Text("Avg Pitch: \(avgPitch)")
+                Text("Median Pitch: \(medianPitch)")
+                Text("Std Dev: \(stdDevPitch)")
+                Text("IQR: \(iqrPitch)")
+                Text("RMS: \(rmsPitch)")
+            }
+            .font(.system(size: 14))
+            .foregroundColor(.secondary)
         }
+        .padding(.vertical, 4)
     }
 }
 
