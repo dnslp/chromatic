@@ -1,282 +1,131 @@
 import SwiftUI
-import AVFoundation     // NEW
+// Removed AVFoundation import as it's not directly used by TunerView after refactoring.
+// Subviews might still need it.
 
 // MARK: - TunerView
 struct TunerView: View {
     @Binding var tunerData: TunerData
-    @State var modifierPreference: ModifierPreference
-    @State var selectedTransposition: Int
+    @Binding var modifierPreference: ModifierPreference // Changed to Binding
+    @Binding var selectedTransposition: Int // Changed to Binding
     
-    @State private var userF0: Double = 77.78
-    @State private var micMuted = false
-    @State private var sessionStats: SessionStatistics?   // Updated!
-    @State private var showStatsModal = false
-    
-    @State private var countdown: Int? = nil    // nil = not counting down
-    let countdownSeconds = 7
-    
-    // Timer State
-    @State private var recordingStartedAt: Date?
-    @State private var now = Date()
-    private let ticker = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-    private var elapsed: TimeInterval {
-        guard let start = recordingStartedAt else { return 0 }
-        return Date().timeIntervalSince(start)
-    }
-    
+    // State for this view specifically
+    @State private var userF0: Double = 77.78 // Default E2-ish. Consider making this configurable or persisted.
+    @State private var micMuted = false // This state might belong in a higher level audio manager or AppState
+
+    // ViewModel for recording logic
+    @StateObject private var recordingViewModel: RecordingViewModel
+
+    // Match calculation, remains here as it depends on selectedTransposition and tunerData
     private var match: ScaleNote.Match {
         tunerData.closestNote.inTransposition(ScaleNote.allCases[selectedTransposition])
     }
-    
-    @AppStorage("HidesTranspositionMenu") private var hidesTranspositionMenu = false
-    
-    // Layout constants
-    private let watchHeight: CGFloat = 150
-    private let nonWatchHeight: CGFloat = 560
-    private let menuHeight: CGFloat = 44
-    private let contentSpacing: CGFloat = 8
-    private let noteTicksHeight: CGFloat = 100
-    private let amplitudeBarHeight: CGFloat = 32
-    private let maxCentDistance: Double = 50
-    
-    // Helper to format time as MM:SS or H:MM:SS
-    private func formatTime(_ interval: TimeInterval) -> String {
-        let totalSeconds = Int(max(0, interval))
-        let hours = totalSeconds / 3600
-        let minutes = (totalSeconds % 3600) / 60
-        let seconds = totalSeconds % 60
-        if hours > 0 {
-            return String(format: "%d:%02d:%02d", hours, minutes, seconds)
-        } else {
-            return String(format: "%02d:%02d", minutes, seconds)
-        }
+
+    // Layout constants that are specific to TunerView's overall structure
+    private let nonWatchHeight: CGFloat = 560 // Keep if still relevant for overall frame
+    // Removed other layout constants as they should be moved to their respective subviews.
+
+    // Initializer to setup RecordingViewModel
+    // This is necessary because RecordingViewModel now takes tunerData
+    // and TunerView itself receives tunerData as a Binding.
+    // We need to ensure that @StateObject is initialized only once.
+    init(tunerData: Binding<TunerData>, modifierPreference: Binding<ModifierPreference>, selectedTransposition: Binding<Int>) {
+        self._tunerData = tunerData
+        self._modifierPreference = modifierPreference
+        self._selectedTransposition = selectedTransposition
+        // Initialize the @StateObject with the wrappedValue of the Binding.
+        // This ensures that RecordingViewModel is instantiated once per TunerView lifecycle.
+        self._recordingViewModel = StateObject(wrappedValue: RecordingViewModel(tunerData: tunerData.wrappedValue))
     }
-    struct CalmingCountdownCircle: View {
-        let secondsLeft: Int
-        let totalSeconds: Int
-
-        var percent: Double {
-            1.0 - Double(secondsLeft-1) / Double(totalSeconds)
-        }
-
-        @State private var animatePulse = false
-
-        var body: some View {
-            ZStack {
-                Circle()
-                    .fill(
-                        LinearGradient(gradient: Gradient(colors: [
-                            Color.blue.opacity(0.18),
-                            Color.purple.opacity(0.12)
-                        ]), startPoint: .topLeading, endPoint: .bottomTrailing)
-                    )
-                    .scaleEffect(animatePulse ? 1.04 : 1)
-                    .animation(.easeInOut(duration: 0.7).repeatForever(autoreverses: true), value: animatePulse)
-                    .onAppear { animatePulse = true }
-                Circle()
-                    .stroke(
-                        AngularGradient(gradient: Gradient(colors: [
-                            Color.blue.opacity(0.2),
-                            Color.blue.opacity(0.5),
-                            Color.purple.opacity(0.6),
-                            Color.blue.opacity(0.2)
-                        ]), center: .center),
-                        lineWidth: 8
-                    )
-                Circle()
-                    .trim(from: 0, to: percent)
-                    .stroke(Color.accentColor, style: StrokeStyle(lineWidth: 7, lineCap: .round))
-                    .rotationEffect(.degrees(-90))
-                    .animation(.easeInOut(duration: 0.6), value: percent)
-            }
-        }
-    }
-
     
     var body: some View {
         Group {
 #if os(watchOS)
-            // watchOS unchanged...
-            ZStack { /* ... */ }
+            // watchOS UI remains unchanged.
+            // If watchOS UI also needs refactoring, it should be addressed separately.
+            // For now, assuming it's simple enough or distinct.
+            ZStack {
+                Text("WatchOS Tuner UI") // Placeholder
+                // ... existing watchOS specific UI ...
+            }
 #else
-            HStack(spacing: 1) {
-                // ────────── VERTICAL VISUALIZER ──────────
+            // iOS / macOS UI
+            HStack(spacing: 1) { // Consider if this spacing is still needed
                 PitchLineVisualizer(
-                    tunerData: tunerData,
+                    tunerData: tunerData, // Pass the binding
                     frequency: tunerData.pitch,
                     fundamental: Frequency(floatLiteral: userF0)
                 )
-                .frame(width: 10)
+                .frame(width: 10) // This could be a constant within PitchLineVisualizer perhaps
                 .padding(.vertical, 16)
                 
-                // ────────── MAIN CONTENT ──────────
-                VStack(spacing: 0) {
-                    // ───── AMPLITUDE BAR ─────
-                    HStack(spacing: 8) {
-                        Text("Level")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                        GeometryReader { geo in
-                            ZStack(alignment: .leading) {
-                                Capsule()
-                                    .frame(height: 6)
-                                    .foregroundColor(Color.secondary.opacity(0.14))
-                                Capsule()
-                                    .frame(
-                                        width: geo.size.width *
-                                        CGFloat(micMuted ? 0 : tunerData.amplitude),
-                                        height: 6)
-                                    .foregroundColor(
-                                        Color(hue: 0.1 - 0.1 * tunerData.amplitude,
-                                              saturation: 0.9,
-                                              brightness: 0.9)
-                                    )
-                                    .animation(.easeInOut, value: tunerData.amplitude)
-                            }
-                        }
-                        .frame(height: amplitudeBarHeight)
-                        .frame(maxWidth: .infinity)
-                    }
-                    .padding(.horizontal, 16)
-                    .frame(height: amplitudeBarHeight)
-                    .background(Color(.systemBackground).opacity(0.85))
-                    .cornerRadius(8)
-                    .shadow(radius: 2, y: -1)
-                    
-                    // ───── NOTE DISPLAY ─────
-                    VStack(spacing: contentSpacing) {
-                        MatchedNoteView(match: match, modifierPreference: modifierPreference)
-                            .padding(.top, 50)
-                        MatchedNoteFrequency(frequency: tunerData.closestNote.frequency)
-                            .padding(.bottom, 50)
-                        NoteTicks(tunerData: tunerData, showFrequencyText: true)
-                            .frame(height: noteTicksHeight)
-                            .padding(.vertical, 2)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.horizontal, 12)
-                    .padding(.top, 40)
-                    
+                VStack(spacing: 0) { // Overall content stack
+                    AmplitudeView(tunerData: $tunerData, micMuted: $micMuted)
+                        .padding(.bottom) // Add some spacing if needed
+
+                    NoteDisplayView(
+                        tunerData: $tunerData,
+                        match: match, // Pass the calculated match
+                        modifierPreference: modifierPreference // Pass the binding
+                    )
+                    .padding(.top, 40) // Restore original padding from TunerView's VStack
+
                     Spacer(minLength: 40)
-                    
-                    // ───── OTHER VISUALIZERS ─────
-                    ConcentricCircleVisualizer(
-                        distance: Double(match.distance.cents),
-                        maxDistance: maxCentDistance,
-                        tunerData: tunerData,
+
+                    VisualizersView(
+                        tunerData: $tunerData,
+                        matchDistanceCents: Double(match.distance.cents),
                         fundamentalHz: userF0
                     )
-                    .frame(width: 100, height: 100)
-                    .padding(.bottom, 20)
-                    
-                    HarmonicGraphView(tunerData: tunerData)
-                        .frame(height: 30)
-                    PitchChakraTimelineView(pitches: tunerData.recordedPitches)
-                        .frame(height: 48)
-                    
-                    // MARK: RECORD / STATS WITH TIMER
-                    if let c = countdown {
-                        VStack {
-                            CalmingCountdownCircle(secondsLeft: c, totalSeconds: countdownSeconds)
-                                .frame(width: 140, height: 140)
-                                .padding(.bottom, 8)
-                            Text("Recording begins in \(c)…")
-                                .font(.title3)
-                                .foregroundColor(.secondary)
-                        }
-                    } else {
-                        HStack(spacing: 16) {
-                            Button(action: {
-                                if tunerData.isRecording {
-                                    tunerData.stopRecording()
-                                    let sessionDuration = Date().timeIntervalSince(recordingStartedAt ?? Date())
-                                    sessionStats = tunerData.calculateStatisticsExtended(duration: max(0, sessionDuration))
-                                    showStatsModal = true
-                                    recordingStartedAt = nil
-                                } else {
-                                    // BEGIN COUNTDOWN
-                                    countdown = countdownSeconds
-                                    Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { timer in
-                                        if let c = countdown, c > 1 {
-                                            countdown = c - 1
-                                        } else {
-                                            timer.invalidate()
-                                            countdown = nil
-                                            // Now actually start recording
-                                            tunerData.startRecording()
-                                            sessionStats = nil
-                                            recordingStartedAt = Date()
-                                        }
-                                    }
-                                }
-                            }) {
-                                Text(tunerData.isRecording ? "Stop Recording" : "Start Recording")
-                                    .padding(.horizontal)
-                                    .padding(.vertical, 8)
-                                    .background(tunerData.isRecording ? Color.red : Color.green)
-                                    .foregroundColor(.white)
-                                    .cornerRadius(8)
-                            }
+                    // Removed specific paddings from here, let VisualizersView manage its internal layout
 
-                            Button(action: {
-                                tunerData.clearRecording()
-                                sessionStats = nil
-                                recordingStartedAt = nil
-                            }) {
-                                Text("Clear Data")
-                                    .padding(.horizontal)
-                                    .padding(.vertical, 8)
-                                    .background(Color.gray)
-                                    .foregroundColor(.white)
-                                    .cornerRadius(8)
-                            }
-                        }
-                        .sheet(isPresented: $showStatsModal) {
-                            if let stats = sessionStats {
-                                StatsModalView(
-                                    statistics: stats.pitch,
-                                    duration: stats.duration,
-                                    values: tunerData.recordedPitches
-                                )
-                            }
-                        }
-                    }
-                    
-                    // ────────── TRANSPOSE MENU ──────────
-                    HStack {
-                        F0SelectorView(f0Hz: $userF0)
-                        if !hidesTranspositionMenu {
-                            TranspositionMenu(selectedTransposition: $selectedTransposition)
-                                .padding(.leading, 8)
-                        }
-                        Spacer()
-                    }
-                    .frame(height: menuHeight)
+                    Spacer() // Add spacer to push controls to bottom if desired
+
+                    RecordingControlView(
+                        viewModel: recordingViewModel,
+                        tunerData: $tunerData // Pass binding for StatsModalView
+                    )
+                    .padding(.vertical) // Add some spacing
+
+                    TunerControlsView(
+                        userF0: $userF0,
+                        selectedTransposition: $selectedTransposition
+                    )
+                    // Padding and frame for this view are handled by TunerControlsView internally or by this VStack
                 }
                 .frame(maxWidth: .infinity)
             }
-            .frame(height: nonWatchHeight)
+            .frame(height: nonWatchHeight) // Apply overall height constraint
             .background(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(Color(.systemBackground).opacity(0.94))
+                    .fill(Color(.systemBackground).opacity(0.94)) // Consider making these configurable
                     .shadow(color: Color.black.opacity(0.05), radius: 16, y: 4)
             )
-            .padding(.horizontal, 8)
+            .padding(.horizontal, 8) // Overall horizontal padding
 #endif
         }
         .frame(maxHeight: .infinity, alignment: .top)
+        // .onReceive(tunerData.$isRecording) { isRecording in
+        //    recordingViewModel.syncRecordingState(isRecording: isRecording)
+        // }
+        // The sync for isRecording is now handled within RecordingControlView using .onChange
     }
 }
 
 // MARK: - TunerView Preview
 struct TunerView_Previews: PreviewProvider {
+    // Create mock bindings for the preview
+    @State static var mockTunerData = TunerData(pitch: 428, amplitude: 0.5)
+    @State static var mockModifierPreference = ModifierPreference.preferSharps
+    @State static var mockSelectedTransposition = 0
+
     static var previews: some View {
         TunerView(
-            tunerData: .constant(TunerData(pitch: 428, amplitude: 0.5)),
-            modifierPreference: .preferSharps,
-            selectedTransposition: 0
+            tunerData: $mockTunerData,
+            modifierPreference: $mockModifierPreference,
+            selectedTransposition: $mockSelectedTransposition
         )
         .previewLayout(.sizeThatFits)
         .padding()
+        .preferredColorScheme(.dark) // Example: test with dark scheme
     }
 }
