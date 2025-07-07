@@ -1,91 +1,32 @@
 import SwiftUI
 import AVFoundation
 
-
-import AVFoundation
-
-struct HarmonicAmplitudes {
-    var fundamental: Double = 1.0
-    var harmonic2: Double = 0.10
-    var harmonic3: Double = 0.05
-    var formant: Double = 0.05
-}
-
-class TonePlayer: ObservableObject {
-    private let audioEngine = AVAudioEngine()
-    private let player = AVAudioPlayerNode()
-    private var isConfigured = false
-
-    init() {
-        setupEngine()
-    }
-
-    private func setupEngine() {
-        guard !isConfigured else { return }
-        audioEngine.attach(player)
-        let format = AVAudioFormat(standardFormatWithSampleRate: 44100, channels: 1)!
-        audioEngine.connect(player, to: audioEngine.mainMixerNode, format: format)
-        try? audioEngine.start()
-        isConfigured = true
-    }
-
-    func play(frequency: Double, duration: Double = 1.2, amplitudes: HarmonicAmplitudes) {
-        stop()
-        let format = AVAudioFormat(standardFormatWithSampleRate: 44100, channels: 1)!
-        let frameCount = AVAudioFrameCount(format.sampleRate * duration)
-        guard let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount) else { return }
-        buffer.frameLength = frameCount
-
-        let attackTime: Double = 0.04
-        let releaseTime: Double = 0.12
-
-        for i in 0..<Int(frameCount) {
-            let t = Double(i) / format.sampleRate
-
-            let fund = amplitudes.fundamental * sin(2 * .pi * frequency * t)
-            let harm2 = amplitudes.harmonic2 * sin(2 * .pi * frequency * 2 * t)
-            let harm3 = amplitudes.harmonic3 * sin(2 * .pi * frequency * 3 * t)
-            let formant = amplitudes.formant * sin(2 * .pi * 1200 * t)
-
-            var sample = fund + harm2 + harm3 
-
-            var env: Double = 1.0
-            if t < attackTime {
-                env = t / attackTime
-            } else if t > duration - releaseTime {
-                env = max(0, (duration - t) / releaseTime)
-            }
-            sample *= env
-            buffer.floatChannelData![0][i] = Float(sample * 0.27)
-        }
-
-        player.scheduleBuffer(buffer, at: nil, options: []) { }
-        if !player.isPlaying {
-            player.play()
-        }
-    }
-
-    func stop() {
-        if player.isPlaying {
-            player.stop()
-        }
-    }
-}
-
-
+// MARK: - Main View
 
 struct SavedSessionsView: View {
     @EnvironmentObject var sessionStore: SessionStore
     @State private var showingDeleteAlert = false
     @State private var sessionToDelete: SessionData?
+    @State private var expandedDays: Set<Date> = []
     
-    private func formattedDate(_ date: Date) -> String {
+    // Group sessions by day (ignoring time)
+    private var sessionsByDay: [(day: Date, sessions: [SessionData])] {
+        let grouped = Dictionary(grouping: sessionStore.sessions) { session in
+            Calendar.current.startOfDay(for: session.date)
+        }
+        return grouped
+            .sorted { $0.key > $1.key }
+            .map { ($0.key, $0.value.sorted { $0.date > $1.date }) }
+    }
+    
+    // Format for the group header
+    private func formattedDay(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
-        formatter.timeStyle = .short
+        formatter.timeStyle = .none
         return formatter.string(from: date)
     }
-
+    
     var body: some View {
         NavigationView {
             List {
@@ -93,18 +34,52 @@ struct SavedSessionsView: View {
                     Text("No saved sessions yet.")
                         .foregroundColor(.gray)
                 } else {
-                    ForEach(sessionStore.sessions) { session in
-                        SessionRowView(session: session)
-                            .swipeActions {
-                                Button(role: .destructive) {
-                                    self.sessionToDelete = session
-                                    self.showingDeleteAlert = true
-                                } label: {
-                                    Label("Delete", systemImage: "trash")
+                    ForEach(sessionsByDay, id: \.day) { (day, sessions) in
+                        Section {
+                            DisclosureGroup(
+                                isExpanded: Binding(
+                                    get: { expandedDays.contains(day) },
+                                    set: { expanded in
+                                        if expanded { expandedDays.insert(day) }
+                                        else { expandedDays.remove(day) }
+                                    }
+                                ),
+                                content: {
+                                    ForEach(sessions) { session in
+                                        SessionRowView(session: session)
+                                            .swipeActions {
+                                                Button(role: .destructive) {
+                                                    self.sessionToDelete = session
+                                                    self.showingDeleteAlert = true
+                                                } label: {
+                                                    Label("Delete", systemImage: "trash")
+                                                }
+                                            }
+                                    }
+                                    .onDelete { offsets in
+                                        let sessionIDsToDelete = offsets.map { sessions[$0].id }
+                                        for id in sessionIDsToDelete {
+                                            sessionStore.deleteSession(id: id)
+                                        }
+                                    }
+                                },
+                                label: {
+                                    HStack {
+                                        Text(formattedDay(day))
+                                            .font(.headline)
+                                            .foregroundColor(.primary)
+                                        Spacer()
+                                        // Badge for number of sessions
+                                        Text("\(sessions.count)")
+                                            .font(.subheadline.bold())
+                                            .padding(.horizontal, 8)
+                                            .padding(.vertical, 2)
+                                            .background(Capsule().fill(Color.accentColor.opacity(0.18)))
+                                    }
                                 }
-                            }
+                            )
+                        }
                     }
-                    .onDelete(perform: deleteSession)
                 }
             }
             .navigationTitle("Saved Sessions")
@@ -112,6 +87,20 @@ struct SavedSessionsView: View {
                 ToolbarItem(placement: .navigationBarLeading) {
                     if !sessionStore.sessions.isEmpty {
                         EditButton()
+                    }
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    if !sessionStore.sessions.isEmpty {
+                        Menu {
+                            Button("Expand All") {
+                                expandedDays = Set(sessionsByDay.map { $0.day })
+                            }
+                            Button("Collapse All") {
+                                expandedDays = []
+                            }
+                        } label: {
+                            Label("Options", systemImage: "ellipsis.circle")
+                        }
                     }
                 }
             }
@@ -125,16 +114,90 @@ struct SavedSessionsView: View {
             }
         }
     }
-
-    private func deleteSession(at offsets: IndexSet) {
-        sessionStore.deleteSession(at: offsets)
+    
+    private func formattedDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        return formatter.string(from: date)
     }
 }
 
 // MARK: - Session Row with Sparkline
 
+private struct SessionRowView: View {
+    let session: SessionData
+    @StateObject private var tonePlayer = TonePlayer()
+    @State private var showStats = false  // <--- Move here!
+    var dateString: String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        return formatter.string(from: session.date)
+    }
+    
+    var durationString: String {
+        let totalSeconds = Int(max(0, session.duration))
+        let hours = totalSeconds / 3600
+        let minutes = (totalSeconds % 3600) / 60
+        let seconds = totalSeconds % 60
+        if hours > 0 {
+            return String(format: "%d:%02d:%02d", hours, minutes, seconds)
+        } else {
+            return String(format: "%02d:%02d", minutes, seconds)
+        }
+    }
+    
+    var stats: PitchStatistics { session.statistics }
+    
+    var body: some View {
+     
+        
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Date: \(dateString)").bold()
+                    Text("Duration: \(durationString)").bold()
+                }
+                Spacer()
+                if !session.values.isEmpty {
+                    Sparkline(data: session.values)
+                        .stroke(Color.accentColor, lineWidth: 2)
+                        .frame(width: 100, height: 32)
+                        .background(
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(Color(.systemBackground))
+                        )
+                        .padding(.leading, 8)
+                }
+            }
+            
+            Divider().padding(.vertical, 2)
+            
+            DisclosureGroup("Show Stats", isExpanded: $showStats) {
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
+                    StatChunk(label: "Min", frequency: stats.min, playAction: { tonePlayer.play(frequency: stats.min) })
+                    StatChunk(label: "Max", frequency: stats.max, playAction: { tonePlayer.play(frequency: stats.max) })
+                    StatChunk(label: "Median", frequency: stats.median, playAction: { tonePlayer.play(frequency: stats.median) })
+                    StatChunk(label: "Avg", frequency: stats.avg, playAction: { tonePlayer.play(frequency: stats.avg) })
+                    SimpleStatChunk(label: "Std Dev", value: stats.stdDev, unit: "Hz")
+                    SimpleStatChunk(label: "IQR", value: stats.iqr, unit: "Hz")
+                    SimpleStatChunk(label: "RMS", value: stats.rms, unit: "Hz")
+                }
+                .padding(.top, 4)
+            }
+            .accentColor(.accentColor)
+            .padding(.top, 4)
+            
+        }
+        .padding()
+        .background(RoundedRectangle(cornerRadius: 18).fill(Color(.tertiarySystemBackground)))
+        .padding(.vertical, 6)
+    }
+}
 
-// Utility to convert frequency to note + cents
+// MARK: - Helper Chunks and Sparkline
+
 func noteNameAndCents(for frequency: Double) -> (String, Int) {
     guard frequency > 0 else { return ("–", 0) }
     let noteNames = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"]
@@ -147,7 +210,6 @@ func noteNameAndCents(for frequency: Double) -> (String, Int) {
     return (noteName, cents)
 }
 
-// "Chunk"/Card for a statistic
 struct StatChunk: View {
     let label: String
     let frequency: Double
@@ -155,8 +217,7 @@ struct StatChunk: View {
 
     var body: some View {
         let (note, cents) = noteNameAndCents(for: frequency)
-        let centsString = cents == 0 ? " (in tune)" :
-            String(format: " (%+d¢)", cents)
+        let centsString = cents == 0 ? " (in tune)" : String(format: " (%+d¢)", cents)
         Button(action: { playAction?() }) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(label)
@@ -179,7 +240,6 @@ struct StatChunk: View {
     }
 }
 
-
 struct SimpleStatChunk: View {
     let label: String
     let value: Double
@@ -200,86 +260,13 @@ struct SimpleStatChunk: View {
     }
 }
 
-
-private struct SessionRowView: View {
-    let session: SessionData
-    @State private var tonePlayer = TonePlayer()
-
-    var dateString: String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .short
-        return formatter.string(from: session.date)
-    }
-
-    var durationString: String {
-        let totalSeconds = Int(max(0, session.duration))
-        let hours = totalSeconds / 3600
-        let minutes = (totalSeconds % 3600) / 60
-        let seconds = totalSeconds % 60
-        if hours > 0 {
-            return String(format: "%d:%02d:%02d", hours, minutes, seconds)
-        } else {
-            return String(format: "%02d:%02d", minutes, seconds)
-        }
-    }
-
-    var stats: PitchStatistics { session.statistics }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Date: \(dateString)").bold()
-                    Text("Duration: \(durationString)").bold()
-                }
-                Spacer()
-                if !session.values.isEmpty {
-                    Sparkline(data: session.values)
-                        .stroke(Color.accentColor, lineWidth: 2)
-                        .frame(width: 100, height: 32)
-                        .background(
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(Color(.systemBackground))
-                        )
-                        .padding(.leading, 8)
-                }
-            }
-
-            Divider().padding(.vertical, 2)
-
-            // Stats in a grid of data chunks
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
-                StatChunk(label: "Min", frequency: stats.min, playAction: nil)
-                StatChunk(label: "Max", frequency: stats.max, playAction: nil)
-                StatChunk(label: "Median", frequency: stats.median, playAction: {
-                    tonePlayer.play(frequency: stats.median, amplitudes: HarmonicAmplitudes())
-                })
-                StatChunk(label: "Avg", frequency: stats.avg, playAction: {
-                    tonePlayer.play(frequency: stats.avg, amplitudes: HarmonicAmplitudes())
-                })
-                SimpleStatChunk(label: "Std Dev", value: stats.stdDev, unit: "Hz")
-                SimpleStatChunk(label: "IQR", value: stats.iqr, unit: "Hz")
-                SimpleStatChunk(label: "RMS", value: stats.rms, unit: "Hz")
-            }
-
-        }
-        .padding()
-        .background(RoundedRectangle(cornerRadius: 18).fill(Color(.tertiarySystemBackground)))
-        .padding(.vertical, 6)
-    }
-}
-
-// ---- Sparkline Shape ----
 struct Sparkline: Shape {
     let data: [Double]
-    
     func path(in rect: CGRect) -> Path {
         guard data.count > 1 else { return Path() }
         let minY = data.min() ?? 0
         let maxY = data.max() ?? 1
         let yRange = maxY - minY == 0 ? 1 : maxY - minY
-
         let stepX = rect.width / CGFloat(data.count - 1)
         let scaleY = rect.height / CGFloat(yRange)
         var path = Path()
@@ -296,19 +283,20 @@ struct Sparkline: Shape {
     }
 }
 
-
-// MARK: - Previews
+// MARK: - Preview
 
 struct SavedSessionsView_Previews: PreviewProvider {
     static var previews: some View {
         let mockStore = SessionStore()
         let sampleStats = PitchStatistics(min: 100, max: 200, avg: 150, median: 145, stdDev: 20, iqr: 30, rms: 160)
-        mockStore.addSession(duration: 300, statistics: sampleStats, values: [120, 130, 140, 155, 170, 155, 145, 150, 148, 147, 149, 151, 153, 157, 154, 150])
-        mockStore.addSession(duration: 650, statistics: sampleStats, values: [135, 137, 139, 142, 148, 151, 153, 154, 155, 153, 151, 150, 148, 147, 146, 144])
-        
+        // Add sessions manually
+        let date1 = Calendar.current.date(byAdding: .day, value: 0, to: Date())!
+        let date2 = Calendar.current.date(byAdding: .day, value: -1, to: Date())!
+        mockStore.sessions.append(SessionData(id: UUID(), date: date1, duration: 300, statistics: sampleStats, values: [120, 130, 140, 155]))
+        mockStore.sessions.append(SessionData(id: UUID(), date: date2, duration: 650, statistics: sampleStats, values: [135, 137, 139, 142]))
+        // ...add more if desired
         return SavedSessionsView()
             .environmentObject(mockStore)
             .preferredColorScheme(.dark)
-            .previewDisplayName("Saved Sessions w/ Sparklines")
     }
 }
