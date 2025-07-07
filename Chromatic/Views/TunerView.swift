@@ -12,6 +12,9 @@ struct TunerView: View {
     @State private var sessionStats: SessionStatistics?   // Updated!
     @State private var showStatsModal = false
     
+    @State private var countdown: Int? = nil    // nil = not counting down
+    let countdownSeconds = 7
+    
     // Timer State
     @State private var recordingStartedAt: Date?
     @State private var now = Date()
@@ -48,6 +51,47 @@ struct TunerView: View {
             return String(format: "%02d:%02d", minutes, seconds)
         }
     }
+    struct CalmingCountdownCircle: View {
+        let secondsLeft: Int
+        let totalSeconds: Int
+
+        var percent: Double {
+            1.0 - Double(secondsLeft-1) / Double(totalSeconds)
+        }
+
+        @State private var animatePulse = false
+
+        var body: some View {
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(gradient: Gradient(colors: [
+                            Color.blue.opacity(0.18),
+                            Color.purple.opacity(0.12)
+                        ]), startPoint: .topLeading, endPoint: .bottomTrailing)
+                    )
+                    .scaleEffect(animatePulse ? 1.04 : 1)
+                    .animation(.easeInOut(duration: 0.7).repeatForever(autoreverses: true), value: animatePulse)
+                    .onAppear { animatePulse = true }
+                Circle()
+                    .stroke(
+                        AngularGradient(gradient: Gradient(colors: [
+                            Color.blue.opacity(0.2),
+                            Color.blue.opacity(0.5),
+                            Color.purple.opacity(0.6),
+                            Color.blue.opacity(0.2)
+                        ]), center: .center),
+                        lineWidth: 8
+                    )
+                Circle()
+                    .trim(from: 0, to: percent)
+                    .stroke(Color.accentColor, style: StrokeStyle(lineWidth: 7, lineCap: .round))
+                    .rotationEffect(.degrees(-90))
+                    .animation(.easeInOut(duration: 0.6), value: percent)
+            }
+        }
+    }
+
     
     var body: some View {
         Group {
@@ -129,26 +173,39 @@ struct TunerView: View {
                         .frame(height: 30)
                     
                     // MARK: RECORD / STATS WITH TIMER
-                    VStack(alignment: .leading, spacing: 6) {
-                        // Show timer only when recording, never negative
-                        if let startedAt = recordingStartedAt, elapsed >= 0 {
-                            Text("Recording: \(formatTime(elapsed))")
-                                .font(.caption2)
+                    if let c = countdown {
+                        VStack {
+                            CalmingCountdownCircle(secondsLeft: c, totalSeconds: countdownSeconds)
+                                .frame(width: 140, height: 140)
+                                .padding(.bottom, 8)
+                            Text("Recording begins in \(c)…")
+                                .font(.title3)
                                 .foregroundColor(.secondary)
                         }
+                    } else {
                         HStack(spacing: 16) {
                             Button(action: {
                                 if tunerData.isRecording {
                                     tunerData.stopRecording()
-                                    // Always use the most up-to-date time for the session duration!
                                     let sessionDuration = Date().timeIntervalSince(recordingStartedAt ?? Date())
                                     sessionStats = tunerData.calculateStatisticsExtended(duration: max(0, sessionDuration))
                                     showStatsModal = true
                                     recordingStartedAt = nil
                                 } else {
-                                    tunerData.startRecording()
-                                    sessionStats = nil
-                                    recordingStartedAt = Date()
+                                    // BEGIN COUNTDOWN
+                                    countdown = countdownSeconds
+                                    Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { timer in
+                                        if let c = countdown, c > 1 {
+                                            countdown = c - 1
+                                        } else {
+                                            timer.invalidate()
+                                            countdown = nil
+                                            // Now actually start recording
+                                            tunerData.startRecording()
+                                            sessionStats = nil
+                                            recordingStartedAt = Date()
+                                        }
+                                    }
                                 }
                             }) {
                                 Text(tunerData.isRecording ? "Stop Recording" : "Start Recording")
@@ -158,7 +215,7 @@ struct TunerView: View {
                                     .foregroundColor(.white)
                                     .cornerRadius(8)
                             }
-                            
+
                             Button(action: {
                                 tunerData.clearRecording()
                                 sessionStats = nil
@@ -182,13 +239,6 @@ struct TunerView: View {
                             }
                         }
                     }
-                    .onReceive(ticker) { current in
-                        // Not strictly needed, but you can keep for legacy logic or display updates
-                        if recordingStartedAt != nil {
-                            now = current
-                        }
-                    }
-                    .padding(.horizontal)
                     
                     // ────────── TRANSPOSE MENU ──────────
                     HStack {
