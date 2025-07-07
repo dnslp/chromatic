@@ -1,6 +1,7 @@
 import SwiftUI
 import AVFoundation     // NEW
 
+
 // MARK: - TunerView
 struct TunerView: View {
     @Binding var tunerData: TunerData
@@ -23,10 +24,29 @@ struct TunerView: View {
         guard let start = recordingStartedAt else { return 0 }
         return Date().timeIntervalSince(start)
     }
-    
+    struct CapsuleBadge<Content: View>: View {
+        let content: () -> Content
+
+        var body: some View {
+            content()
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(Capsule().fill(Color.accentColor))
+                .foregroundColor(.white)
+                .shadow(radius: 2)
+        }
+    }
     private var match: ScaleNote.Match {
         tunerData.closestNote.inTransposition(ScaleNote.allCases[selectedTransposition])
     }
+    
+    func detectedOctave(from tunerData: TunerData) -> Int {
+        let hz = tunerData.pitch.measurement.value
+        guard hz > 0 else { return 4 } // fallback to C4
+        let midi = Int(round(69 + 12 * log2(hz / 440.0)))
+        return midi / 12
+    }
+    
     
     @AppStorage("HidesTranspositionMenu") private var hidesTranspositionMenu = false
     
@@ -54,13 +74,13 @@ struct TunerView: View {
     struct CalmingCountdownCircle: View {
         let secondsLeft: Int
         let totalSeconds: Int
-
+        
         var percent: Double {
             1.0 - Double(secondsLeft-1) / Double(totalSeconds)
         }
-
+        
         @State private var animatePulse = false
-
+        
         var body: some View {
             ZStack {
                 Circle()
@@ -91,7 +111,7 @@ struct TunerView: View {
             }
         }
     }
-
+    
     
     var body: some View {
         Group {
@@ -99,17 +119,23 @@ struct TunerView: View {
             // watchOS unchanged...
             ZStack { /* ... */ }
 #else
+            
+            
             HStack(spacing: 1) {
-                // ────────── VERTICAL VISUALIZER ──────────
-                PitchLineVisualizer(
-                    tunerData: tunerData,
-                    frequency: tunerData.pitch,
-                    fundamental: Frequency(floatLiteral: userF0)
-                )
-                .frame(width: 10)
-                .padding(.vertical, 16)
                 
-                // ────────── MAIN CONTENT ──────────
+                // ────────── VERTICAL VISUALIZER ──────────
+                //                PitchLineVisualizer(
+                //                    tunerData: tunerData,
+                //                    frequency: tunerData.pitch,
+                //                    fundamental: Frequency(floatLiteral: userF0)
+                //                )
+                //                .frame(width: 10)
+                //                .padding(.vertical, 16)
+                //
+                //
+                //                // ────────── MAIN CONTENT ──────────
+                //                .frame(height: 80)
+                //                .disabled(true)
                 VStack(spacing: 0) {
                     // ───── AMPLITUDE BAR ─────
                     HStack(spacing: 8) {
@@ -144,6 +170,7 @@ struct TunerView: View {
                     .shadow(radius: 2, y: -1)
                     
                     // ───── NOTE DISPLAY ─────
+                    
                     VStack(spacing: contentSpacing) {
                         MatchedNoteView(match: match, modifierPreference: modifierPreference)
                             .padding(.top, 50)
@@ -157,6 +184,12 @@ struct TunerView: View {
                     .padding(.horizontal, 12)
                     .padding(.top, 40)
                     
+                    //                    SimpleKeyboardView(
+                    //                         highlightedMIDINote: {
+                    //                             let freq = tunerData.pitch.measurement.value
+                    //                             return freq > 0 ? Int(round(69 + 12 * log2(freq / 440.0))) : nil
+                    //                         }()
+                    //                     )
                     Spacer(minLength: 40)
                     
                     // ───── OTHER VISUALIZERS ─────
@@ -169,16 +202,16 @@ struct TunerView: View {
                     .frame(width: 100, height: 100)
                     .padding(.bottom, 20)
                     
-                    HarmonicGraphView(tunerData: tunerData)
-                        .frame(height: 30)
+                    //                    HarmonicGraphView(tunerData: tunerData)
+                    //                        .frame(height: 30)
                     PitchChakraTimelineView(pitches: tunerData.recordedPitches)
-                        .frame(height: 48)
+                        .frame(height: 48).padding(.bottom, 25)
                     
                     // MARK: RECORD / STATS WITH TIMER
                     if let c = countdown {
                         VStack {
                             CalmingCountdownCircle(secondsLeft: c, totalSeconds: countdownSeconds)
-                                .frame(width: 140, height: 140)
+                                .frame(width: 100, height: 100)
                                 .padding(.bottom, 8)
                             Text("Recording begins in \(c)…")
                                 .font(.title3)
@@ -217,7 +250,7 @@ struct TunerView: View {
                                     .foregroundColor(.white)
                                     .cornerRadius(8)
                             }
-
+                            
                             Button(action: {
                                 tunerData.clearRecording()
                                 sessionStats = nil
@@ -243,15 +276,25 @@ struct TunerView: View {
                     }
                     
                     // ────────── TRANSPOSE MENU ──────────
-                    HStack {
-                        F0SelectorView(f0Hz: $userF0)
-                        if !hidesTranspositionMenu {
-                            TranspositionMenu(selectedTransposition: $selectedTransposition)
-                                .padding(.leading, 8)
+                    ZStack(alignment: .topTrailing) {
+                        HStack {
+                            // You can remove F0SelectorView from here!
+                            if !hidesTranspositionMenu {
+                                TranspositionMenu(selectedTransposition: $selectedTransposition)
+                                    .padding(.leading, 8)
+                            }
+                            Spacer()
                         }
-                        Spacer()
+                        .frame(height: menuHeight)
+
+                        // F₀ badge!
+                        CapsuleBadge {
+                            F0SelectorView(f0Hz: $userF0)
+                        }
+                        .padding(.trailing, 10)
+                        .padding(.top, 4)
                     }
-                    .frame(height: menuHeight)
+
                 }
                 .frame(maxWidth: .infinity)
             }
