@@ -110,7 +110,7 @@ struct MatchedNoteView: View {
                     .alignmentGuide(.octaveCenter) { dims in
                         dims[HorizontalAlignment.center]
                     }
-            }.frame(width: 120, height: 120)
+            }.frame(width: 90, height: 90)
             
             if let mod = accidental {
                 Text(mod)

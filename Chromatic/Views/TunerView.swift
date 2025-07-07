@@ -107,7 +107,7 @@ struct TunerView: View {
                     fundamental: Frequency(floatLiteral: userF0)
                 )
                 .frame(width: 10)
-                .padding(.vertical, 16)
+                .padding(.vertical, 1)
                 
                 // ────────── MAIN CONTENT ──────────
                 VStack(spacing: 0) {
@@ -155,7 +155,7 @@ struct TunerView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.horizontal, 12)
-                    .padding(.top, 40)
+                    .padding(.top, 100)
                     
                     Spacer(minLength: 40)
                     
