@@ -171,6 +171,8 @@ struct TunerView: View {
                     
                     HarmonicGraphView(tunerData: tunerData)
                         .frame(height: 30)
+                    PitchChakraTimelineView(pitches: tunerData.recordedPitches)
+                        .frame(height: 48)
                     
                     // MARK: RECORD / STATS WITH TIMER
                     if let c = countdown {
