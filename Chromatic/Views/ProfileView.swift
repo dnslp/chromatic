@@ -32,15 +32,18 @@ struct ProfileView: View {
     private func noteNameAndCents(for frequency: Double) -> (String, Int) {
         guard frequency > 0 else { return ("–", 0) }
         let noteNames = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"]
-        let midi = 69 + 12 * log2(frequency / 440)
-        let noteNum = Int(round(midi))
-        let noteIndex = (noteNum + 120) % 12
+        let freqRatio = frequency / 440.0
+        let midiDouble = 69.0 + 12.0 * log2(freqRatio)
+        let midi = Int(round(midiDouble))
+        let noteIndex = (midi + 120) % 12
         let noteName = noteNames[noteIndex]
-        let noteHz = 440 * pow(2.0, Double(noteNum - 69) / 12)
-        let cents = Int(round(1200 * log2(frequency / noteHz)))
-        let octave = (noteNum / 12) - 1
+        let noteHz = 440.0 * pow(2.0, Double(midi - 69) / 12.0)
+        let centsDouble = 1200.0 * log2(frequency / noteHz)
+        let cents = Int(round(centsDouble))
+        let octave = (midi / 12) - 1
         return ("\(noteName)\(octave)", cents)
     }
+
     
     var body: some View {
         NavigationView {
@@ -122,9 +125,10 @@ struct ProfileView: View {
 
                 Section(header: Text("Harmonics (f₁ - f₇)")) {
                     ForEach(Array(editingProfile.harmonics.enumerated()), id: \.offset) { index, harmonicHz in
+                        // Calculate outside the view builder!
+                        let noteCents = noteNameAndCents(for: harmonicHz)
                         Button(action: { tonePlayer.play(frequency: harmonicHz) }) {
                             HStack {
-                                // Chakra color indicator
                                 Circle()
                                     .fill(chakraColor(for: harmonicHz))
                                     .frame(width: 18, height: 18)
@@ -132,13 +136,11 @@ struct ProfileView: View {
                                         Circle()
                                             .stroke(Color.primary.opacity(0.15), lineWidth: 1)
                                     )
-                                
                                 Text("f\(index + 1):")
                                 Spacer()
-                                let (note, cents) = noteNameAndCents(for: harmonicHz)
                                 VStack(alignment: .trailing, spacing: 0) {
                                     Text("\(harmonicHz, specifier: "%.2f") Hz")
-                                    Text("\(note) (\(cents >= 0 ? "+" : "")\(cents)¢)")
+                                    Text("\(noteCents.0) (\(noteCents.1 >= 0 ? "+" : "")\(noteCents.1)¢)")
                                         .foregroundColor(.secondary)
                                         .font(.footnote)
                                 }
@@ -148,6 +150,7 @@ struct ProfileView: View {
                         }
                         .buttonStyle(.plain)
                     }
+
                 }
             }
             .navigationTitle("Profile Details")

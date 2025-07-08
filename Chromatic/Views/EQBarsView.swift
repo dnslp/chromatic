@@ -29,7 +29,7 @@ struct EQBarsView: View {
 
 struct EQBarsView_Previews: PreviewProvider {
     static var previews: some View {
-        let match1 = ScaleNote.Match(note: .A, octave: 4, distance: .zero)
+        let match1 = ScaleNote.Match(note: .A, octave: 4, distance: 0)
         let tunerData1 = TunerData(pitch: 440.0, amplitude: 0.8)
 
         let match2 = ScaleNote.Match(note: .C, octave: 3, distance: Frequency.MusicalDistance(cents: 30))
