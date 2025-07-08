@@ -298,11 +298,11 @@
 			isa = PBXGroup;
 			children = (
 				8F560A392698963E000B33BF /* BuildSupport */,
-				8F8B37602678069400BC3568 /* Packages */,
 				8FB571A925B72146007C28BC /* Chromatic */,
 				8FE56CDB25BE05D20038664C /* ChromaticTests */,
-				8FB571B225B72147007C28BC /* Products */,
 				8FB5720925B7412B007C28BC /* Frameworks */,
+				8F8B37602678069400BC3568 /* Packages */,
+				8FB571B225B72147007C28BC /* Products */,
 			);
 			sourceTree = "<group>";
 		};
@@ -344,31 +344,31 @@
 		8FB571D425B722F2007C28BC /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				BE026CBF2E1DA6DE0088BD78 /* TonePlayerControlPanel.swift */,
-				BE0541CB2E19759100E8A38E /* F0SelectorView.swift */,
 				BEDD83032E18A99500C46430 /* CircleWave.swift */,
-				BEDD82492E16B6E300C46430 /* HarmonicGraphView.swift */,
-				BEED700E2E14528D00037881 /* FunctionGeneratorView.swift */,
+				BE15128E2E15F6A600BB9EC2 /* ConcentricCircleVisualizer.swift */,
 				8FB571EF25B73ECE007C28BC /* CurrentNoteMarker.swift */,
-				BEED6ED42E143F0100037881 /* PlayerView.swift */,
-				8F2D9754269390D800B512D0 /* MicrophoneAccessAlert.swift */,
+				BE15128F2E15F6A600BB9EC2 /* EQBarsView.swift */,
+				BE0541CB2E19759100E8A38E /* F0SelectorView.swift */,
+				BEED700E2E14528D00037881 /* FunctionGeneratorView.swift */,
+				BEDD82492E16B6E300C46430 /* HarmonicGraphView.swift */,
 				8FB571F025B73ECE007C28BC /* MainNoteView.swift */,
 				8FB571F225B73ECF007C28BC /* MatchedNoteFrequency.swift */,
 				8FB571F125B73ECE007C28BC /* MatchedNoteView.swift */,
+				8F2D9754269390D800B512D0 /* MicrophoneAccessAlert.swift */,
 				8FB571F325B73ECF007C28BC /* NoteDistanceMarkers.swift */,
-				8FB571F425B73ECF007C28BC /* TunerView.swift */,
 				8F2D97582693930000B512D0 /* NoteTicks.swift */,
-				8F693E3825B87DB20054DB16 /* TranspositionMenu.swift */,
-				BE15128E2E15F6A600BB9EC2 /* ConcentricCircleVisualizer.swift */,
-				BE15128F2E15F6A600BB9EC2 /* EQBarsView.swift */,
-				BE1512902E15F6A600BB9EC2 /* PitchLineVisualizer.swift */,
-				BEE6D7F12E1B265600B3B886 /* StatsModalView.swift */,
-				BE37664C2E1C2270005CFA44 /* SavedSessionsView.swift */,
-				BE37664F2E1C2282005CFA44 /* PitchLineVisualizer.swift */,
 				BE3766522E1C229D005CFA44 /* PitchChakraTimelineView.swift */,
-				BE026B2A2E1C67670088BD78 /* TonePlayer.swift */,
+				BE1512902E15F6A600BB9EC2 /* PitchLineVisualizer.swift */,
+				BE37664F2E1C2282005CFA44 /* PitchLineVisualizer.swift */,
+				BEED6ED42E143F0100037881 /* PlayerView.swift */,
 				BE026BFF2E1D61F80088BD78 /* ProfileSelectionView.swift */,
 				BE026C002E1D61F80088BD78 /* ProfileView.swift */,
+				BE37664C2E1C2270005CFA44 /* SavedSessionsView.swift */,
+				BEE6D7F12E1B265600B3B886 /* StatsModalView.swift */,
+				BE026B2A2E1C67670088BD78 /* TonePlayer.swift */,
+				BE026CBF2E1DA6DE0088BD78 /* TonePlayerControlPanel.swift */,
+				8F693E3825B87DB20054DB16 /* TranspositionMenu.swift */,
+				8FB571F425B73ECF007C28BC /* TunerView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -376,21 +376,21 @@
 		8FB571D725B73E9A007C28BC /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				BE026CC22E1DA8080088BD78 /* ToneSettingsManager.swift */,
+				BEED6ED72E143F3A00037881 /* Audio */,
+				BEED6ED12E143EDF00037881 /* AudioPlayer.swift */,
+				8FB571D925B73E9A007C28BC /* Frequency.swift */,
 				BEED700B2E14526400037881 /* FunctionGeneratorEngine.swift */,
 				BEED70052E144B7B00037881 /* MixerEngine.swift */,
-				BEED6ED12E143EDF00037881 /* AudioPlayer.swift */,
-				BEED6E932E143B3B00037881 /* PlaylistManager.swift */,
-				8FB571D925B73E9A007C28BC /* Frequency.swift */,
 				8FB571D825B73E9A007C28BC /* ModifierPreference.swift */,
-				8FB571DA25B73E9A007C28BC /* ScaleNote.swift */,
-				8FB571DB25B73E9A007C28BC /* TunerData.swift */,
-				BEED6ED72E143F3A00037881 /* Audio */,
 				BEED70172E1462D300037881 /* Pitch.swift */,
 				BEE6D7E82E1B263F00B3B886 /* PitchStatistics.swift */,
+				BEED6E932E143B3B00037881 /* PlaylistManager.swift */,
+				8FB571DA25B73E9A007C28BC /* ScaleNote.swift */,
 				BEE6D7E92E1B263F00B3B886 /* SessionStatistics.swift */,
-				BEE6D7EA2E1B263F00B3B886 /* TunerData+Statistics.swift */,
 				BE3766492E1C224E005CFA44 /* SessionStore.swift */,
+				BE026CC22E1DA8080088BD78 /* ToneSettingsManager.swift */,
+				8FB571DB25B73E9A007C28BC /* TunerData.swift */,
+				BEE6D7EA2E1B263F00B3B886 /* TunerData+Statistics.swift */,
 				BE026C052E1D620A0088BD78 /* UserProfile.swift */,
 				BE026C062E1D620A0088BD78 /* UserProfileManager.swift */,
 			);
