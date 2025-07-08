@@ -1,17 +1,13 @@
 import SwiftUI
 import AVFoundation
 
-// MARK: - Main View
-
 struct SavedSessionsView: View {
     @EnvironmentObject var sessionStore: SessionStore
     @State private var showingDeleteAlert = false
     @State private var sessionToDelete: SessionData?
     @State private var expandedDays: Set<Date> = []
-    
     @State private var showingToneSettings = false
 
-    
     // Group sessions by day (ignoring time)
     private var sessionsByDay: [(day: Date, sessions: [SessionData])] {
         let grouped = Dictionary(grouping: sessionStore.sessions) { session in
@@ -21,7 +17,7 @@ struct SavedSessionsView: View {
             .sorted { $0.key > $1.key }
             .map { ($0.key, $0.value.sorted { $0.date > $1.date }) }
     }
-    
+
     // Format for the group header
     private func formattedDay(_ date: Date) -> String {
         let formatter = DateFormatter()
@@ -29,10 +25,9 @@ struct SavedSessionsView: View {
         formatter.timeStyle = .none
         return formatter.string(from: date)
     }
-    
+
     var body: some View {
         NavigationView {
-            
             List {
                 if sessionStore.sessions.isEmpty {
                     Text("No saved sessions yet.")
@@ -51,6 +46,7 @@ struct SavedSessionsView: View {
                                 content: {
                                     ForEach(sessions) { session in
                                         SessionRowView(session: session)
+                                            .environmentObject(ToneSettingsManager.shared)
                                             .swipeActions {
                                                 Button(role: .destructive) {
                                                     self.sessionToDelete = session
@@ -61,10 +57,8 @@ struct SavedSessionsView: View {
                                             }
                                     }
                                     .onDelete { offsets in
-                                        let sessionIDsToDelete = offsets.map { sessions[$0].id }
-                                        for id in sessionIDsToDelete {
-                                            sessionStore.deleteSession(id: id)
-                                        }
+                                        let ids = offsets.map { sessions[$0].id }
+                                        ids.forEach { sessionStore.deleteSession(id: $0) }
                                     }
                                 },
                                 label: {
@@ -73,7 +67,6 @@ struct SavedSessionsView: View {
                                             .font(.headline)
                                             .foregroundColor(.primary)
                                         Spacer()
-                                        // Badge for number of sessions
                                         Text("\(sessions.count)")
                                             .font(.subheadline.bold())
                                             .padding(.horizontal, 8)
@@ -86,8 +79,9 @@ struct SavedSessionsView: View {
                     }
                 }
             }
+            .navigationTitle("Saved Sessions")
             .toolbar {
-                // ...existing items...
+                // Tone Settings button
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
                         showingToneSettings = true
@@ -95,13 +89,7 @@ struct SavedSessionsView: View {
                         Label("Tone Settings", systemImage: "slider.horizontal.3")
                     }
                 }
-            }
-            .sheet(isPresented: $showingToneSettings) {
-                TonePlayerControlPanel()
-                    .environmentObject(ToneSettingsManager.shared)
-            }
-            .navigationTitle("Saved Sessions")
-            .toolbar {
+                // Edit / Options menu
                 ToolbarItem(placement: .navigationBarLeading) {
                     if !sessionStore.sessions.isEmpty {
                         EditButton()
@@ -114,7 +102,7 @@ struct SavedSessionsView: View {
                                 expandedDays = Set(sessionsByDay.map { $0.day })
                             }
                             Button("Collapse All") {
-                                expandedDays = []
+                                expandedDays.removeAll()
                             }
                         } label: {
                             Label("Options", systemImage: "ellipsis.circle")
@@ -122,17 +110,23 @@ struct SavedSessionsView: View {
                     }
                 }
             }
-            .alert("Delete Session?", isPresented: $showingDeleteAlert, presenting: sessionToDelete) { sessionDetail in
+            .sheet(isPresented: $showingToneSettings) {
+                TonePlayerControlPanel()
+                    .environmentObject(ToneSettingsManager.shared)
+            }
+            .alert("Delete Session?", isPresented: $showingDeleteAlert, presenting: sessionToDelete) { session in
                 Button("Delete", role: .destructive) {
-                    sessionStore.deleteSession(id: sessionDetail.id)
+                    sessionStore.deleteSession(id: session.id)
                 }
-                Button("Cancel", role: .cancel) {}
-            } message: { sessionDetail in
-                Text("Are you sure you want to delete the session from \(formattedDate(sessionDetail.date))? This action cannot be undone.")
+                Button("Cancel", role: .cancel) { }
+            } message: { session in
+                Text("Are you sure you want to delete the session from \(formattedDate(session.date))? This action cannot be undone.")
             }
         }
+        // Inject the shared ToneSettingsManager into the entire view hierarchy
+        .environmentObject(ToneSettingsManager.shared)
     }
-    
+
     private func formattedDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
@@ -141,20 +135,20 @@ struct SavedSessionsView: View {
     }
 }
 
-// MARK: - Session Row with Sparkline Playback
+// MARK: - Session Row
 
 private struct SessionRowView: View {
     let session: SessionData
+
+    @EnvironmentObject private var toneSettings: ToneSettingsManager
     @StateObject private var tonePlayer = TonePlayer()
-    @State private var showStats = false
     @State private var isPlaying = false
     @State private var playbackChunks: [(Double, Int)] = []
-    @State private var playbackChunkIndex: Int = 0
+    @State private var playbackChunkIndex = 0
     @State private var playbackTimer: Timer? = nil
 
-    // MARK: - Sparkline Tap/Playback
-
-    private func chunkPitches(_ values: [Double], tolerance: Double = 7.0) -> [(freq: Double, length: Int)] {
+    // Sparkline chunking
+    private func chunkPitches(_ values: [Double], tolerance: Double = 7.0) -> [(Double, Int)] {
         guard !values.isEmpty else { return [] }
         var result: [(Double, Int)] = []
         var currentFreq = values[0]
@@ -175,7 +169,7 @@ private struct SessionRowView: View {
     private func startPlayback() {
         guard !session.values.isEmpty else { return }
         isPlaying = true
-        playbackChunks = chunkPitches(session.values, tolerance: 7.0)
+        playbackChunks = chunkPitches(session.values)
         playbackChunkIndex = 0
         playbackTimer?.invalidate()
         playNextChunk()
@@ -187,12 +181,18 @@ private struct SessionRowView: View {
             return
         }
         let (freq, count) = playbackChunks[playbackChunkIndex]
-        let segmentDuration = Double(count) * 0.055
+        let dur = Double(count) * 0.055
         if freq > 30 {
-            tonePlayer.play(frequency: freq, duration: segmentDuration)
+            tonePlayer.play(
+                frequency: freq,
+                duration: dur,
+                amplitudes: toneSettings.amplitudes,
+                attack: toneSettings.attack,
+                release: toneSettings.release
+            )
         }
         playbackChunkIndex += 1
-        playbackTimer = Timer.scheduledTimer(withTimeInterval: segmentDuration, repeats: false) { _ in
+        playbackTimer = Timer.scheduledTimer(withTimeInterval: dur, repeats: false) { _ in
             playNextChunk()
         }
     }
@@ -201,35 +201,25 @@ private struct SessionRowView: View {
         playbackTimer?.invalidate()
         playbackTimer = nil
         isPlaying = false
-        playbackChunkIndex = 0
-        playbackChunks = []
         tonePlayer.stop()
     }
 
-    // MARK: - Info Display
-
-    var dateString: String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .short
-        return formatter.string(from: session.date)
+    // Display helpers
+    private var dateString: String {
+        let f = DateFormatter()
+        f.dateStyle = .medium; f.timeStyle = .short
+        return f.string(from: session.date)
     }
-    
-    var durationString: String {
-        let totalSeconds = Int(max(0, session.duration))
-        let hours = totalSeconds / 3600
-        let minutes = (totalSeconds % 3600) / 60
-        let seconds = totalSeconds % 60
-        if hours > 0 {
-            return String(format: "%d:%02d:%02d", hours, minutes, seconds)
+    private var durationString: String {
+        let secs = Int(max(0, session.duration))
+        let h = secs / 3600, m = (secs % 3600) / 60, s = secs % 60
+        if h > 0 {
+            return String(format: "%d:%02d:%02d", h, m, s)
         } else {
-            return String(format: "%02d:%02d", minutes, seconds)
+            return String(format: "%02d:%02d", m, s)
         }
     }
-    
-    var stats: PitchStatistics { session.statistics }
-
-    // MARK: - View Body
+    private var stats: PitchStatistics { session.statistics }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -238,52 +228,41 @@ private struct SessionRowView: View {
                     Text("Date: \(dateString)").bold()
                     Text("Duration: \(durationString)").bold()
                     Text("Profile: \(session.profileName)")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .font(.subheadline).foregroundColor(.secondary)
                 }
                 Spacer()
                 if let timeline = session.chakraTimeline {
                     PitchChakraTimelineView(pitches: timeline.pitches)
-                        .frame(height: 48)
-                        .padding(.top, 6)
+                        .frame(height: 48).padding(.top, 6)
                 }
                 if !session.values.isEmpty {
                     ZStack {
                         Sparkline(data: session.values)
                             .stroke(isPlaying ? Color.green : Color.accentColor, lineWidth: 2)
                             .frame(width: 100, height: 32)
-                            .background(
-                                RoundedRectangle(cornerRadius: 4)
-                                    .fill(Color(.systemBackground))
-                            )
-                            .padding(.leading, 8)
+                            .background(RoundedRectangle(cornerRadius: 4)
+                                            .fill(Color(.systemBackground)))
                             .onTapGesture {
-                                if isPlaying {
-                                    stopPlayback()
-                                } else {
-                                    startPlayback()
-                                }
+                                isPlaying ? stopPlayback() : startPlayback()
                             }
-                        HStack {
+                            .animation(.easeInOut(duration: 0.2), value: isPlaying)
+
+                        VStack {
+                            Image(systemName: isPlaying ? "stop.fill" : "play.fill")
+                                .foregroundColor(isPlaying ? .red : .accentColor)
+                                .opacity(0.88)
+                                .padding(.top, 2)
                             Spacer()
-                            VStack {
-                                Image(systemName: isPlaying ? "stop.fill" : "play.fill")
-                                    .foregroundColor(isPlaying ? .red : .accentColor)
-                                    .opacity(0.88)
-                                    .padding(.top, 2)
-                                Spacer()
-                            }
                         }
                         .frame(width: 100, height: 32)
                         .allowsHitTesting(false)
                     }
-                    .animation(.easeInOut(duration: 0.2), value: isPlaying)
                 }
             }
-            
+
             Divider().padding(.vertical, 2)
-            
-            DisclosureGroup("Show Stats", isExpanded: $showStats) {
+
+            DisclosureGroup("Show Stats", isExpanded: .constant(false)) {
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
                     StatChunk(label: "Min", frequency: stats.min, playAction: { tonePlayer.play(frequency: stats.min) })
                     StatChunk(label: "Max", frequency: stats.max, playAction: { tonePlayer.play(frequency: stats.max) })
@@ -299,7 +278,8 @@ private struct SessionRowView: View {
             .padding(.top, 4)
         }
         .padding()
-        .background(RoundedRectangle(cornerRadius: 18).fill(Color(.tertiarySystemBackground)))
+        .background(RoundedRectangle(cornerRadius: 18)
+                        .fill(Color(.tertiarySystemBackground)))
         .padding(.vertical, 6)
     }
 }
