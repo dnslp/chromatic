@@ -11,7 +11,11 @@ import Foundation
 /// Stores all user-related fundamental frequency (f₀) information.
 struct UserF0Profile: Equatable, Codable {
     /// The user’s target/selected fundamental frequency, in Hz (if set)
-    var value: Double?
+    var value: Double? {
+        didSet {
+            updateHarmonics()
+        }
+    }
     
     /// A display name or label for this f₀ (e.g., "My Chest Voice", "Reference")
     var label: String?
@@ -33,6 +37,9 @@ struct UserF0Profile: Equatable, Codable {
     /// User notes or comments (optional)
     var notes: String?
     
+    /// The calculated harmonics for the user's f0.
+    var harmonics: [Harmonic]?
+
     // You can add more fields as your app grows!
     
     init(
@@ -46,7 +53,8 @@ struct UserF0Profile: Equatable, Codable {
         max: Double? = nil,
         sampleCount: Int? = nil,
         isActiveReference: Bool = true,
-        notes: String? = nil
+        notes: String? = nil,
+        harmonics: [Harmonic]? = nil
     ) {
         self.value = value
         self.label = label
@@ -59,5 +67,31 @@ struct UserF0Profile: Equatable, Codable {
         self.sampleCount = sampleCount
         self.isActiveReference = isActiveReference
         self.notes = notes
+        // Initialize harmonics without calling didSet if initial value is present
+        if let initialValue = value, harmonics == nil {
+            self.harmonics = HarmonicCalculator.calculateHarmonics(f0: initialValue, count: 8) // Default to 8 harmonics
+        } else {
+            self.harmonics = harmonics
+        }
+        // Ensure updateHarmonics is called if value is set during initialization and harmonics were not explicitly passed
+        if self.value != nil && harmonics == nil {
+             //This ensures that if `value` is set, harmonics are calculated,
+             //but avoids double calculation if harmonics are also passed directly.
+            if self.harmonics == nil {
+                updateHarmonics()
+            }
+        }
+    }
+
+    /// Updates the `harmonics` array based on the current `value` (f0).
+    /// Calculates a default number of harmonics (e.g., 8).
+    mutating func updateHarmonics() {
+        guard let f0 = value else {
+            harmonics = nil // Clear harmonics if f0 is not set
+            return
+        }
+        // Calculate a default of 8 harmonics (fundamental + 7 overtones)
+        // This number can be made configurable later if needed.
+        harmonics = HarmonicCalculator.calculateHarmonics(f0: f0, count: 8)
     }
 }
