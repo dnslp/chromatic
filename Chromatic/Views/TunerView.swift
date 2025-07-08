@@ -6,11 +6,13 @@ struct TunerView: View {
     @Binding var tunerData: TunerData
     @State var modifierPreference: ModifierPreference
     @State var selectedTransposition: Int
-    
-    @State private var userF0: Double = 77.78
+
+    @StateObject private var profileManager = UserProfileManager()
+    @State private var userF0: Double = 77.78 // Default, will be updated from profileManager
     @State private var micMuted = false
     @State private var sessionStats: SessionStatistics?   // Updated!
     @State private var showStatsModal = false
+    @State private var showingProfileSelector = false // For presenting ProfileSelectionView
     
     @State private var countdown: Int? = nil    // nil = not counting down
     let countdownSeconds = 7
@@ -243,9 +245,27 @@ struct TunerView: View {
                         }
                     }
                     
-                    // ────────── TRANSPOSE MENU ──────────
+                    // ────────── PROFILE & TRANSPOSE CONTROLS ──────────
                     HStack {
+                        Button {
+                            showingProfileSelector = true
+                        } label: {
+                            HStack {
+                                Image(systemName: "person.crop.circle")
+                                Text(profileManager.currentProfile?.name ?? "Profiles")
+                                    .font(.caption)
+                                    .lineLimit(1)
+                            }
+                            .padding(8)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(Color(UIColor.secondarySystemBackground))
+                            )
+                        }
+                        .padding(.trailing, 4)
+
                         F0SelectorView(f0Hz: $userF0)
+
                         if !hidesTranspositionMenu {
                             TranspositionMenu(selectedTransposition: $selectedTransposition)
                                 .padding(.leading, 8)
@@ -253,6 +273,7 @@ struct TunerView: View {
                         Spacer()
                     }
                     .frame(height: menuHeight)
+                    .padding(.horizontal, 8) // Add some padding to the HStack
                 }
                 .frame(maxWidth: .infinity)
             }
@@ -266,6 +287,35 @@ struct TunerView: View {
 #endif
         }
         .frame(maxHeight: .infinity, alignment: .top)
+        .onAppear {
+            if let currentF0 = profileManager.currentProfile?.f0 {
+                userF0 = currentF0
+            } else if let defaultF0 = profileManager.profiles.first?.f0 { // Fallback to first profile if current is nil
+                userF0 = defaultF0
+                profileManager.currentProfile = profileManager.profiles.first
+            }
+            // If profiles is empty, UserProfileManager init creates a default one and sets it to current.
+            // So currentProfile should ideally not be nil here if manager is initialized.
+        }
+        .onChange(of: profileManager.currentProfile) { newProfile in
+            if let newF0 = newProfile?.f0 {
+                if userF0 != newF0 { // Update only if different to avoid potential loops
+                    userF0 = newF0
+                }
+            }
+        }
+        .onChange(of: userF0) { newValue in
+            if var current = profileManager.currentProfile, current.f0 != newValue {
+                current.f0 = newValue
+                profileManager.updateProfile(current)
+            }
+            // Consider what happens if currentProfile is nil.
+            // Should changing userF0 prompt to create a new profile?
+            // For now, it only updates if a profile is selected.
+        }
+        .sheet(isPresented: $showingProfileSelector) {
+            ProfileSelectionView(profileManager: profileManager, isPresented: $showingProfileSelector)
+        }
     }
 }
 
