@@ -3,15 +3,22 @@ import Foundation
 struct TunerData {
     let pitch: Frequency
     let closestNote: ScaleNote.Match
-    let amplitude: Double // New property
+    let amplitude: Double
+
+    var harmonics: [Double] = []  // Add this line!
 
     var isRecording: Bool = false
     var recordedPitches: [Double] = []
 
-    init(pitch: Double = 440, amplitude: Double = 0.0) { // Added amplitude to init
+    init(
+        pitch: Double = 440,
+        amplitude: Double = 0.0,
+        harmonics: [Double] = []
+    ) {
         self.pitch = Frequency(floatLiteral: pitch)
         self.closestNote = ScaleNote.closestNote(to: self.pitch)
-        self.amplitude = amplitude // Store amplitude
+        self.amplitude = amplitude
+        self.harmonics = harmonics   // And this!
     }
 
     mutating func startRecording() {
