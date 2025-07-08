@@ -19,7 +19,7 @@ struct FunctionGeneratorView: View {
                     .padding(.top)
 
                 ForEach(Array(engine.channels.enumerated()), id: \.1.id) { idx, currentChannel in
-                    ChannelView(channel: currentChannel, channelIndex: idx, engine: engine)
+//                    ChannelView(channel: currentChannel, channelIndex: idx, engine: engine)
                     Divider()
                 }
 

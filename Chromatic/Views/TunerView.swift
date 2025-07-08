@@ -6,7 +6,7 @@ struct TunerView: View {
     @Binding var tunerData: TunerData
     @State var modifierPreference: ModifierPreference
     @State var selectedTransposition: Int
-
+    
     @StateObject private var profileManager = UserProfileManager()
     @State private var userF0: Double = 77.78 // Default, will be updated from profileManager
     @State private var micMuted = false
@@ -57,13 +57,13 @@ struct TunerView: View {
     struct CalmingCountdownCircle: View {
         let secondsLeft: Int
         let totalSeconds: Int
-
+        
         var percent: Double {
             1.0 - Double(secondsLeft-1) / Double(totalSeconds)
         }
-
+        
         @State private var animatePulse = false
-
+        
         var body: some View {
             ZStack {
                 Circle()
@@ -94,7 +94,7 @@ struct TunerView: View {
             }
         }
     }
-
+    
     
     var body: some View {
         Group {
@@ -107,7 +107,8 @@ struct TunerView: View {
                 PitchLineVisualizer(
                     tunerData: tunerData,
                     frequency: tunerData.pitch,
-                    fundamental: Frequency(floatLiteral: userF0)
+//                    fundamental: Frequency(floatLiteral: userF0),
+                    profile: profileManager.currentProfile // Pass the whole profile
                 )
                 .frame(width: 10)
                 .padding(.vertical, 1)
@@ -220,7 +221,7 @@ struct TunerView: View {
                                     .foregroundColor(.white)
                                     .cornerRadius(8)
                             }
-
+                            
                             Button(action: {
                                 tunerData.clearRecording()
                                 sessionStats = nil
@@ -263,9 +264,9 @@ struct TunerView: View {
                             )
                         }
                         .padding(.trailing, 4)
-
+                        
                         F0SelectorView(f0Hz: $userF0)
-
+                        
                         if !hidesTranspositionMenu {
                             TranspositionMenu(selectedTransposition: $selectedTransposition)
                                 .padding(.leading, 8)

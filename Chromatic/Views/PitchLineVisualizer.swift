@@ -2,37 +2,61 @@ import SwiftUI
 
 /// Visualizer showing:
 ///  - the current input pitch (filled circle, colored by note)
-///  - the user-selected fundamental (outlined circle)
-///  - the first four harmonics (small stroked circles + labels)
+///  - markers for f0, P4, P5, Octave from the UserProfile
+///  - the first four harmonics of f0 (small stroked circles + labels)
 /// on a vertical track from `minHz`–`maxHz`.
 struct PitchLineVisualizer: View {
     let tunerData: TunerData
-    let frequency: Frequency
-    let fundamental: Frequency?
-    let minHz: Double = 55
-    let maxHz: Double = 963
+    let frequency: Frequency // Live pitch
+    let profile: UserProfile? // User's selected profile
+    
+    let minHz: Double = 55 // A1
+    let maxHz: Double = 987.77 // B5, approx C6 - B2. Adjusted for wider range if needed.
 
-    /// normalized 0–1 for the live pitch
-    private var percent: Double {
-        let hz = frequency.measurement.value
-        return min(max((hz - minHz) / (maxHz - minHz), 0), 1)
-    }
-
-    /// normalized 0–1 for f₀
-    private var f0Percent: Double? {
-        guard let f0 = fundamental?.measurement.value else { return nil }
-        let p = (f0 - minHz) / (maxHz - minHz)
+    // Helper to calculate normalized percentage for a given frequency
+    private func normalize(_ hzValue: Double) -> Double? {
+        let p = (hzValue - minHz) / (maxHz - minHz)
         return (0...1).contains(p) ? p : nil
     }
 
-    /// normalized positions for harmonics 1×…4×
+    /// normalized 0–1 for the live pitch
+    private var livePitchPercent: Double {
+        normalize(frequency.measurement.value) ?? 0 // Default to 0 if out of range
+    }
+
+    /// normalized 0–1 for f₀ from profile
+    private var f0Percent: Double? {
+        guard let f0 = profile?.f0 else { return nil }
+        return normalize(f0)
+    }
+    
+    /// normalized 0–1 for Perfect Fourth from profile
+    private var p4Percent: Double? {
+        guard let p4 = profile?.perfectFourth else { return nil }
+        return normalize(p4)
+    }
+    
+    /// normalized 0–1 for Perfect Fifth from profile
+    private var p5Percent: Double? {
+        guard let p5 = profile?.perfectFifth else { return nil }
+        return normalize(p5)
+    }
+    
+    /// normalized 0–1 for Octave from profile
+    private var octavePercent: Double? {
+        guard let oct = profile?.octave else { return nil }
+        return normalize(oct)
+    }
+
+    /// normalized positions for harmonics 1×…4× of f0 from profile
     private var harmonicPercents: [(multiplier: Int, percent: Double)] {
-        guard let f0 = fundamental?.measurement.value else { return [] }
-        return (1...4).compactMap { i in
-            let freq = f0 * Double(i)
-            let p = (freq - minHz) / (maxHz - minHz)
-            guard (0...1).contains(p) else { return nil }
-            return (i, p)
+        guard let f0 = profile?.f0 else { return [] }
+        return (1...4).compactMap { i -> (Int, Double)? in
+            let harmonicFrequency = f0 * Double(i)
+            if let p = normalize(harmonicFrequency) {
+                return (i, p)
+            }
+            return nil
         }
     }
 
@@ -45,76 +69,136 @@ struct PitchLineVisualizer: View {
 
     var body: some View {
         GeometryReader { geo in
+            let markerSize: CGFloat = 12
+            let livePitchMarkerSize: CGFloat = 16
+            let labelOffsetX: CGFloat = 18 // Increased to avoid overlap with markers
+
             ZStack(alignment: .top) {
                 // 1) Full-height track
                 Capsule()
                     .frame(width: 4, height: geo.size.height)
-                    .foregroundColor(.gray.opacity(0.3))
+                    .foregroundColor(Color.gray.opacity(0.3))
 
-                // 2) Harmonic markers & labels
+                // 2) Harmonic markers & labels (1x-4x of f0)
                 ForEach(harmonicPercents, id: \.multiplier) { mult, p in
-                    // group circle + label
+                    if mult > 1 { // only draw 2x, 3x, 4x distinct from main f0 marker
+                        HStack(spacing: 4) {
+                            Circle() // Small circle for higher harmonics
+                                .stroke(Color.primary.opacity(0.5), lineWidth: 1)
+                                .frame(width: markerSize * 0.7, height: markerSize * 0.7)
+                            Text("\(mult)x")
+                                .font(.caption2)
+                                .foregroundColor(Color.primary.opacity(0.7))
+                        }
+                        .offset(x: labelOffsetX, y: (1 - CGFloat(p)) * (geo.size.height - markerSize * 0.7))
+                    }
+                }
+                
+                // 3) Fundamental (f0) marker (outlined blue circle)
+                if let p = f0Percent {
                     HStack(spacing: 4) {
                         Circle()
-                            .stroke(Color.primary.opacity(0.6), lineWidth: 1)
-                            .frame(width: 10, height: 10)
-                        Text("\(mult)x")
-                            .font(.caption2)
-                            .foregroundColor(.primary.opacity(0.8))
+                            .stroke(Color.blue.opacity(0.9), lineWidth: 2)
+                            .frame(width: markerSize, height: markerSize)
+                        Text("f₀")
+                            .font(.caption2.bold())
+                            .foregroundColor(Color.blue.opacity(0.9))
                     }
-                    // position along the track
-                    .offset(x: 12, // push label to the right of the track
-                            y: (1 - CGFloat(p)) * (geo.size.height - 10))
+                    .offset(x: labelOffsetX, y: (1 - CGFloat(p)) * (geo.size.height - markerSize))
                 }
 
-                // 3) Fundamental marker (outlined)
-                if let p0 = f0Percent {
-                    Circle()
-                        .stroke(Color.blue.opacity(0.8), lineWidth: 2)
-                        .frame(width: 12, height: 12)
-                        .offset(y: (1 - CGFloat(p0)) * (geo.size.height - 12))
+                // Perfect Fourth marker (Green Square)
+                if let p = p4Percent {
+                    HStack(spacing: 4) {
+                        Rectangle()
+                            .fill(Color.green.opacity(0.8))
+                            .frame(width: markerSize * 0.8, height: markerSize * 0.8)
+                        Text("P4")
+                            .font(.caption2)
+                            .foregroundColor(Color.green.opacity(0.9))
+                    }
+                    .offset(x: labelOffsetX, y: (1 - CGFloat(p)) * (geo.size.height - markerSize * 0.8))
                 }
 
-                // 4) Live-pitch marker (filled)
+                // Perfect Fifth marker (Orange Diamond)
+                if let p = p5Percent {
+                    HStack(spacing: 4) {
+                        Rectangle() // Diamond shape
+                            .fill(Color.orange.opacity(0.8))
+                            .frame(width: markerSize * 0.8, height: markerSize * 0.8)
+                            .rotationEffect(.degrees(45))
+                        Text("P5")
+                            .font(.caption2)
+                            .foregroundColor(Color.orange.opacity(0.9))
+                    }
+                     .offset(x: labelOffsetX + 2, y: (1 - CGFloat(p)) * (geo.size.height - markerSize * 0.8)) // +2 to x to center diamond better
+                }
+                
+                // Octave marker (Purple Circle, thicker stroke)
+                if let p = octavePercent {
+                     HStack(spacing: 4) {
+                        Circle()
+                            .stroke(Color.purple.opacity(0.8), lineWidth: 2.5)
+                            .frame(width: markerSize * 0.9, height: markerSize * 0.9)
+                        Text("Oct")
+                            .font(.caption2)
+                            .foregroundColor(Color.purple.opacity(0.9))
+                    }
+                    .offset(x: labelOffsetX, y: (1 - CGFloat(p)) * (geo.size.height - markerSize * 0.9))
+                }
+
+                // Live-pitch marker (filled circle)
                 Circle()
-                    .frame(width: 16, height: 16)
+                    .frame(width: livePitchMarkerSize, height: livePitchMarkerSize)
                     .foregroundColor(fillColor)
-                    .offset(y: (1 - CGFloat(percent)) * (geo.size.height - 16))
-                    .animation(.easeInOut(duration: 0.2), value: percent)
+                    .offset(y: (1 - CGFloat(livePitchPercent)) * (geo.size.height - livePitchMarkerSize))
+                    .animation(.easeInOut(duration: 0.1), value: livePitchPercent) // Faster animation
             }
         }
-        // widen a bit to fit labels
-        .frame(width: 50)
+        .frame(width: 65) // Widen a bit more for new labels
     }
 }
 
 
 struct PitchLineVisualizer_Previews: PreviewProvider {
+    static let sampleProfile1 = UserProfile(name: "Profile 100Hz", f0: 100.0)
+    static let sampleProfile2 = UserProfile(name: "Profile 150Hz", f0: 150.0)
+    static let sampleProfile3 = UserProfile(name: "Profile 200Hz", f0: 200.0)
+    static let noProfile: UserProfile? = nil
+
     static var previews: some View {
         VStack(spacing: 40) {
-            // Example 1: f0 = 100, live = 100
+            Text("Live: 100Hz, Profile: 100Hz (f0)")
             PitchLineVisualizer(
                 tunerData: TunerData(pitch: 100),
                 frequency: Frequency(floatLiteral: 100),
-                fundamental: Frequency(floatLiteral: 100)
+                profile: sampleProfile1
             )
-            .frame(height: 200)
+            .frame(height: 250) // Increased height for better visualization
 
-            // Example 2: f0 = 150, live = 300
+            Text("Live: 300Hz, Profile: 150Hz (f0)")
             PitchLineVisualizer(
                 tunerData: TunerData(pitch: 300),
                 frequency: Frequency(floatLiteral: 300),
-                fundamental: Frequency(floatLiteral: 150)
+                profile: sampleProfile2
             )
-            .frame(height: 200)
+            .frame(height: 250)
 
-            // Example 3: f0 = 200, live = 80
+            Text("Live: 80Hz, Profile: 200Hz (f0)")
             PitchLineVisualizer(
                 tunerData: TunerData(pitch: 80),
                 frequency: Frequency(floatLiteral: 80),
-                fundamental: Frequency(floatLiteral: 200)
+                profile: sampleProfile3
             )
-            .frame(height: 200)
+            .frame(height: 250)
+            
+            Text("Live: 120Hz, No Profile")
+            PitchLineVisualizer(
+                tunerData: TunerData(pitch: 120),
+                frequency: Frequency(floatLiteral: 120),
+                profile: noProfile
+            )
+            .frame(height: 250)
         }
         .padding()
         .previewLayout(.sizeThatFits)

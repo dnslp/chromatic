@@ -96,7 +96,7 @@ struct ProfileSelectionView: View {
         // UserProfileManager's deleteProfile(at:) should handle this.
         profileManager.deleteProfile(at: offsets)
     }
-
+    
     private var hzFormatter: NumberFormatter {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
@@ -114,7 +114,7 @@ struct ProfileSelectionView_Previews: PreviewProvider {
              manager.addProfile(name: "Violin G3", f0: 196.00)
              manager.addProfile(name: "Guitar E2", f0: 82.41)
         }
-
+       
 
         return ProfileSelectionView(profileManager: manager, isPresented: .constant(true))
     }
