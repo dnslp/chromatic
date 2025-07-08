@@ -13,14 +13,15 @@ struct VowelPreset: Identifiable {
     let amplitudes: HarmonicAmplitudes
 }
 
+// Updated Vowel Presets to include new parameters
 let vowelPresets: [VowelPreset] = [
-    VowelPreset(name: "A (as in 'father')", amplitudes: .init(fundamental: 0.85, harmonic2: 0.16, harmonic3: 0.08, formant: 0.18, noise: 0.00, formantFrequency: 900)),
-    VowelPreset(name: "E (as in 'bed')",    amplitudes: .init(fundamental: 0.75, harmonic2: 0.15, harmonic3: 0.06, formant: 0.11, noise: 0.01, formantFrequency: 1100)),
-    VowelPreset(name: "I (as in 'machine')",amplitudes: .init(fundamental: 0.67, harmonic2: 0.19, harmonic3: 0.13, formant: 0.09, noise: 0.01, formantFrequency: 1200)),
-    VowelPreset(name: "O (as in 'law')",    amplitudes: .init(fundamental: 0.77, harmonic2: 0.18, harmonic3: 0.09, formant: 0.12, noise: 0.00, formantFrequency: 800)),
-    VowelPreset(name: "U (as in 'goose')",  amplitudes: .init(fundamental: 0.83, harmonic2: 0.13, harmonic3: 0.09, formant: 0.07, noise: 0.00, formantFrequency: 850)),
-    VowelPreset(name: "Breathy",            amplitudes: .init(fundamental: 0.55, harmonic2: 0.09, harmonic3: 0.03, formant: 0.04, noise: 0.13, formantFrequency: 900)),
-    VowelPreset(name: "Whisper",            amplitudes: .init(fundamental: 0.10, harmonic2: 0.01, harmonic3: 0.01, formant: 0.02, noise: 0.49, formantFrequency: 1200))
+    VowelPreset(name: "A (as in 'father')", amplitudes: .init(fundamental: 0.85, harmonic2: 0.16, harmonic3: 0.08, formant: 0.18, noiseLevel: 0.00, formantFrequency: 900, waveform: .sine, noiseType: .white, eqLowGain: 0, eqMidGain: 0, eqHighGain: 0)),
+    VowelPreset(name: "E (as in 'bed')",    amplitudes: .init(fundamental: 0.75, harmonic2: 0.15, harmonic3: 0.06, formant: 0.11, noiseLevel: 0.01, formantFrequency: 1100, waveform: .sine, noiseType: .white, eqLowGain: 0, eqMidGain: 0, eqHighGain: 0)),
+    VowelPreset(name: "I (as in 'machine')",amplitudes: .init(fundamental: 0.67, harmonic2: 0.19, harmonic3: 0.13, formant: 0.09, noiseLevel: 0.01, formantFrequency: 1200, waveform: .sine, noiseType: .white, eqLowGain: 0, eqMidGain: 0, eqHighGain: 0)),
+    VowelPreset(name: "O (as in 'law')",    amplitudes: .init(fundamental: 0.77, harmonic2: 0.18, harmonic3: 0.09, formant: 0.12, noiseLevel: 0.00, formantFrequency: 800, waveform: .sine, noiseType: .white, eqLowGain: 0, eqMidGain: 0, eqHighGain: 0)),
+    VowelPreset(name: "U (as in 'goose')",  amplitudes: .init(fundamental: 0.83, harmonic2: 0.13, harmonic3: 0.09, formant: 0.07, noiseLevel: 0.00, formantFrequency: 850, waveform: .sine, noiseType: .white, eqLowGain: 0, eqMidGain: 0, eqHighGain: 0)),
+    VowelPreset(name: "Breathy",            amplitudes: .init(fundamental: 0.55, harmonic2: 0.09, harmonic3: 0.03, formant: 0.04, noiseLevel: 0.13, formantFrequency: 900, waveform: .sine, noiseType: .pink, eqLowGain: 0, eqMidGain: -2, eqHighGain: 1)),
+    VowelPreset(name: "Whisper",            amplitudes: .init(fundamental: 0.10, harmonic2: 0.01, harmonic3: 0.01, formant: 0.02, noiseLevel: 0.49, formantFrequency: 1200, waveform: .sine, noiseType: .white, eqLowGain: 0, eqMidGain: 0, eqHighGain: 2))
 ]
 
 struct TonePlayerControlPanel: View {
@@ -85,45 +86,77 @@ struct TonePlayerControlPanel: View {
 
                 Divider().padding(.vertical, 3)
 
-                // ───── Harmonic/Noise Sliders ─────
+                // ───── Waveform Picker ─────
+                Text("Oscillator Waveform")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                Picker("Waveform", selection: $settings.amplitudes.waveform) {
+                    ForEach(WaveformType.allCases) { waveform in
+                        Text(waveform.displayName).tag(waveform)
+                    }
+                }
+                .pickerStyle(SegmentedPickerStyle())
+                
+                Divider().padding(.vertical, 3)
+
+                // ───── Harmonic Sliders ─────
+                Text("Harmonics & Formant")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
                 Group {
                     SliderRow(label: "Fundamental",
-                              value: Binding(
-                                  get: { settings.amplitudes.fundamental },
-                                  set: { settings.amplitudes.fundamental = $0 }
-                              ),
+                              value: $settings.amplitudes.fundamental, // Direct binding
                               range: 0...1)
                     SliderRow(label: "2nd Harmonic",
-                              value: Binding(
-                                  get: { settings.amplitudes.harmonic2 },
-                                  set: { settings.amplitudes.harmonic2 = $0 }
-                              ),
+                              value: $settings.amplitudes.harmonic2, // Direct binding
                               range: 0...1)
                     SliderRow(label: "3rd Harmonic",
-                              value: Binding(
-                                  get: { settings.amplitudes.harmonic3 },
-                                  set: { settings.amplitudes.harmonic3 = $0 }
-                              ),
+                              value: $settings.amplitudes.harmonic3, // Direct binding
                               range: 0...1)
                     SliderRow(label: "Formant",
-                              value: Binding(
-                                  get: { settings.amplitudes.formant },
-                                  set: { settings.amplitudes.formant = $0 }
-                              ),
+                              value: $settings.amplitudes.formant, // Direct binding
                               range: 0...0.3)
                     SliderRow(label: "Formant Freq",
-                              value: Binding(
-                                  get: { settings.amplitudes.formantFrequency },
-                                  set: { settings.amplitudes.formantFrequency = $0 }
-                              ),
+                              value: $settings.amplitudes.formantFrequency, // Direct binding
                               range: 800...1200,
                               format: "%.0f Hz")
-                    SliderRow(label: "Noise",
-                              value: Binding(
-                                  get: { settings.amplitudes.noise },
-                                  set: { settings.amplitudes.noise = $0 }
-                              ),
-                              range: 0...0.5)
+                }
+
+                Divider().padding(.vertical, 3)
+
+                // ───── Noise Controls ─────
+                Text("Noise Generator")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                Picker("Noise Type", selection: $settings.amplitudes.noiseType) {
+                    ForEach(NoiseType.allCases) { type in
+                        Text(type.displayName).tag(type)
+                    }
+                }
+                .pickerStyle(SegmentedPickerStyle())
+                SliderRow(label: "Noise Level",
+                          value: $settings.amplitudes.noiseLevel, // Bind to noiseLevel
+                          range: 0...0.5)
+
+                Divider().padding(.vertical, 3)
+                
+                // ───── EQ Controls ─────
+                Text("Equalizer (Gain)")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                Group {
+                    SliderRow(label: "Low Band", // Changed from Low Shelf for more general EQ
+                              value: $settings.amplitudes.eqLowGain,
+                              range: -24...24, // Standard gain range for EQs
+                              format: "%.1f dB")
+                    SliderRow(label: "Mid Band",
+                              value: $settings.amplitudes.eqMidGain,
+                              range: -24...24,
+                              format: "%.1f dB")
+                    SliderRow(label: "High Band", // Changed from High Shelf
+                              value: $settings.amplitudes.eqHighGain,
+                              range: -24...24,
+                              format: "%.1f dB")
                 }
             }
             .padding(.bottom, 16)

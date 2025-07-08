@@ -146,6 +146,7 @@ private struct SessionRowView: View {
     @State private var playbackChunks: [(Double, Int)] = []
     @State private var playbackChunkIndex = 0
     @State private var playbackTimer: Timer? = nil
+    @State private var showStats = false
 
     // Sparkline chunking
     private func chunkPitches(_ values: [Double], tolerance: Double = 7.0) -> [(Double, Int)] {
@@ -262,7 +263,9 @@ private struct SessionRowView: View {
 
             Divider().padding(.vertical, 2)
 
-            DisclosureGroup("Show Stats", isExpanded: .constant(false)) {
+         
+
+            DisclosureGroup("Show Stats", isExpanded: $showStats) {
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
                     StatChunk(label: "Min", frequency: stats.min, playAction: { tonePlayer.play(frequency: stats.min) })
                     StatChunk(label: "Max", frequency: stats.max, playAction: { tonePlayer.play(frequency: stats.max) })
