@@ -17,7 +17,7 @@ struct TunerView: View {
     @State private var showingProfileSelector = false
     @State private var countdown: Int? = nil
     let countdownSeconds = 3
-
+    
     // Timer State
     @State private var recordingStartedAt: Date?
     private var elapsed: TimeInterval {
@@ -37,9 +37,9 @@ struct TunerView: View {
     private let noteTicksHeight: CGFloat = 100
     private let amplitudeBarHeight: CGFloat = 32
     private let maxCentDistance: Double = 50
-
+    
     // MARK: - Helper Views
-
+    
     struct CalmingCountdownCircle: View {
         let secondsLeft: Int
         let totalSeconds: Int
@@ -77,7 +77,7 @@ struct TunerView: View {
     }
     
     // MARK: - Main Body
-
+    
     var body: some View {
         HStack(spacing: 1) {
             // ────────── VERTICAL VISUALIZER ──────────
@@ -92,37 +92,37 @@ struct TunerView: View {
             // ────────── MAIN CONTENT ──────────
             VStack(spacing: 0) {
                 // ───── AMPLITUDE BAR ─────
-//                HStack(spacing: 8) {
-//                    Text("Level")
-//                        .font(.caption2)
-//                        .foregroundColor(.secondary)
-//                    GeometryReader { geo in
-//                        ZStack(alignment: .leading) {
-//                            Capsule()
-//                                .frame(height: 6)
-//                                .foregroundColor(Color.secondary.opacity(0.14))
-//                            Capsule()
-//                                .frame(
-//                                    width: geo.size.width * CGFloat(micMuted ? 0 : tunerData.amplitude),
-//                                    height: 6)
-//                                .foregroundColor(
-//                                    Color(hue: 0.1 - 0.1 * tunerData.amplitude,
-//                                          saturation: 0.9,
-//                                          brightness: 0.9)
-//                                )
-//                                .animation(.easeInOut, value: tunerData.amplitude)
-//                        }
-//                    }
-//                    .frame(height: amplitudeBarHeight)
-//                    .frame(maxWidth: .infinity)
-//                }
-//                .padding(.horizontal, 16)
-//                .frame(height: amplitudeBarHeight)
-//                .background(Color(.systemBackground).opacity(0.85))
-//                .cornerRadius(8)
-//                .shadow(radius: 2, y: -1)
+                //                HStack(spacing: 8) {
+                //                    Text("Level")
+                //                        .font(.caption2)
+                //                        .foregroundColor(.secondary)
+                //                    GeometryReader { geo in
+                //                        ZStack(alignment: .leading) {
+                //                            Capsule()
+                //                                .frame(height: 6)
+                //                                .foregroundColor(Color.secondary.opacity(0.14))
+                //                            Capsule()
+                //                                .frame(
+                //                                    width: geo.size.width * CGFloat(micMuted ? 0 : tunerData.amplitude),
+                //                                    height: 6)
+                //                                .foregroundColor(
+                //                                    Color(hue: 0.1 - 0.1 * tunerData.amplitude,
+                //                                          saturation: 0.9,
+                //                                          brightness: 0.9)
+                //                                )
+                //                                .animation(.easeInOut, value: tunerData.amplitude)
+                //                        }
+                //                    }
+                //                    .frame(height: amplitudeBarHeight)
+                //                    .frame(maxWidth: .infinity)
+                //                }
+                //                .padding(.horizontal, 16)
+                //                .frame(height: amplitudeBarHeight)
+                //                .background(Color(.systemBackground).opacity(0.85))
+                //                .cornerRadius(8)
+                //                .shadow(radius: 2, y: -1)
                 
-
+                
                 // ───── NOTE DISPLAY ─────
                 VStack(spacing: contentSpacing) {
                     MatchedNoteView(match: match, modifierPreference: modifierPreference)
@@ -145,7 +145,7 @@ struct TunerView: View {
                 }
                 Spacer(minLength: 40)
                 
-
+                
                 // ───── OTHER VISUALIZERS ─────
                 ConcentricCircleVisualizer(
                     distance: Double(match.distance.cents),
@@ -155,12 +155,12 @@ struct TunerView: View {
                 )
                 .frame(width: 100, height: 100)
                 .padding(.bottom, 2)
-
+                
                 HarmonicGraphView(tunerData: tunerData)
                     .frame(height: 30)
                 PitchChakraTimelineView(pitches: tunerData.recordedPitches)
                     .frame(height: 48)
-
+                
                 // MARK: RECORD / STATS WITH TIMER
                 if let c = countdown {
                     VStack {
@@ -227,7 +227,7 @@ struct TunerView: View {
                     }
                 }
                 
-
+                
                 // ────────── PROFILE & TRANSPOSE CONTROLS ──────────
                 HStack {
                     Button {
@@ -246,9 +246,9 @@ struct TunerView: View {
                         )
                     }
                     .padding(.trailing, 4)
-
+                    
                     F0SelectorView(f0Hz: $userF0)
-
+                    
                     if !hidesTranspositionMenu {
                         TranspositionMenu(selectedTransposition: $selectedTransposition)
                             .padding(.leading, 8)
@@ -277,10 +277,7 @@ struct TunerView: View {
                 }
             }
         }
-        .sheet(isPresented: $showingToneSettings) {
-            TonePlayerControlPanel()
-                .environmentObject(ToneSettingsManager.shared)
-        }
+        
         
         .sheet(isPresented: $showingProfileSelector) {
             ProfileSelectionView(profileManager: profileManager, isPresented: $showingProfileSelector)

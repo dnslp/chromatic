@@ -9,6 +9,9 @@ struct SavedSessionsView: View {
     @State private var sessionToDelete: SessionData?
     @State private var expandedDays: Set<Date> = []
     
+    @State private var showingToneSettings = false
+
+    
     // Group sessions by day (ignoring time)
     private var sessionsByDay: [(day: Date, sessions: [SessionData])] {
         let grouped = Dictionary(grouping: sessionStore.sessions) { session in
@@ -29,6 +32,7 @@ struct SavedSessionsView: View {
     
     var body: some View {
         NavigationView {
+            
             List {
                 if sessionStore.sessions.isEmpty {
                     Text("No saved sessions yet.")
@@ -81,6 +85,20 @@ struct SavedSessionsView: View {
                         }
                     }
                 }
+            }
+            .toolbar {
+                // ...existing items...
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        showingToneSettings = true
+                    } label: {
+                        Label("Tone Settings", systemImage: "slider.horizontal.3")
+                    }
+                }
+            }
+            .sheet(isPresented: $showingToneSettings) {
+                TonePlayerControlPanel()
+                    .environmentObject(ToneSettingsManager.shared)
             }
             .navigationTitle("Saved Sessions")
             .toolbar {

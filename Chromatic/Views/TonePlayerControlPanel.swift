@@ -79,7 +79,7 @@ struct TonePlayerControlPanel: View {
                     SliderRow(label: "Fundamental", value: $harmonicAmplitudes.fundamental, range: 0...1)
                     SliderRow(label: "2nd Harmonic", value: $harmonicAmplitudes.harmonic2, range: 0...1)
                     SliderRow(label: "3rd Harmonic", value: $harmonicAmplitudes.harmonic3, range: 0...1)
-                    SliderRow(label: "Formant", value: $harmonicAmplitudes.formant, range: 0...1)
+                    SliderRow(label: "Formant", value: $harmonicAmplitudes.formant, range: 0...0.3)
                     SliderRow(
                         label: "Formant Freq",
                         value: $harmonicAmplitudes.formantFrequency,

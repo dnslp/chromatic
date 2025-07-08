@@ -15,44 +15,44 @@ struct TunerScreen: View {
     }
     
     var body: some View {
-        NavigationView {
-            TunerView(
-                tunerData: $tunerData, // Pass as a binding
-                modifierPreference: modifierPreference,
-                selectedTransposition: selectedTransposition
-            )
-            .onChange(of: pitchDetector.pitch) { newPitch in
-                // Create a new TunerData instance for the update
-                // This is important because TunerData is a struct.
-                // We need to ensure that the reference itself changes for SwiftUI to detect the change for some views.
-                var newTunerDataInstance = TunerData(pitch: newPitch, amplitude: pitchDetector.amplitude)
-                
-                // Preserve recording state and data from the current tunerData
-                newTunerDataInstance.isRecording = tunerData.isRecording
-                newTunerDataInstance.recordedPitches = tunerData.recordedPitches
-                
-                // If recording, add the new pitch
-                if newTunerDataInstance.isRecording {
-                    newTunerDataInstance.addPitch(newPitch) // This will add to its own recordedPitches
-                }
-                
-                // Assign the new instance to self.tunerData to trigger view updates
-                self.tunerData = newTunerDataInstance
+        
+        TunerView(
+            tunerData: $tunerData, // Pass as a binding
+            modifierPreference: modifierPreference,
+            selectedTransposition: selectedTransposition
+        )
+        .onChange(of: pitchDetector.pitch) { newPitch in
+            // Create a new TunerData instance for the update
+            // This is important because TunerData is a struct.
+            // We need to ensure that the reference itself changes for SwiftUI to detect the change for some views.
+            var newTunerDataInstance = TunerData(pitch: newPitch, amplitude: pitchDetector.amplitude)
+            
+            // Preserve recording state and data from the current tunerData
+            newTunerDataInstance.isRecording = tunerData.isRecording
+            newTunerDataInstance.recordedPitches = tunerData.recordedPitches
+            
+            // If recording, add the new pitch
+            if newTunerDataInstance.isRecording {
+                newTunerDataInstance.addPitch(newPitch) // This will add to its own recordedPitches
             }
-            .opacity(pitchDetector.didReceiveAudio ? 1 : 0.5)
-            .animation(.easeInOut, value: pitchDetector.didReceiveAudio)
-            .task {
-                do {
-                    try await pitchDetector.activate()
-                } catch {
-                    // TODO: Handle error
-                    print(error)
-                }
-            }
-            .alert(isPresented: $pitchDetector.showMicrophoneAccessAlert) {
-                MicrophoneAccessAlert()
+            
+            // Assign the new instance to self.tunerData to trigger view updates
+            self.tunerData = newTunerDataInstance
+        }
+        .opacity(pitchDetector.didReceiveAudio ? 1 : 0.5)
+        .animation(.easeInOut, value: pitchDetector.didReceiveAudio)
+        .task {
+            do {
+                try await pitchDetector.activate()
+            } catch {
+                // TODO: Handle error
+                print(error)
             }
         }
+        .alert(isPresented: $pitchDetector.showMicrophoneAccessAlert) {
+            MicrophoneAccessAlert()
+        }
+        
     }
 }
 
