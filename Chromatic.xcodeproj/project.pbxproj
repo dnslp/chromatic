@@ -61,6 +61,10 @@
 		BE026C082E1D620A0088BD78 /* UserProfileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE026C062E1D620A0088BD78 /* UserProfileManager.swift */; };
 		BE026C092E1D620A0088BD78 /* UserProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE026C052E1D620A0088BD78 /* UserProfile.swift */; };
 		BE026C0A2E1D620A0088BD78 /* UserProfileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE026C062E1D620A0088BD78 /* UserProfileManager.swift */; };
+		BE026CC02E1DA6DE0088BD78 /* TonePlayerControlPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE026CBF2E1DA6DE0088BD78 /* TonePlayerControlPanel.swift */; };
+		BE026CC12E1DA6DE0088BD78 /* TonePlayerControlPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE026CBF2E1DA6DE0088BD78 /* TonePlayerControlPanel.swift */; };
+		BE026CC32E1DA8080088BD78 /* ToneSettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE026CC22E1DA8080088BD78 /* ToneSettingsManager.swift */; };
+		BE026CC42E1DA8080088BD78 /* ToneSettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE026CC22E1DA8080088BD78 /* ToneSettingsManager.swift */; };
 		BE0541CC2E19759100E8A38E /* F0SelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE0541CB2E19759100E8A38E /* F0SelectorView.swift */; };
 		BE0541CD2E19759100E8A38E /* F0SelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE0541CB2E19759100E8A38E /* F0SelectorView.swift */; };
 		BE0F246E2E1AE51D003DE109 /* SpectrogramFlatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE0F24692E1AE51D003DE109 /* SpectrogramFlatView.swift */; };
@@ -183,6 +187,8 @@
 		BE026C002E1D61F80088BD78 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		BE026C052E1D620A0088BD78 /* UserProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfile.swift; sourceTree = "<group>"; };
 		BE026C062E1D620A0088BD78 /* UserProfileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileManager.swift; sourceTree = "<group>"; };
+		BE026CBF2E1DA6DE0088BD78 /* TonePlayerControlPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TonePlayerControlPanel.swift; sourceTree = "<group>"; };
+		BE026CC22E1DA8080088BD78 /* ToneSettingsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToneSettingsManager.swift; sourceTree = "<group>"; };
 		BE0541CB2E19759100E8A38E /* F0SelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = F0SelectorView.swift; sourceTree = "<group>"; };
 		BE0F24692E1AE51D003DE109 /* SpectrogramFlatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpectrogramFlatView.swift; sourceTree = "<group>"; };
 		BE0F246A2E1AE51D003DE109 /* SpectrogramModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpectrogramModel.swift; sourceTree = "<group>"; };
@@ -338,6 +344,7 @@
 		8FB571D425B722F2007C28BC /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				BE026CBF2E1DA6DE0088BD78 /* TonePlayerControlPanel.swift */,
 				BE0541CB2E19759100E8A38E /* F0SelectorView.swift */,
 				BEDD83032E18A99500C46430 /* CircleWave.swift */,
 				BEDD82492E16B6E300C46430 /* HarmonicGraphView.swift */,
@@ -369,6 +376,7 @@
 		8FB571D725B73E9A007C28BC /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				BE026CC22E1DA8080088BD78 /* ToneSettingsManager.swift */,
 				BEED700B2E14526400037881 /* FunctionGeneratorEngine.swift */,
 				BEED70052E144B7B00037881 /* MixerEngine.swift */,
 				BEED6ED12E143EDF00037881 /* AudioPlayer.swift */,
@@ -630,6 +638,7 @@
 				BE1512932E15F6A600BB9EC2 /* PitchLineVisualizer.swift in Sources */,
 				BE3766542E1C229D005CFA44 /* PitchChakraTimelineView.swift in Sources */,
 				8F3ECD2A2682838D00415B9F /* TunerView.swift in Sources */,
+				BE026CC32E1DA8080088BD78 /* ToneSettingsManager.swift in Sources */,
 				8F3ECD262682838D00415B9F /* MatchedNoteView.swift in Sources */,
 				8F3ECD282682838D00415B9F /* MainNoteView.swift in Sources */,
 				BEE6D7F22E1B265600B3B886 /* StatsModalView.swift in Sources */,
@@ -637,6 +646,7 @@
 				BE3766502E1C2282005CFA44 /* PitchLineVisualizer.swift in Sources */,
 				BEED6ED32E143EEB00037881 /* AudioPlayer.swift in Sources */,
 				BE026C072E1D620A0088BD78 /* UserProfile.swift in Sources */,
+				BE026CC12E1DA6DE0088BD78 /* TonePlayerControlPanel.swift in Sources */,
 				BE026C082E1D620A0088BD78 /* UserProfileManager.swift in Sources */,
 				8F3ECD202682834700415B9F /* TunerData.swift in Sources */,
 				BEDD83042E18A99500C46430 /* CircleWave.swift in Sources */,
@@ -670,9 +680,11 @@
 				BE37664D2E1C2270005CFA44 /* SavedSessionsView.swift in Sources */,
 				BE3766532E1C229D005CFA44 /* PitchChakraTimelineView.swift in Sources */,
 				8FB571E925B73E9A007C28BC /* Alignment.swift in Sources */,
+				BE026CC42E1DA8080088BD78 /* ToneSettingsManager.swift in Sources */,
 				BE0F246E2E1AE51D003DE109 /* SpectrogramFlatView.swift in Sources */,
 				BE0F246F2E1AE51D003DE109 /* UIColor+intermediate.swift in Sources */,
 				BE0F24702E1AE51D003DE109 /* SpectrogramModel.swift in Sources */,
+				BE026CC02E1DA6DE0088BD78 /* TonePlayerControlPanel.swift in Sources */,
 				BE3766512E1C2282005CFA44 /* PitchLineVisualizer.swift in Sources */,
 				BE0F24712E1AE51D003DE109 /* SpectrogramSlice.swift in Sources */,
 				BEED70182E1462D300037881 /* Pitch.swift in Sources */,
