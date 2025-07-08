@@ -3,6 +3,7 @@ import SwiftUI
 struct ProfileView: View {
     @ObservedObject var profileManager: UserProfileManager
     @State var editingProfile: UserProfile // A copy for editing
+    @StateObject private var tonePlayer = TonePlayer()
 
     private var originalProfile: UserProfile // To compare for changes or revert
 
@@ -31,30 +32,52 @@ struct ProfileView: View {
                 }
 
                 Section(header: Text("Calculated Values")) {
+                Button(action: { tonePlayer.play(frequency: editingProfile.perfectFourth) }) {
                     HStack {
                         Text("Perfect Fourth:")
                         Spacer()
                         Text("\(editingProfile.perfectFourth, specifier: "%.2f") Hz")
+                        Image(systemName: "play.circle")
+                            .foregroundColor(.accentColor)
                     }
+                    }
+                .buttonStyle(.plain)
+
+                Button(action: { tonePlayer.play(frequency: editingProfile.perfectFifth) }) {
                     HStack {
                         Text("Perfect Fifth:")
                         Spacer()
                         Text("\(editingProfile.perfectFifth, specifier: "%.2f") Hz")
+                        Image(systemName: "play.circle")
+                            .foregroundColor(.accentColor)
                     }
+                    }
+                .buttonStyle(.plain)
+
+                Button(action: { tonePlayer.play(frequency: editingProfile.octave) }) {
                     HStack {
                         Text("Octave:")
                         Spacer()
                         Text("\(editingProfile.octave, specifier: "%.2f") Hz")
+                        Image(systemName: "play.circle")
+                            .foregroundColor(.accentColor)
                     }
+                    }
+                .buttonStyle(.plain)
                 }
 
                 Section(header: Text("Harmonics (f₁ - f₇)")) {
                     ForEach(Array(editingProfile.harmonics.enumerated()), id: \.offset) { index, harmonicHz in
+                    Button(action: { tonePlayer.play(frequency: harmonicHz) }) {
                         HStack {
                             Text("f\(index + 1):")
                             Spacer()
                             Text("\(harmonicHz, specifier: "%.2f") Hz")
+                            Image(systemName: "play.circle")
+                                .foregroundColor(.accentColor)
                         }
+                        }
+                    .buttonStyle(.plain)
                     }
                 }
             }
