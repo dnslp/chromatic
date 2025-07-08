@@ -74,10 +74,10 @@ struct ConcentricCircleVisualizer: View {
             // 2) Waving circle for amplitude (background)
             WavingCircleBorder(
                 strength: tunerData.amplitude * 5,
-                frequency: 20,
+                frequency: 10, // Lowered frequency for a gentler pulse
                 lineWidth: 2,
                 color: fillColor.opacity(0.1 + 0.2 * tunerData.amplitude),
-                animationDuration: 1,
+                animationDuration: 1.5, // Slower wave cycle
                 autoreverses: true
             )
             .frame(width: 110, height: 110)
@@ -104,9 +104,9 @@ struct ConcentricCircleVisualizer: View {
             WavingCircleBorder(
                 strength: 4,
                 frequency: tunerData.pitch.measurement.value,
-                lineWidth: 0.5 - percent,
+                lineWidth: 0.5 - percent, // Gets thinner when in tune
                 color: fillColor.opacity(0.3),
-                animationDuration: 0.5,
+                animationDuration: 0.8, // Slower wave cycle
                 autoreverses: false
             )
             .frame(width: 116, height: 116)
@@ -114,9 +114,9 @@ struct ConcentricCircleVisualizer: View {
             WavingCircleBorder(
                 strength: 9,
                 frequency: tunerData.pitch.measurement.value,
-                lineWidth: 1 - percent,
+                lineWidth: 1 - percent, // Gets thinner when in tune
                 color: fillColor.opacity(0.3),
-                animationDuration: 0.2,
+                animationDuration: 0.6, // Slower wave cycle
                 autoreverses: false
             )
             .frame(width: 124, height: 124)
@@ -145,6 +145,12 @@ struct ConcentricCircleVisualizer: View {
             }
         }
         .compositingGroup()
+        // Apply animations to the ZStack for better coordination
+        .animation(.interpolatingSpring(stiffness: 80, damping: 20), value: percent) // Softer spring
+        .animation(.spring(response: 0.5, dampingFraction: 0.7), value: tunerData.amplitude) // Gentler spring
+        .animation(.easeInOut(duration: 0.3), value: tunerData.pitch.measurement.value) // Smooth pitch changes
+        .animation(.easeInOut(duration: 0.4), value: isAtFundamental)
+
         let match = pitchMatchLabel(
             pitchHz: tunerData.pitch.measurement.value,
             f0: fundamentalHz ?? tunerData.pitch.measurement.value
@@ -155,11 +161,14 @@ struct ConcentricCircleVisualizer: View {
             match != .none ?
                 match.rawValue :
                 "\(String(format: "%.2f", freqDifference)) Hz"
-        ).font(.headline).bold().offset(y: -20)
-        // Smoother, coordinated animation on key property changes
-        .animation(.interpolatingSpring(stiffness: 80, damping: 14), value: percent)
-        .animation(.easeInOut(duration: 0.3), value: tunerData.amplitude)
-        .animation(.easeInOut(duration: 0.6), value: isAtFundamental)
+        )
+        .font(.headline)
+        .bold()
+        .offset(y: -20)
+        // Individual animations for text if needed, but often benefits from container's animation
+        // For instance, if text content changes and needs its own transition:
+        // .animation(.easeInOut(duration: 0.2), value: match.rawValue)
+        // .animation(.easeInOut(duration: 0.2), value: freqDifference)
         
     }
 }
