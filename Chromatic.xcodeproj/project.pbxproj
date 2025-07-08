@@ -53,6 +53,14 @@
 		8FE56CDD25BE05D20038664C /* TranspositionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FE56CDC25BE05D20038664C /* TranspositionTests.swift */; };
 		BE026B2B2E1C67670088BD78 /* TonePlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE026B2A2E1C67670088BD78 /* TonePlayer.swift */; };
 		BE026B2C2E1C67670088BD78 /* TonePlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE026B2A2E1C67670088BD78 /* TonePlayer.swift */; };
+		BE026C012E1D61F80088BD78 /* ProfileSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE026BFF2E1D61F80088BD78 /* ProfileSelectionView.swift */; };
+		BE026C022E1D61F80088BD78 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE026C002E1D61F80088BD78 /* ProfileView.swift */; };
+		BE026C032E1D61F80088BD78 /* ProfileSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE026BFF2E1D61F80088BD78 /* ProfileSelectionView.swift */; };
+		BE026C042E1D61F80088BD78 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE026C002E1D61F80088BD78 /* ProfileView.swift */; };
+		BE026C072E1D620A0088BD78 /* UserProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE026C052E1D620A0088BD78 /* UserProfile.swift */; };
+		BE026C082E1D620A0088BD78 /* UserProfileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE026C062E1D620A0088BD78 /* UserProfileManager.swift */; };
+		BE026C092E1D620A0088BD78 /* UserProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE026C052E1D620A0088BD78 /* UserProfile.swift */; };
+		BE026C0A2E1D620A0088BD78 /* UserProfileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE026C062E1D620A0088BD78 /* UserProfileManager.swift */; };
 		BE0541CC2E19759100E8A38E /* F0SelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE0541CB2E19759100E8A38E /* F0SelectorView.swift */; };
 		BE0541CD2E19759100E8A38E /* F0SelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE0541CB2E19759100E8A38E /* F0SelectorView.swift */; };
 		BE0F246E2E1AE51D003DE109 /* SpectrogramFlatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE0F24692E1AE51D003DE109 /* SpectrogramFlatView.swift */; };
@@ -171,6 +179,10 @@
 		8FE56CDC25BE05D20038664C /* TranspositionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranspositionTests.swift; sourceTree = "<group>"; };
 		8FE56CDE25BE05D20038664C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BE026B2A2E1C67670088BD78 /* TonePlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TonePlayer.swift; sourceTree = "<group>"; };
+		BE026BFF2E1D61F80088BD78 /* ProfileSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSelectionView.swift; sourceTree = "<group>"; };
+		BE026C002E1D61F80088BD78 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
+		BE026C052E1D620A0088BD78 /* UserProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfile.swift; sourceTree = "<group>"; };
+		BE026C062E1D620A0088BD78 /* UserProfileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileManager.swift; sourceTree = "<group>"; };
 		BE0541CB2E19759100E8A38E /* F0SelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = F0SelectorView.swift; sourceTree = "<group>"; };
 		BE0F24692E1AE51D003DE109 /* SpectrogramFlatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpectrogramFlatView.swift; sourceTree = "<group>"; };
 		BE0F246A2E1AE51D003DE109 /* SpectrogramModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpectrogramModel.swift; sourceTree = "<group>"; };
@@ -348,6 +360,8 @@
 				BE37664F2E1C2282005CFA44 /* PitchLineVisualizer.swift */,
 				BE3766522E1C229D005CFA44 /* PitchChakraTimelineView.swift */,
 				BE026B2A2E1C67670088BD78 /* TonePlayer.swift */,
+				BE026BFF2E1D61F80088BD78 /* ProfileSelectionView.swift */,
+				BE026C002E1D61F80088BD78 /* ProfileView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -369,6 +383,8 @@
 				BEE6D7E92E1B263F00B3B886 /* SessionStatistics.swift */,
 				BEE6D7EA2E1B263F00B3B886 /* TunerData+Statistics.swift */,
 				BE3766492E1C224E005CFA44 /* SessionStore.swift */,
+				BE026C052E1D620A0088BD78 /* UserProfile.swift */,
+				BE026C062E1D620A0088BD78 /* UserProfileManager.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -605,6 +621,8 @@
 				BEDD824B2E16B6E300C46430 /* HarmonicGraphView.swift in Sources */,
 				BE37664A2E1C224E005CFA44 /* SessionStore.swift in Sources */,
 				8F3ECD212682834700415B9F /* Frequency.swift in Sources */,
+				BE026C032E1D61F80088BD78 /* ProfileSelectionView.swift in Sources */,
+				BE026C042E1D61F80088BD78 /* ProfileView.swift in Sources */,
 				8F3ECD232682837800415B9F /* Alignment.swift in Sources */,
 				BE0F24732E1AE569003DE109 /* SpectogramView.swift in Sources */,
 				BE1512912E15F6A600BB9EC2 /* ConcentricCircleVisualizer.swift in Sources */,
@@ -618,6 +636,8 @@
 				BEED700C2E14526400037881 /* FunctionGeneratorEngine.swift in Sources */,
 				BE3766502E1C2282005CFA44 /* PitchLineVisualizer.swift in Sources */,
 				BEED6ED32E143EEB00037881 /* AudioPlayer.swift in Sources */,
+				BE026C072E1D620A0088BD78 /* UserProfile.swift in Sources */,
+				BE026C082E1D620A0088BD78 /* UserProfileManager.swift in Sources */,
 				8F3ECD202682834700415B9F /* TunerData.swift in Sources */,
 				BEDD83042E18A99500C46430 /* CircleWave.swift in Sources */,
 				8F2D975326938B0500B512D0 /* TunerScreen.swift in Sources */,
@@ -641,6 +661,8 @@
 				BE37664B2E1C224E005CFA44 /* SessionStore.swift in Sources */,
 				BEED700D2E14526400037881 /* FunctionGeneratorEngine.swift in Sources */,
 				BE0F24742E1AE569003DE109 /* SpectogramView.swift in Sources */,
+				BE026C012E1D61F80088BD78 /* ProfileSelectionView.swift in Sources */,
+				BE026C022E1D61F80088BD78 /* ProfileView.swift in Sources */,
 				8FB571F925B73ECF007C28BC /* MatchedNoteView.swift in Sources */,
 				BEED6ED62E143F0400037881 /* PlayerView.swift in Sources */,
 				BEED6E952E143B3E00037881 /* PlaylistManager.swift in Sources */,
@@ -666,6 +688,8 @@
 				BEDD83052E18A99500C46430 /* CircleWave.swift in Sources */,
 				8FB571FF25B73ECF007C28BC /* TunerView.swift in Sources */,
 				8F2D975126938AF900B512D0 /* TunerScreen.swift in Sources */,
+				BE026C092E1D620A0088BD78 /* UserProfile.swift in Sources */,
+				BE026C0A2E1D620A0088BD78 /* UserProfileManager.swift in Sources */,
 				8FB571BD25B72147007C28BC /* ChromaticApp.swift in Sources */,
 				BEED6ED22E143EEB00037881 /* AudioPlayer.swift in Sources */,
 				BE026B2B2E1C67670088BD78 /* TonePlayer.swift in Sources */,
