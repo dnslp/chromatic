@@ -9,6 +9,7 @@ struct TunerData {
 
     var isRecording: Bool = false
     var recordedPitches: [Double] = []
+    var isTunerActive: Bool = true // Added for managing pause/resume state
 
     init(
            pitch: Double = 440,

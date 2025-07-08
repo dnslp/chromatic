@@ -37,6 +37,25 @@ struct ChromaticApp: App {
                 UIApplication.shared.isIdleTimerDisabled = true
                 #endif
             }
+            .onChange(of: scenePhase) { newPhase in
+                if newPhase == .active {
+                    // Attempt to start the pitch detector when app becomes active
+                    // The `start()` method in MicrophonePitchDetector should handle permissions
+                    // and not start if already running.
+                    // We'll rely on TunerView's state to decide if it *should* be active.
+                    // For now, ChromaticApp will always try to start it, and TunerView can pause it.
+                    Task {
+                        try? await pitchDetector.start()
+                    }
+                } else if newPhase == .inactive {
+                    // Potentially stop here if we want to be aggressive about releasing resources
+                    // when app is merely inactive (e.g. app switcher showing)
+                    // For now, only stopping on .background
+                } else if newPhase == .background {
+                    // Stop the pitch detector when app goes to background
+                    pitchDetector.stop()
+                }
+            }
         }
     }
 }

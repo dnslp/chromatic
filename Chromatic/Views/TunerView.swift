@@ -4,6 +4,7 @@ import AVFoundation
 // MARK: - TunerView
 
 struct TunerView: View {
+    @ObservedObject var pitchDetector: MicrophonePitchDetector // Added pitchDetector
     @Binding var tunerData: TunerData
     @State var modifierPreference: ModifierPreference
     @State var selectedTransposition: Int
@@ -227,6 +228,61 @@ struct TunerView: View {
                     }
                 }
                 
+                // MARK: - PAUSE / START / RESTART CONTROLS
+                HStack(spacing: 16) {
+                    Button(action: {
+                        pitchDetector.stop()
+                        tunerData.isTunerActive = false
+                    }) {
+                        Text("Pause")
+                            .padding(.horizontal)
+                            .padding(.vertical, 8)
+                            .background(Color.orange)
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
+                    }
+                    .disabled(!pitchDetector.isRunning)
+
+                    Button(action: {
+                        Task {
+                            do {
+                                try await pitchDetector.start()
+                                tunerData.isTunerActive = true
+                            } catch {
+                                print("Error starting pitch detector: \(error)")
+                                // Optionally show an alert to the user
+                            }
+                        }
+                    }) {
+                        Text("Start")
+                            .padding(.horizontal)
+                            .padding(.vertical, 8)
+                            .background(Color.blue) // Changed from green to avoid confusion with "Start Recording"
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
+                    }
+                    .disabled(pitchDetector.isRunning)
+
+                    Button(action: {
+                        Task {
+                            do {
+                                try await pitchDetector.restart()
+                                tunerData.isTunerActive = true
+                            } catch {
+                                print("Error restarting pitch detector: \(error)")
+                                // Optionally show an alert to the user
+                            }
+                        }
+                    }) {
+                        Text("Restart")
+                            .padding(.horizontal)
+                            .padding(.vertical, 8)
+                            .background(Color.purple)
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
+                    }
+                }
+                .padding(.top, 10) // Add some spacing above these new controls
                 
                 // ────────── PROFILE & TRANSPOSE CONTROLS ──────────
                 HStack {
@@ -309,9 +365,12 @@ struct TunerView: View {
 
 // MARK: - TunerView Preview
 
+import MicrophonePitchDetector // Ensure MicrophonePitchDetector is imported for the preview
+
 struct TunerView_Previews: PreviewProvider {
     static var previews: some View {
         TunerView(
+            pitchDetector: MicrophonePitchDetector(), // Add pitchDetector to preview
             tunerData: .constant(TunerData(pitch: 428, amplitude: 0.5)),
             modifierPreference: .preferSharps,
             selectedTransposition: 0

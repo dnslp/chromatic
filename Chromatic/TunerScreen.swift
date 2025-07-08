@@ -17,6 +17,7 @@ struct TunerScreen: View {
     var body: some View {
         
         TunerView(
+            pitchDetector: pitchDetector, // Pass pitchDetector
             tunerData: $tunerData, // Pass as a binding
             modifierPreference: modifierPreference,
             selectedTransposition: selectedTransposition
