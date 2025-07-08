@@ -10,3 +10,19 @@ func MicrophoneAccessAlert() -> Alert {
         )
     )
 }
+
+struct MicrophoneAccessAlert_Previews: PreviewProvider {
+    static var previews: some View {
+        PreviewWrapper()
+    }
+
+    struct PreviewWrapper: View {
+        @State private var showAlert = true
+        var body: some View {
+            Text("Preview for MicrophoneAccessAlert")
+                .alert(isPresented: $showAlert) {
+                    MicrophoneAccessAlert()
+                }
+        }
+    }
+}

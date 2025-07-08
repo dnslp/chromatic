@@ -39,6 +39,14 @@ struct HarmonicControlPanel: View {
     }
 }
 
+struct HarmonicControlPanel_Previews: PreviewProvider {
+    static var previews: some View {
+        HarmonicControlPanel()
+            .previewLayout(.sizeThatFits)
+            .padding()
+    }
+}
+
 struct SliderRow: View {
     let label: String
     @Binding var value: Double
