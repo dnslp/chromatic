@@ -1,5 +1,9 @@
 import Foundation
 
+struct PitchChakraTimeline: Codable {
+    let pitches: [Double]
+}
+
 struct SessionData: Codable, Identifiable {
     let id: UUID
     let date: Date
@@ -7,23 +11,33 @@ struct SessionData: Codable, Identifiable {
     let statistics: PitchStatistics // Ensure PitchStatistics is Codable
     let values: [Double]
     let profileName: String
+    let chakraTimeline: PitchChakraTimeline?  // <--- NEW!
 
-    // Explicit initializer to include profileName and match Codable requirements
-    init(id: UUID = UUID(), date: Date = Date(), duration: TimeInterval, statistics: PitchStatistics, values: [Double], profileName: String) {
+    // Updated initializer (add chakraTimeline, default nil for backward compat)
+    init(
+        id: UUID = UUID(),
+        date: Date = Date(),
+        duration: TimeInterval,
+        statistics: PitchStatistics,
+        values: [Double],
+        profileName: String,
+        chakraTimeline: PitchChakraTimeline? = nil  // <-- NEW, default nil
+    ) {
         self.id = id
         self.date = date
         self.duration = duration
         self.statistics = statistics
         self.values = values
         self.profileName = profileName
+        self.chakraTimeline = chakraTimeline
     }
 
-    // Coding keys to handle the new property
+    // Coding keys: add chakraTimeline
     enum CodingKeys: String, CodingKey {
-        case id, date, duration, statistics, values, profileName
+        case id, date, duration, statistics, values, profileName, chakraTimeline
     }
 
-    // Custom decoder to handle old data without profileName
+    // Decoder: default to nil if missing
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decode(UUID.self, forKey: .id)
@@ -31,10 +45,11 @@ struct SessionData: Codable, Identifiable {
         duration = try container.decode(TimeInterval.self, forKey: .duration)
         statistics = try container.decode(PitchStatistics.self, forKey: .statistics)
         values = try container.decode([Double].self, forKey: .values)
-        profileName = try container.decodeIfPresent(String.self, forKey: .profileName) ?? "Guest" // Default if missing
+        profileName = try container.decodeIfPresent(String.self, forKey: .profileName) ?? "Guest"
+        chakraTimeline = try container.decodeIfPresent(PitchChakraTimeline.self, forKey: .chakraTimeline)
     }
 
-    // Custom encoder to include profileName
+    // Encoder: encode chakraTimeline
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
@@ -43,8 +58,10 @@ struct SessionData: Codable, Identifiable {
         try container.encode(statistics, forKey: .statistics)
         try container.encode(values, forKey: .values)
         try container.encode(profileName, forKey: .profileName)
+        try container.encodeIfPresent(chakraTimeline, forKey: .chakraTimeline)
     }
 }
+
 
 // Removed duplicate PitchStatistics struct definition
 
@@ -56,12 +73,24 @@ class SessionStore: ObservableObject {
         loadSessions()
     }
 
-    func addSession(duration: TimeInterval, statistics: PitchStatistics, values: [Double], profileName: String) {
-        // Use the comprehensive initializer for SessionData
-        let newSession = SessionData(duration: duration, statistics: statistics, values: values, profileName: profileName)
+    func addSession(
+        duration: TimeInterval,
+        statistics: PitchStatistics,
+        values: [Double],
+        profileName: String,
+        chakraTimeline: PitchChakraTimeline? = nil   // <-- Add this param
+    ) {
+        let newSession = SessionData(
+            duration: duration,
+            statistics: statistics,
+            values: values,
+            profileName: profileName,
+            chakraTimeline: chakraTimeline            // <-- Pass it along
+        )
         sessions.append(newSession)
         saveSessions()
     }
+
 
     func deleteSession(at offsets: IndexSet) {
         sessions.remove(atOffsets: offsets)

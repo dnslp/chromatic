@@ -15,7 +15,7 @@ struct TunerView: View {
     @State private var showingProfileSelector = false // For presenting ProfileSelectionView
     
     @State private var countdown: Int? = nil    // nil = not counting down
-    let countdownSeconds = 7
+    let countdownSeconds = 3
     
     
     // Timer State

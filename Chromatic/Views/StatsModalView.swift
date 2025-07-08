@@ -85,11 +85,13 @@ struct StatsModalView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") {
                         // Save the session before dismissing
+                        let chakraTimeline = PitchChakraTimeline(pitches: values)
                         sessionStore.addSession(
                             duration: duration,
                             statistics: statistics,
                             values: values,
-                            profileName: self.profileName // Pass profileName
+                            profileName: profileName,
+                            chakraTimeline: chakraTimeline
                         )
                         dismiss()
                     }

@@ -123,12 +123,73 @@ struct SavedSessionsView: View {
     }
 }
 
-// MARK: - Session Row with Sparkline
+// MARK: - Session Row with Sparkline Playback
 
 private struct SessionRowView: View {
     let session: SessionData
     @StateObject private var tonePlayer = TonePlayer()
-    @State private var showStats = false  // <--- Move here!
+    @State private var showStats = false
+    @State private var isPlaying = false
+    @State private var playbackChunks: [(Double, Int)] = []
+    @State private var playbackChunkIndex: Int = 0
+    @State private var playbackTimer: Timer? = nil
+
+    // MARK: - Sparkline Tap/Playback
+
+    private func chunkPitches(_ values: [Double], tolerance: Double = 7.0) -> [(freq: Double, length: Int)] {
+        guard !values.isEmpty else { return [] }
+        var result: [(Double, Int)] = []
+        var currentFreq = values[0]
+        var count = 1
+        for val in values.dropFirst() {
+            if abs(val - currentFreq) <= tolerance {
+                count += 1
+            } else {
+                result.append((currentFreq, count))
+                currentFreq = val
+                count = 1
+            }
+        }
+        result.append((currentFreq, count))
+        return result
+    }
+
+    private func startPlayback() {
+        guard !session.values.isEmpty else { return }
+        isPlaying = true
+        playbackChunks = chunkPitches(session.values, tolerance: 7.0)
+        playbackChunkIndex = 0
+        playbackTimer?.invalidate()
+        playNextChunk()
+    }
+
+    private func playNextChunk() {
+        guard playbackChunkIndex < playbackChunks.count else {
+            stopPlayback()
+            return
+        }
+        let (freq, count) = playbackChunks[playbackChunkIndex]
+        let segmentDuration = Double(count) * 0.055
+        if freq > 30 {
+            tonePlayer.play(frequency: freq, duration: segmentDuration)
+        }
+        playbackChunkIndex += 1
+        playbackTimer = Timer.scheduledTimer(withTimeInterval: segmentDuration, repeats: false) { _ in
+            playNextChunk()
+        }
+    }
+
+    private func stopPlayback() {
+        playbackTimer?.invalidate()
+        playbackTimer = nil
+        isPlaying = false
+        playbackChunkIndex = 0
+        playbackChunks = []
+        tonePlayer.stop()
+    }
+
+    // MARK: - Info Display
+
     var dateString: String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
@@ -149,29 +210,56 @@ private struct SessionRowView: View {
     }
     
     var stats: PitchStatistics { session.statistics }
-    
+
+    // MARK: - View Body
+
     var body: some View {
-     
-        
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Date: \(dateString)").bold()
                     Text("Duration: \(durationString)").bold()
-                    Text("Profile: \(session.profileName)") // Display profile name
+                    Text("Profile: \(session.profileName)")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
                 Spacer()
+                if let timeline = session.chakraTimeline {
+                    PitchChakraTimelineView(pitches: timeline.pitches)
+                        .frame(height: 48)
+                        .padding(.top, 6)
+                }
                 if !session.values.isEmpty {
-                    Sparkline(data: session.values)
-                        .stroke(Color.accentColor, lineWidth: 2)
+                    ZStack {
+                        Sparkline(data: session.values)
+                            .stroke(isPlaying ? Color.green : Color.accentColor, lineWidth: 2)
+                            .frame(width: 100, height: 32)
+                            .background(
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(Color(.systemBackground))
+                            )
+                            .padding(.leading, 8)
+                            .onTapGesture {
+                                if isPlaying {
+                                    stopPlayback()
+                                } else {
+                                    startPlayback()
+                                }
+                            }
+                        HStack {
+                            Spacer()
+                            VStack {
+                                Image(systemName: isPlaying ? "stop.fill" : "play.fill")
+                                    .foregroundColor(isPlaying ? .red : .accentColor)
+                                    .opacity(0.88)
+                                    .padding(.top, 2)
+                                Spacer()
+                            }
+                        }
                         .frame(width: 100, height: 32)
-                        .background(
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(Color(.systemBackground))
-                        )
-                        .padding(.leading, 8)
+                        .allowsHitTesting(false)
+                    }
+                    .animation(.easeInOut(duration: 0.2), value: isPlaying)
                 }
             }
             
@@ -191,13 +279,13 @@ private struct SessionRowView: View {
             }
             .accentColor(.accentColor)
             .padding(.top, 4)
-            
         }
         .padding()
         .background(RoundedRectangle(cornerRadius: 18).fill(Color(.tertiarySystemBackground)))
         .padding(.vertical, 6)
     }
 }
+
 
 // MARK: - Helper Chunks and Sparkline
 
@@ -286,27 +374,48 @@ struct Sparkline: Shape {
     }
 }
 
-// MARK: - Preview
-
 struct SavedSessionsView_Previews: PreviewProvider {
     static var previews: some View {
         let mockStore = SessionStore()
         let sampleStats = PitchStatistics(min: 100, max: 200, avg: 150, median: 145, stdDev: 20, iqr: 30, rms: 160)
-        // Add sessions manually, now including profileName
         let date1 = Calendar.current.date(byAdding: .day, value: 0, to: Date())!
         let date2 = Calendar.current.date(byAdding: .day, value: -1, to: Date())!
 
-        // Since addSession now requires profileName, we'll add them directly to the sessions array for the preview
-        // or update addSession calls if they were used here.
-        // For simplicity in preview, directly creating SessionData:
-        mockStore.sessions.append(SessionData(id: UUID(), date: date1, duration: 300, statistics: sampleStats, values: [120, 130, 140, 155], profileName: "User1"))
-        mockStore.sessions.append(SessionData(id: UUID(), date: date2, duration: 650, statistics: sampleStats, values: [135, 137, 139, 142], profileName: "User2"))
+        // Split into smaller chunks for preview speed/type-check
+        let pitches1: [Double] = {
+            var array: [Double] = []
+            for i in 0..<32 {
+                array.append(220 + 50 * sin(Double(i)/4) + Double.random(in: -5...5))
+            }
+            return array
+        }()
+        let pitches2: [Double] = {
+            var array: [Double] = []
+            for i in 0..<40 {
+                array.append(330 + 80 * cos(Double(i)/7) + Double.random(in: -8...8))
+            }
+            return array
+        }()
 
-        // Example of using the updated addSession if mockStore was live and saving
-        // mockStore.addSession(duration: 300, statistics: sampleStats, values: [120,130,140,155], profileName: "User1")
-        // mockStore.addSession(duration: 650, statistics: sampleStats, values: [135,137,139,142], profileName: "User2")
+        mockStore.sessions.append(SessionData(
+            id: UUID(),
+            date: date1,
+            duration: 300,
+            statistics: sampleStats,
+            values: pitches1,
+            profileName: "User1",
+            chakraTimeline: PitchChakraTimeline(pitches: pitches1)
+        ))
+        mockStore.sessions.append(SessionData(
+            id: UUID(),
+            date: date2,
+            duration: 650,
+            statistics: sampleStats,
+            values: pitches2,
+            profileName: "User2",
+            chakraTimeline: PitchChakraTimeline(pitches: pitches2)
+        ))
 
-        // ...add more if desired
         return SavedSessionsView()
             .environmentObject(mockStore)
             .preferredColorScheme(.dark)
