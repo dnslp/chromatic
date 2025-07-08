@@ -168,7 +168,7 @@ struct TunerView: View {
                         fundamentalHz: userF0
                     )
                     .frame(width: 100, height: 100)
-                    .padding(.bottom, 20)
+                    .padding(.bottom, 2)
                     
                     HarmonicGraphView(tunerData: tunerData)
                         .frame(height: 30)

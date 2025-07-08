@@ -4,6 +4,10 @@ import SwiftUI
 struct F0SelectorView: View {
     @Binding var f0Hz: Double
     @State private var showingEditor = false
+    
+    private var harmonics: [Double] {
+         (1...7).map { Double($0) * f0Hz }
+     }
 
     var body: some View {
         Button(action: { showingEditor = true }) {
@@ -29,6 +33,9 @@ struct F0SelectorView: View {
 /// Allows free text editing without slider overriding input, and shows closest note + cent deviation.
 struct F0EditorView: View {
     @Binding var f0Hz: Double
+    private var harmonics: [Double] {
+         (1...7).map { Double($0) * f0Hz }
+     }
     @Environment(\.presentationMode) private var presentationMode
     @FocusState private var isTextFocused: Bool
     @State private var editingText: String = ""
@@ -93,9 +100,18 @@ struct F0EditorView: View {
                         .font(.title2)
                         .monospacedDigit()
                 }
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Harmonics:")
+                        .font(.headline)
+                    ForEach(Array(harmonics.enumerated()), id: \.offset) { i, hz in
+                        Text("f\(i + 1): \(hz, specifier: "%.2f") Hz")
+                            .font(.caption.monospacedDigit())
+                    }
+                }
 
                 Spacer()
             }
+   
             .padding()
             .navigationTitle("Select f₀")
             .navigationBarTitleDisplayMode(.inline)

@@ -11,15 +11,16 @@ struct TunerData {
     var recordedPitches: [Double] = []
 
     init(
-        pitch: Double = 440,
-        amplitude: Double = 0.0,
-        harmonics: [Double] = []
-    ) {
-        self.pitch = Frequency(floatLiteral: pitch)
-        self.closestNote = ScaleNote.closestNote(to: self.pitch)
-        self.amplitude = amplitude
-        self.harmonics = harmonics   // And this!
-    }
+           pitch: Double = 440,
+           amplitude: Double = 0.0,
+           harmonics: [Double]? = nil  // Optional!
+       ) {
+           self.pitch = Frequency(floatLiteral: pitch)
+           self.closestNote = ScaleNote.closestNote(to: self.pitch)
+           self.amplitude = amplitude
+           // Default: f₁ through f₇
+           self.harmonics = harmonics ?? (1...7).map { Double($0) * pitch }
+       }
 
     mutating func startRecording() {
         isRecording = true
