@@ -158,6 +158,9 @@ private struct SessionRowView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Date: \(dateString)").bold()
                     Text("Duration: \(durationString)").bold()
+                    Text("Profile: \(session.profileName)") // Display profile name
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
                 }
                 Spacer()
                 if !session.values.isEmpty {
@@ -289,11 +292,20 @@ struct SavedSessionsView_Previews: PreviewProvider {
     static var previews: some View {
         let mockStore = SessionStore()
         let sampleStats = PitchStatistics(min: 100, max: 200, avg: 150, median: 145, stdDev: 20, iqr: 30, rms: 160)
-        // Add sessions manually
+        // Add sessions manually, now including profileName
         let date1 = Calendar.current.date(byAdding: .day, value: 0, to: Date())!
         let date2 = Calendar.current.date(byAdding: .day, value: -1, to: Date())!
-        mockStore.sessions.append(SessionData(id: UUID(), date: date1, duration: 300, statistics: sampleStats, values: [120, 130, 140, 155]))
-        mockStore.sessions.append(SessionData(id: UUID(), date: date2, duration: 650, statistics: sampleStats, values: [135, 137, 139, 142]))
+
+        // Since addSession now requires profileName, we'll add them directly to the sessions array for the preview
+        // or update addSession calls if they were used here.
+        // For simplicity in preview, directly creating SessionData:
+        mockStore.sessions.append(SessionData(id: UUID(), date: date1, duration: 300, statistics: sampleStats, values: [120, 130, 140, 155], profileName: "User1"))
+        mockStore.sessions.append(SessionData(id: UUID(), date: date2, duration: 650, statistics: sampleStats, values: [135, 137, 139, 142], profileName: "User2"))
+
+        // Example of using the updated addSession if mockStore was live and saving
+        // mockStore.addSession(duration: 300, statistics: sampleStats, values: [120,130,140,155], profileName: "User1")
+        // mockStore.addSession(duration: 650, statistics: sampleStats, values: [135,137,139,142], profileName: "User2")
+
         // ...add more if desired
         return SavedSessionsView()
             .environmentObject(mockStore)
