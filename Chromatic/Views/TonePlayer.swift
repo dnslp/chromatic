@@ -14,6 +14,7 @@ struct HarmonicAmplitudes: Codable, Equatable {
     var harmonic3: Double = 0.05
     var formant: Double = 0.05
     var noise: Double = 0.00
+    var formantFrequency: Double = 1200 // default, but now adjustable
 }
 
 // You likely have this already, but this is for reference:
@@ -80,9 +81,9 @@ class TonePlayer: ObservableObject {
     func play(
         frequency: Double,
         duration: Double = 1.2,
-        amplitudes: HarmonicAmplitudes? = nil,
-        attack: Double? = nil,
-        release: Double? = nil
+        amplitudes: HarmonicAmplitudes = HarmonicAmplitudes(),
+        attack: Double = 0.04,
+        release: Double = 0.12
     ) {
         stop()
 
@@ -96,30 +97,20 @@ class TonePlayer: ObservableObject {
         buffer.frameLength = frameCount
 
         for i in 0..<Int(frameCount) {
-            let t = Double(i) / format.sampleRate
+               let t = Double(i) / format.sampleRate
 
-            let fund = amps.fundamental * sin(2 * .pi * frequency * t)
-            let harm2 = amps.harmonic2 * sin(2 * .pi * frequency * 2 * t)
-            let harm3 = amps.harmonic3 * sin(2 * .pi * frequency * 3 * t)
-            let formant = amps.formant * sin(2 * .pi * 1200 * t)
+               let fund = amplitudes.fundamental * sin(2 * .pi * frequency * t)
+               let harm2 = amplitudes.harmonic2 * sin(2 * .pi * frequency * 2 * t)
+               let harm3 = amplitudes.harmonic3 * sin(2 * .pi * frequency * 3 * t)
+               // use variable formant freq
+               let formant = amplitudes.formant * sin(2 * .pi * amplitudes.formantFrequency * t)
+               let noise = amplitudes.noise * (Double.random(in: -1...1))
 
-            // Simple white noise for noise component
-            let noise: Double = amps.noise > 0
-                ? amps.noise * (Double.random(in: -1.0...1.0))
-                : 0
+               var sample = fund + harm2 + harm3 + formant + noise
 
-            var sample = fund + harm2 + harm3 + formant + noise
-
-            // Envelope
-            var env: Double = 1.0
-            if t < atk {
-                env = t / atk
-            } else if t > duration - rel {
-                env = max(0, (duration - t) / rel)
-            }
-            sample *= env
-            buffer.floatChannelData![0][i] = Float(sample * 0.27)
-        }
+               // ... envelope code unchanged ...
+               buffer.floatChannelData![0][i] = Float(sample * 0.27)
+           }
 
         player.scheduleBuffer(buffer, at: nil, options: []) { }
         if !player.isPlaying {

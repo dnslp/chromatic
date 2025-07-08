@@ -15,14 +15,15 @@ struct VowelPreset: Identifiable {
 }
 
 let vowelPresets: [VowelPreset] = [
-    VowelPreset(name: "A (as in 'father')", amplitudes: HarmonicAmplitudes(fundamental: 0.85, harmonic2: 0.16, harmonic3: 0.08, formant: 0.44, noise: 0.00)),
-    VowelPreset(name: "E (as in 'bed')",    amplitudes: HarmonicAmplitudes(fundamental: 0.75, harmonic2: 0.15, harmonic3: 0.06, formant: 0.33, noise: 0.01)),
-    VowelPreset(name: "I (as in 'machine')",amplitudes: HarmonicAmplitudes(fundamental: 0.67, harmonic2: 0.19, harmonic3: 0.13, formant: 0.18, noise: 0.01)),
-    VowelPreset(name: "O (as in 'law')",    amplitudes: HarmonicAmplitudes(fundamental: 0.77, harmonic2: 0.18, harmonic3: 0.09, formant: 0.27, noise: 0.00)),
-    VowelPreset(name: "U (as in 'goose')",  amplitudes: HarmonicAmplitudes(fundamental: 0.83, harmonic2: 0.13, harmonic3: 0.09, formant: 0.21, noise: 0.00)),
-    VowelPreset(name: "Breathy",            amplitudes: HarmonicAmplitudes(fundamental: 0.55, harmonic2: 0.09, harmonic3: 0.03, formant: 0.07, noise: 0.13)),
-    VowelPreset(name: "Whisper",            amplitudes: HarmonicAmplitudes(fundamental: 0.1, harmonic2: 0.01, harmonic3: 0.01, formant: 0.04, noise: 0.49))
+    VowelPreset(name: "A (as in 'father')", amplitudes: HarmonicAmplitudes(fundamental: 0.85, harmonic2: 0.16, harmonic3: 0.08, formant: 0.18, noise: 0.00, formantFrequency: 900)),
+    VowelPreset(name: "E (as in 'bed')",    amplitudes: HarmonicAmplitudes(fundamental: 0.75, harmonic2: 0.15, harmonic3: 0.06, formant: 0.11, noise: 0.01, formantFrequency: 1100)),
+    VowelPreset(name: "I (as in 'machine')",amplitudes: HarmonicAmplitudes(fundamental: 0.67, harmonic2: 0.19, harmonic3: 0.13, formant: 0.09, noise: 0.01, formantFrequency: 1200)),
+    VowelPreset(name: "O (as in 'law')",    amplitudes: HarmonicAmplitudes(fundamental: 0.77, harmonic2: 0.18, harmonic3: 0.09, formant: 0.12, noise: 0.00, formantFrequency: 800)),
+    VowelPreset(name: "U (as in 'goose')",  amplitudes: HarmonicAmplitudes(fundamental: 0.83, harmonic2: 0.13, harmonic3: 0.09, formant: 0.07, noise: 0.00, formantFrequency: 850)),
+    VowelPreset(name: "Breathy",            amplitudes: HarmonicAmplitudes(fundamental: 0.55, harmonic2: 0.09, harmonic3: 0.03, formant: 0.04, noise: 0.13, formantFrequency: 900)),
+    VowelPreset(name: "Whisper",            amplitudes: HarmonicAmplitudes(fundamental: 0.1, harmonic2: 0.01, harmonic3: 0.01, formant: 0.02, noise: 0.49, formantFrequency: 1200))
 ]
+
 
 
 struct TonePlayerControlPanel: View {
@@ -78,7 +79,13 @@ struct TonePlayerControlPanel: View {
                     SliderRow(label: "Fundamental", value: $harmonicAmplitudes.fundamental, range: 0...1)
                     SliderRow(label: "2nd Harmonic", value: $harmonicAmplitudes.harmonic2, range: 0...1)
                     SliderRow(label: "3rd Harmonic", value: $harmonicAmplitudes.harmonic3, range: 0...1)
-                    SliderRow(label: "Formant (1200 Hz)", value: $harmonicAmplitudes.formant, range: 0...1)
+                    SliderRow(label: "Formant", value: $harmonicAmplitudes.formant, range: 0...1)
+                    SliderRow(
+                        label: "Formant Freq",
+                        value: $harmonicAmplitudes.formantFrequency,
+                        range: 800...1200,
+                        format: "%.0f Hz"
+                    )
                     SliderRow(label: "Noise", value: $harmonicAmplitudes.noise, range: 0...0.5)
                 }
             }
