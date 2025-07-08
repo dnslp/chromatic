@@ -198,4 +198,23 @@ struct ProfileView: View {
 //            .preferredColorScheme(.dark)
 //    }
 //}
-//
+
+struct ProfileView_Previews: PreviewProvider {
+    static var previews: some View {
+        // Create a UserProfileManager instance for the preview
+        let manager = UserProfileManager()
+
+        // Ensure there's at least one profile to preview.
+        // If the manager initializes with a default profile, this might not be strictly necessary,
+        // but it's good for ensuring the preview always has data.
+        if manager.profiles.isEmpty {
+            manager.addProfile(name: "Preview Profile", f0: 440.0)
+        }
+
+        // Select the first profile for the preview, or a default if none (though the above ensures one)
+        let profileToPreview = manager.profiles.first ?? UserProfile(id: UUID(), name: "Default Preview", f0: 261.63) // C4 as fallback
+
+        return ProfileView(profileManager: manager, profile: profileToPreview)
+            .preferredColorScheme(.dark)
+    }
+}

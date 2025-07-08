@@ -101,3 +101,61 @@ struct StatsModalView: View {
     }
 }
 
+// Preview for StatsModalView
+struct StatsModalView_Previews: PreviewProvider {
+    static var previews: some View {
+        PreviewWrapper()
+            .environmentObject(SessionStore()) // Provide SessionStore for the preview
+    }
+
+    struct PreviewWrapper: View {
+        @State private var showModal = true
+
+        // Create sample data for the preview
+        let sampleStats = PitchStatistics(
+            min: 110.0, // A2
+            max: 440.0, // A4
+            avg: 220.0, // A3
+            median: 200.0,
+            stdDev: 50.0,
+            iqr: 80.0,
+            rms: 230.0
+        )
+        let sampleDuration: TimeInterval = 125 // 2 minutes 5 seconds
+        let sampleValues: [Double] = (0..<50).map { _ in Double.random(in: 100.0...500.0) }
+        let sampleProfileName = "Guitar Standard"
+
+        var body: some View {
+            VStack {
+                Text("This view presents the StatsModalView.")
+                Button("Show Stats Modal") {
+                    showModal = true
+                }
+            }
+            .sheet(isPresented: $showModal) {
+                StatsModalView(
+                    statistics: sampleStats,
+                    duration: sampleDuration,
+                    values: sampleValues,
+                    profileName: sampleProfileName
+                )
+            }
+        }
+    }
+}
+
+// Ensure pitchFrequencies is available for the preview context if it's defined globally or accessible.
+// If it's part of a class or struct, it might need to be mocked or provided.
+// For simplicity, assuming it's accessible or this part of preview won't crash.
+// If `pitchFrequencies` is not globally available, you might need to define a sample one here:
+let pitchFrequencies: [(name: String, frequency: Double)] = [
+    ("A2", 110.00), ("A#2/Bb2", 116.54), ("B2", 123.47),
+    ("C3", 130.81), ("C#3/Db3", 138.59), ("D3", 146.83),
+    ("D#3/Eb3", 155.56), ("E3", 164.81), ("F3", 174.61),
+    ("F#3/Gb3", 185.00), ("G3", 196.00), ("G#3/Ab3", 207.65),
+    ("A3", 220.00), ("A#3/Bb3", 233.08), ("B3", 246.94),
+    ("C4", 261.63), ("C#4/Db4", 277.18), ("D4", 293.66),
+    ("D#4/Eb4", 311.13), ("E4", 329.63), ("F4", 349.23),
+    ("F#4/Gb4", 369.99), ("G4", 392.00), ("G#4/Ab4", 415.30),
+    ("A4", 440.00)
+]

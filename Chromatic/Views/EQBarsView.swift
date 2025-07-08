@@ -26,3 +26,30 @@ struct EQBarsView: View {
         .padding(.bottom, 35)
     }
 }
+
+struct EQBarsView_Previews: PreviewProvider {
+    static var previews: some View {
+        let match1 = ScaleNote.Match(note: .A, octave: 4, distance: .zero)
+        let tunerData1 = TunerData(pitch: 440.0, amplitude: 0.8)
+
+        let match2 = ScaleNote.Match(note: .C, octave: 3, distance: Frequency.MusicalDistance(cents: 30))
+        let tunerData2 = TunerData(pitch: 135.0, amplitude: 0.5)
+
+        let match3 = ScaleNote.Match(note: .GSharp_AFlat, octave: 5, distance: Frequency.MusicalDistance(cents: -10))
+        let tunerData3 = TunerData(pitch: 820.0, amplitude: 0.3)
+
+        return VStack(spacing: 50) {
+            EQBarsView(match: match1, tunerData: tunerData1, eqBarCount: 5, eqMaxHeight: 100)
+                .previewDisplayName("Strong Signal - In Tune")
+
+            EQBarsView(match: match2, tunerData: tunerData2, eqBarCount: 7, eqMaxHeight: 80)
+                .previewDisplayName("Medium Signal - Sharp")
+
+            EQBarsView(match: match3, tunerData: tunerData3, eqBarCount: 3, eqMaxHeight: 120)
+                .previewDisplayName("Weak Signal - Flat")
+        }
+        .padding()
+        .previewLayout(.sizeThatFits)
+        .background(Color.gray.opacity(0.1))
+    }
+}
