@@ -240,7 +240,8 @@ struct TunerView: View {
                                 StatsModalView(
                                     statistics: stats.pitch,
                                     duration: stats.duration,
-                                    values: tunerData.recordedPitches
+                                    values: tunerData.recordedPitches,
+                                    profileName: profileManager.currentProfile?.name ?? "Guest" // Pass profile name
                                 )
                             }
                         }

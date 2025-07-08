@@ -6,6 +6,7 @@ struct StatsModalView: View {
     let statistics: PitchStatistics
     let duration: TimeInterval
     let values: [Double]
+    let profileName: String // Added profileName property
     @Environment(\.dismiss) private var dismiss
 
     // Helper to find the closest pitch and cents difference for a given frequency
@@ -87,7 +88,8 @@ struct StatsModalView: View {
                         sessionStore.addSession(
                             duration: duration,
                             statistics: statistics,
-                            values: values
+                            values: values,
+                            profileName: self.profileName // Pass profileName
                         )
                         dismiss()
                     }
