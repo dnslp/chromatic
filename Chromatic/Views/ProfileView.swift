@@ -15,6 +15,19 @@ struct ProfileView: View {
         self._editingProfile = State(initialValue: profile)
     }
 
+    private let chakraFrequencies: [Double] = [396, 417, 528, 639, 741, 852, 963]
+    private let chakraColors: [Color] = [
+        .red, .orange, .yellow, .green, .blue, .indigo, .purple
+    ]
+
+    private func chakraColor(for freq: Double) -> Color {
+        let idx = chakraFrequencies
+            .enumerated()
+            .min(by: { abs($0.element - freq) < abs($1.element - freq) })!
+            .offset
+        return chakraColors[idx]
+    }
+    
     var body: some View {
         NavigationView {
             Form {
@@ -23,12 +36,17 @@ struct ProfileView: View {
                         Text("Name:")
                         TextField("Profile Name", text: $editingProfile.name)
                     }
-
-                    HStack {
-                        Text("f₀ (Hz):")
-                        TextField("Fundamental Frequency", value: $editingProfile.f0, formatter: hzFormatter)
-                            .keyboardType(.decimalPad)
-                    }
+                    
+                    
+                    Button(action: { tonePlayer.play(frequency: editingProfile.f0) }) {
+                        HStack {
+                            Text("f₀ (Hz):")
+                            Spacer()
+                            Text("\(editingProfile.f0, specifier: "%.2f") Hz")
+                            Image(systemName: "play.circle")
+                                .foregroundColor(.accentColor)
+                        }
+                        }
                 }
 
                 Section(header: Text("Calculated Values")) {
@@ -68,16 +86,25 @@ struct ProfileView: View {
 
                 Section(header: Text("Harmonics (f₁ - f₇)")) {
                     ForEach(Array(editingProfile.harmonics.enumerated()), id: \.offset) { index, harmonicHz in
-                    Button(action: { tonePlayer.play(frequency: harmonicHz) }) {
-                        HStack {
-                            Text("f\(index + 1):")
-                            Spacer()
-                            Text("\(harmonicHz, specifier: "%.2f") Hz")
-                            Image(systemName: "play.circle")
-                                .foregroundColor(.accentColor)
+                        Button(action: { tonePlayer.play(frequency: harmonicHz) }) {
+                            HStack {
+                                // Chakra color indicator
+                                Circle()
+                                    .fill(chakraColor(for: harmonicHz))
+                                    .frame(width: 18, height: 18)
+                                    .overlay(
+                                        Circle()
+                                            .stroke(Color.primary.opacity(0.15), lineWidth: 1)
+                                    )
+                                
+                                Text("f\(index + 1):")
+                                Spacer()
+                                Text("\(harmonicHz, specifier: "%.2f") Hz")
+                                Image(systemName: "play.circle")
+                                    .foregroundColor(.accentColor)
+                            }
                         }
-                        }
-                    .buttonStyle(.plain)
+                        .buttonStyle(.plain)
                     }
                 }
             }
