@@ -31,7 +31,7 @@ struct UserProfile: Codable, Identifiable, Equatable {
 
     // Static function to create a default profile
     static func defaultProfile() -> UserProfile {
-        UserProfile(name: "Default Profile", f0: 77.78) // Default f0 from TunerView
+        UserProfile(name: "Current Setting", f0: 77.78) // Default f0 from TunerView
     }
 
     // Equatable conformance

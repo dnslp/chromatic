@@ -28,6 +28,20 @@ struct ProfileView: View {
         return chakraColors[idx]
     }
     
+    /// Returns (note name with octave, cents offset)
+    private func noteNameAndCents(for frequency: Double) -> (String, Int) {
+        guard frequency > 0 else { return ("–", 0) }
+        let noteNames = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"]
+        let midi = 69 + 12 * log2(frequency / 440)
+        let noteNum = Int(round(midi))
+        let noteIndex = (noteNum + 120) % 12
+        let noteName = noteNames[noteIndex]
+        let noteHz = 440 * pow(2.0, Double(noteNum - 69) / 12)
+        let cents = Int(round(1200 * log2(frequency / noteHz)))
+        let octave = (noteNum / 12) - 1
+        return ("\(noteName)\(octave)", cents)
+    }
+    
     var body: some View {
         NavigationView {
             Form {
@@ -36,52 +50,74 @@ struct ProfileView: View {
                         Text("Name:")
                         TextField("Profile Name", text: $editingProfile.name)
                     }
-                    
-                    
+                    let (f0Note, f0Cents) = noteNameAndCents(for: editingProfile.f0)
                     Button(action: { tonePlayer.play(frequency: editingProfile.f0) }) {
                         HStack {
                             Text("f₀ (Hz):")
                             Spacer()
-                            Text("\(editingProfile.f0, specifier: "%.2f") Hz")
+                            VStack(alignment: .trailing, spacing: 0) {
+                                Text("\(editingProfile.f0, specifier: "%.2f") Hz")
+                                Text("\(f0Note) (\(f0Cents >= 0 ? "+" : "")\(f0Cents)¢)")
+                                    .foregroundColor(.secondary)
+                                    .font(.footnote)
+                            }
                             Image(systemName: "play.circle")
                                 .foregroundColor(.accentColor)
                         }
-                        }
+                    }
                 }
 
                 Section(header: Text("Calculated Values")) {
-                Button(action: { tonePlayer.play(frequency: editingProfile.perfectFourth) }) {
-                    HStack {
-                        Text("Perfect Fourth:")
-                        Spacer()
-                        Text("\(editingProfile.perfectFourth, specifier: "%.2f") Hz")
-                        Image(systemName: "play.circle")
-                            .foregroundColor(.accentColor)
+                    let (p4Note, p4Cents) = noteNameAndCents(for: editingProfile.perfectFourth)
+                    Button(action: { tonePlayer.play(frequency: editingProfile.perfectFourth) }) {
+                        HStack {
+                            Text("Perfect Fourth:")
+                            Spacer()
+                            VStack(alignment: .trailing, spacing: 0) {
+                                Text("\(editingProfile.perfectFourth, specifier: "%.2f") Hz")
+                                Text("\(p4Note) (\(p4Cents >= 0 ? "+" : "")\(p4Cents)¢)")
+                                    .foregroundColor(.secondary)
+                                    .font(.footnote)
+                            }
+                            Image(systemName: "play.circle")
+                                .foregroundColor(.accentColor)
+                        }
                     }
-                    }
-                .buttonStyle(.plain)
+                    .buttonStyle(.plain)
 
-                Button(action: { tonePlayer.play(frequency: editingProfile.perfectFifth) }) {
-                    HStack {
-                        Text("Perfect Fifth:")
-                        Spacer()
-                        Text("\(editingProfile.perfectFifth, specifier: "%.2f") Hz")
-                        Image(systemName: "play.circle")
-                            .foregroundColor(.accentColor)
+                    let (p5Note, p5Cents) = noteNameAndCents(for: editingProfile.perfectFifth)
+                    Button(action: { tonePlayer.play(frequency: editingProfile.perfectFifth) }) {
+                        HStack {
+                            Text("Perfect Fifth:")
+                            Spacer()
+                            VStack(alignment: .trailing, spacing: 0) {
+                                Text("\(editingProfile.perfectFifth, specifier: "%.2f") Hz")
+                                Text("\(p5Note) (\(p5Cents >= 0 ? "+" : "")\(p5Cents)¢)")
+                                    .foregroundColor(.secondary)
+                                    .font(.footnote)
+                            }
+                            Image(systemName: "play.circle")
+                                .foregroundColor(.accentColor)
+                        }
                     }
-                    }
-                .buttonStyle(.plain)
+                    .buttonStyle(.plain)
 
-                Button(action: { tonePlayer.play(frequency: editingProfile.octave) }) {
-                    HStack {
-                        Text("Octave:")
-                        Spacer()
-                        Text("\(editingProfile.octave, specifier: "%.2f") Hz")
-                        Image(systemName: "play.circle")
-                            .foregroundColor(.accentColor)
+                    let (octNote, octCents) = noteNameAndCents(for: editingProfile.octave)
+                    Button(action: { tonePlayer.play(frequency: editingProfile.octave) }) {
+                        HStack {
+                            Text("Octave:")
+                            Spacer()
+                            VStack(alignment: .trailing, spacing: 0) {
+                                Text("\(editingProfile.octave, specifier: "%.2f") Hz")
+                                Text("\(octNote) (\(octCents >= 0 ? "+" : "")\(octCents)¢)")
+                                    .foregroundColor(.secondary)
+                                    .font(.footnote)
+                            }
+                            Image(systemName: "play.circle")
+                                .foregroundColor(.accentColor)
+                        }
                     }
-                    }
-                .buttonStyle(.plain)
+                    .buttonStyle(.plain)
                 }
 
                 Section(header: Text("Harmonics (f₁ - f₇)")) {
@@ -99,7 +135,13 @@ struct ProfileView: View {
                                 
                                 Text("f\(index + 1):")
                                 Spacer()
-                                Text("\(harmonicHz, specifier: "%.2f") Hz")
+                                let (note, cents) = noteNameAndCents(for: harmonicHz)
+                                VStack(alignment: .trailing, spacing: 0) {
+                                    Text("\(harmonicHz, specifier: "%.2f") Hz")
+                                    Text("\(note) (\(cents >= 0 ? "+" : "")\(cents)¢)")
+                                        .foregroundColor(.secondary)
+                                        .font(.footnote)
+                                }
                                 Image(systemName: "play.circle")
                                     .foregroundColor(.accentColor)
                             }
@@ -139,16 +181,21 @@ struct ProfileView: View {
     }
 }
 
-struct ProfileView_Previews: PreviewProvider {
-    static var previews: some View {
-        // Create a sample profile and manager for previewing
-        let manager = UserProfileManager()
-        // Ensure there's at least one profile for the preview, e.g., the default
-        if manager.profiles.isEmpty {
-            manager.addProfile(name: "Preview Profile", f0: 440.0)
-        }
-        let profileToPreview = manager.profiles.first ?? UserProfile.defaultProfile()
-
-        return ProfileView(profileManager: manager, profile: profileToPreview)
-    }
-}
+//struct ProfileView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        let manager = UserProfileManager()
+//        if manager.profiles.isEmpty {
+//            let sampleProfile = UserProfile(
+//                id: UUID(),
+//                name: "Preview Profile",
+//                f0: 440.0,
+//                harmonics: (1...7).map { Double($0) * 440.0 }
+//            )
+//            manager.profiles = [sampleProfile]
+//        }
+//        let profileToPreview = manager.profiles.first!
+//        return ProfileView(profileManager: manager, profile: profileToPreview)
+//            .preferredColorScheme(.dark)
+//    }
+//}
+//

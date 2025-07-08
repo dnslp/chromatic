@@ -10,7 +10,7 @@ struct ProfileSelectionView: View {
 
     // For navigating to the detail/edit view
     @State private var profileToEdit: UserProfile? = nil
-    @State private var showingEditSheet = false
+    // @State private var showingEditSheet = false // Removed
 
     var body: some View {
         NavigationView {
@@ -26,8 +26,7 @@ struct ProfileSelectionView: View {
                         }
                         Spacer()
                         Button {
-                            profileToEdit = profile
-                            showingEditSheet = true
+                            profileToEdit = profile // Only set profileToEdit
                         } label: {
                             Image(systemName: "pencil.circle.fill")
                                 .foregroundColor(.accentColor)
@@ -69,11 +68,9 @@ struct ProfileSelectionView: View {
                      EditButton()
                 }
             }
-            .sheet(isPresented: $showingEditSheet) {
-                if let profile = profileToEdit {
-                    // Pass the original profile for editing
-                    ProfileView(profileManager: profileManager, profile: profile)
-                }
+            .sheet(item: $profileToEdit) { selectedProfile in // Changed to .sheet(item:content:)
+                // Pass the unwrapped selectedProfile
+                ProfileView(profileManager: profileManager, profile: selectedProfile)
             }
             .alert("New Profile", isPresented: $showingCreateProfileAlert, actions: {
                 TextField("Profile Name", text: $newProfileName)
