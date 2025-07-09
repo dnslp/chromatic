@@ -24,6 +24,13 @@ class UserProfileManager: ObservableObject {
             currentProfile = profiles.first // Select the first profile if none is current
         }
     }
+    
+    func updateProfile(id: UUID, name: String, f0: Double) {
+        if let idx = profiles.firstIndex(where: { $0.id == id }) {
+            profiles[idx].name = name
+            profiles[idx].f0 = f0
+        }
+    }
 
     // MARK: - Storage
     func saveProfiles() {

@@ -7,6 +7,51 @@ struct ProfilesTabView: View {
     @State private var newProfileF0: Double = 77.78
     @State private var profileToEdit: UserProfile? = nil
 
+    struct EditProfileSheet: View {
+        @Environment(\.dismiss) var dismiss
+        @State var name: String
+        @State var f0: Double
+        let onSave: (String, Double) -> Void
+
+        init(initialName: String, initialF0: Double, onSave: @escaping (String, Double) -> Void) {
+            _name = State(initialValue: initialName)
+            _f0 = State(initialValue: initialF0)
+            self.onSave = onSave
+        }
+
+        var body: some View {
+            NavigationView {
+                Form {
+                    TextField("Profile Name", text: $name)
+                    TextField("f₀ (Hz)", value: $f0, formatter: hzFormatter)
+                        .keyboardType(.decimalPad)
+                }
+                .navigationTitle("Edit Profile")
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Save") {
+                            if !name.isEmpty {
+                                onSave(name, f0)
+                            }
+                            dismiss()
+                        }
+                    }
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Cancel") { dismiss() }
+                    }
+                }
+            }
+        }
+
+        private var hzFormatter: NumberFormatter {
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .decimal
+            formatter.maximumFractionDigits = 2
+            formatter.minimumFractionDigits = 2
+            return formatter
+        }
+    }
+
     var body: some View {
         NavigationView {
             List {
@@ -55,7 +100,12 @@ struct ProfilesTabView: View {
                 }
             }
             .sheet(item: $profileToEdit) { selectedProfile in
-                ProfileView(profileManager: profileManager, profile: selectedProfile)
+                EditProfileSheet(
+                    initialName: selectedProfile.name,
+                    initialF0: selectedProfile.f0
+                ) { newName, newF0 in
+                    profileManager.updateProfile(id: selectedProfile.id, name: newName, f0: newF0)
+                }
             }
             .alert("New Profile", isPresented: $showingCreateProfileAlert, actions: {
                 TextField("Profile Name", text: $newProfileName)
