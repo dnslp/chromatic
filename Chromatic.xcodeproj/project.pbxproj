@@ -65,6 +65,8 @@
 		BE026CC12E1DA6DE0088BD78 /* TonePlayerControlPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE026CBF2E1DA6DE0088BD78 /* TonePlayerControlPanel.swift */; };
 		BE026CC32E1DA8080088BD78 /* ToneSettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE026CC22E1DA8080088BD78 /* ToneSettingsManager.swift */; };
 		BE026CC42E1DA8080088BD78 /* ToneSettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE026CC22E1DA8080088BD78 /* ToneSettingsManager.swift */; };
+		BE026FF62E1DF2020088BD78 /* ProfilesTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE026FF52E1DF2020088BD78 /* ProfilesTabView.swift */; };
+		BE026FF72E1DF2020088BD78 /* ProfilesTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE026FF52E1DF2020088BD78 /* ProfilesTabView.swift */; };
 		BE0541CC2E19759100E8A38E /* F0SelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE0541CB2E19759100E8A38E /* F0SelectorView.swift */; };
 		BE0541CD2E19759100E8A38E /* F0SelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE0541CB2E19759100E8A38E /* F0SelectorView.swift */; };
 		BE0F246E2E1AE51D003DE109 /* SpectrogramFlatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE0F24692E1AE51D003DE109 /* SpectrogramFlatView.swift */; };
@@ -189,6 +191,7 @@
 		BE026C062E1D620A0088BD78 /* UserProfileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileManager.swift; sourceTree = "<group>"; };
 		BE026CBF2E1DA6DE0088BD78 /* TonePlayerControlPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TonePlayerControlPanel.swift; sourceTree = "<group>"; };
 		BE026CC22E1DA8080088BD78 /* ToneSettingsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToneSettingsManager.swift; sourceTree = "<group>"; };
+		BE026FF52E1DF2020088BD78 /* ProfilesTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilesTabView.swift; sourceTree = "<group>"; };
 		BE0541CB2E19759100E8A38E /* F0SelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = F0SelectorView.swift; sourceTree = "<group>"; };
 		BE0F24692E1AE51D003DE109 /* SpectrogramFlatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpectrogramFlatView.swift; sourceTree = "<group>"; };
 		BE0F246A2E1AE51D003DE109 /* SpectrogramModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpectrogramModel.swift; sourceTree = "<group>"; };
@@ -369,6 +372,7 @@
 				BE026CBF2E1DA6DE0088BD78 /* TonePlayerControlPanel.swift */,
 				8F693E3825B87DB20054DB16 /* TranspositionMenu.swift */,
 				8FB571F425B73ECF007C28BC /* TunerView.swift */,
+				BE026FF52E1DF2020088BD78 /* ProfilesTabView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -658,6 +662,7 @@
 				8F2D975B2693930000B512D0 /* NoteTicks.swift in Sources */,
 				8F3ECD1F2682834700415B9F /* ModifierPreference.swift in Sources */,
 				BEED6ED52E143F0400037881 /* PlayerView.swift in Sources */,
+				BE026FF62E1DF2020088BD78 /* ProfilesTabView.swift in Sources */,
 				BEED6E942E143B3E00037881 /* PlaylistManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -713,6 +718,7 @@
 				BE0541CC2E19759100E8A38E /* F0SelectorView.swift in Sources */,
 				8F693E3925B87DB20054DB16 /* TranspositionMenu.swift in Sources */,
 				8FB571FB25B73ECF007C28BC /* MatchedNoteFrequency.swift in Sources */,
+				BE026FF72E1DF2020088BD78 /* ProfilesTabView.swift in Sources */,
 				8F2D97592693930000B512D0 /* NoteTicks.swift in Sources */,
 				BEED70102E14528D00037881 /* FunctionGeneratorView.swift in Sources */,
 				8F44F7FF26939F13007DBE1E /* Color+MusicalDistance.swift in Sources */,
