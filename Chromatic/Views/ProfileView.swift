@@ -57,6 +57,7 @@ struct ProfileView: View {
 
                     VStack(alignment: .leading, spacing: 4) {
                         HStack {
+                            Text("f₀ (Hz):")
                             F0SelectorView(f0Hz: $editingProfile.f0)
                             Spacer()
                             Button(action: { tonePlayer.play(frequency: editingProfile.f0) }) {
