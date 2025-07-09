@@ -71,8 +71,8 @@
 		BE0F246F2E1AE51D003DE109 /* UIColor+intermediate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE0F246C2E1AE51D003DE109 /* UIColor+intermediate.swift */; };
 		BE0F24702E1AE51D003DE109 /* SpectrogramModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE0F246A2E1AE51D003DE109 /* SpectrogramModel.swift */; };
 		BE0F24712E1AE51D003DE109 /* SpectrogramSlice.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE0F246B2E1AE51D003DE109 /* SpectrogramSlice.swift */; };
-		BE0F24732E1AE569003DE109 /* SpectogramView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE0F24722E1AE569003DE109 /* SpectogramView.swift */; };
-		BE0F24742E1AE569003DE109 /* SpectogramView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE0F24722E1AE569003DE109 /* SpectogramView.swift */; };
+		BE0F24732E1AE569003DE109 /* SpectrogramView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE0F24722E1AE569003DE109 /* SpectrogramView.swift */; };
+		BE0F24742E1AE569003DE109 /* SpectrogramView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE0F24722E1AE569003DE109 /* SpectrogramView.swift */; };
 		BE0F24772E1AE592003DE109 /* AudioKit in Frameworks */ = {isa = PBXBuildFile; productRef = BE0F24762E1AE592003DE109 /* AudioKit */; };
 		BE1512912E15F6A600BB9EC2 /* ConcentricCircleVisualizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE15128E2E15F6A600BB9EC2 /* ConcentricCircleVisualizer.swift */; };
 		BE1512922E15F6A600BB9EC2 /* EQBarsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE15128F2E15F6A600BB9EC2 /* EQBarsView.swift */; };
@@ -194,7 +194,7 @@
 		BE0F246A2E1AE51D003DE109 /* SpectrogramModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpectrogramModel.swift; sourceTree = "<group>"; };
 		BE0F246B2E1AE51D003DE109 /* SpectrogramSlice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpectrogramSlice.swift; sourceTree = "<group>"; };
 		BE0F246C2E1AE51D003DE109 /* UIColor+intermediate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+intermediate.swift"; sourceTree = "<group>"; };
-		BE0F24722E1AE569003DE109 /* SpectogramView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpectogramView.swift; sourceTree = "<group>"; };
+		BE0F24722E1AE569003DE109 /* SpectrogramView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpectrogramView.swift; sourceTree = "<group>"; };
 		BE15128E2E15F6A600BB9EC2 /* ConcentricCircleVisualizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConcentricCircleVisualizer.swift; sourceTree = "<group>"; };
 		BE15128F2E15F6A600BB9EC2 /* EQBarsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EQBarsView.swift; sourceTree = "<group>"; };
 		BE1512902E15F6A600BB9EC2 /* PitchLineVisualizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchLineVisualizer.swift; sourceTree = "<group>"; };
@@ -313,7 +313,7 @@
 				8FB571D725B73E9A007C28BC /* Models */,
 				8FB571AA25B72146007C28BC /* ChromaticApp.swift */,
 				8F2D975026938AF900B512D0 /* TunerScreen.swift */,
-				BE0F24722E1AE569003DE109 /* SpectogramView.swift */,
+				BE0F24722E1AE569003DE109 /* SpectrogramView.swift */,
 				8FB571D425B722F2007C28BC /* Views */,
 				8FB571AC25B72147007C28BC /* Assets.xcassets */,
 				BE0F246D2E1AE51D003DE109 /* SpectrogramFlatView */,
@@ -632,7 +632,7 @@
 				BE026C032E1D61F80088BD78 /* ProfileSelectionView.swift in Sources */,
 				BE026C042E1D61F80088BD78 /* ProfileView.swift in Sources */,
 				8F3ECD232682837800415B9F /* Alignment.swift in Sources */,
-				BE0F24732E1AE569003DE109 /* SpectogramView.swift in Sources */,
+				BE0F24732E1AE569003DE109 /* SpectrogramView.swift in Sources */,
 				BE1512912E15F6A600BB9EC2 /* ConcentricCircleVisualizer.swift in Sources */,
 				BE1512922E15F6A600BB9EC2 /* EQBarsView.swift in Sources */,
 				BE1512932E15F6A600BB9EC2 /* PitchLineVisualizer.swift in Sources */,
@@ -670,7 +670,7 @@
 				8FB571F525B73ECF007C28BC /* CurrentNoteMarker.swift in Sources */,
 				BE37664B2E1C224E005CFA44 /* SessionStore.swift in Sources */,
 				BEED700D2E14526400037881 /* FunctionGeneratorEngine.swift in Sources */,
-				BE0F24742E1AE569003DE109 /* SpectogramView.swift in Sources */,
+				BE0F24742E1AE569003DE109 /* SpectrogramView.swift in Sources */,
 				BE026C012E1D61F80088BD78 /* ProfileSelectionView.swift in Sources */,
 				BE026C022E1D61F80088BD78 /* ProfileView.swift in Sources */,
 				8FB571F925B73ECF007C28BC /* MatchedNoteView.swift in Sources */,
