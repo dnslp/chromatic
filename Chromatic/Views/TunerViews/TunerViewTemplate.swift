@@ -5,21 +5,21 @@ struct TunerViewTemplate: View {
     @Binding var tunerData: TunerData
     @State var modifierPreference: ModifierPreference
     @State var selectedTransposition: Int
-    
+
     // Recording State
     @State private var sessionStats: SessionStatistics?
     @State private var showStatsModal = false
     @State private var countdown: Int? = nil
     let countdownSeconds = 3
     @State private var recordingStartedAt: Date?
-    
-    // User Profile Info (replace with your own source if needed)
+
+    // User Profile Info
     @EnvironmentObject private var profileManager: UserProfileManager
     @State private var userF0: Double = 77.78
 
-    // Add this state to control sheet presentation
+    // Sheet for profile selection
     @State private var showingProfileSelector = false
-    
+
     var body: some View {
         VStack(spacing: 28) {
             // ------- Profile Selection Bar -------
@@ -32,10 +32,18 @@ struct TunerViewTemplate: View {
                         .cornerRadius(10)
                 }
                 Spacer()
-                // You could add a transposition or modifier toggle here too!
             }
             .padding(.top)
             .padding(.horizontal)
+
+            // --------- COUNTDOWN TIMER ----------
+            if let c = countdown {
+                Text("\(c)")
+                    .font(.system(size: 76, weight: .bold, design: .rounded))
+                    .foregroundColor(.yellow)
+                    .padding(.vertical, 12)
+                    .transition(.scale)
+            }
 
             // ------- Visual Section -------
             VStack(spacing: 8) {
@@ -45,6 +53,7 @@ struct TunerViewTemplate: View {
                     .font(.title2)
             }
             .padding(.top)
+            .opacity(countdown == nil ? 1 : 0.25) // Fade during countdown
 
             // ------- Recording Controls -------
             HStack(spacing: 18) {
@@ -70,13 +79,20 @@ struct TunerViewTemplate: View {
                         }
                     }
                 }) {
-                    Text(tunerData.isRecording ? "Stop Recording" : "Start Recording")
-                        .padding(.horizontal)
-                        .padding(.vertical, 8)
-                        .background(tunerData.isRecording ? Color.red : Color.green)
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
+                    Text(
+                        tunerData.isRecording
+                        ? "Stop Recording"
+                        : (countdown != nil ? "\(countdown!)..." : "Start Recording")
+                    )
+                    .padding(.horizontal)
+                    .padding(.vertical, 8)
+                    .background(tunerData.isRecording ? Color.red : Color.green)
+                    .foregroundColor(.white)
+                    .cornerRadius(8)
                 }
+                // Disable the button during countdown, unless you're stopping
+                .disabled(countdown != nil && !tunerData.isRecording)
+
                 Button(action: {
                     tunerData.clearRecording()
                     sessionStats = nil
@@ -89,6 +105,7 @@ struct TunerViewTemplate: View {
                         .foregroundColor(.white)
                         .cornerRadius(8)
                 }
+                .disabled(countdown != nil) // Lock out while countdown
             }
             .sheet(isPresented: $showStatsModal) {
                 if let stats = sessionStats {
@@ -122,7 +139,6 @@ struct TunerViewTemplate: View {
         .padding()
     }
 }
-
 
 // Example preview (requires sample TunerData/UserProfileManager in your project)
 struct TunerViewTemplate_Previews: PreviewProvider {

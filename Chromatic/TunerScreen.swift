@@ -7,6 +7,8 @@ struct TunerScreen: View {
     @Binding var modifierPreference: ModifierPreference
     @Binding var selectedTransposition: Int
     @EnvironmentObject var profileManager: UserProfileManager
+    @State private var countdown: Int? = nil
+    let countdownSeconds = 3 // Change if you want a different start delay
 
     var userF0: Double {
         profileManager.currentProfile?.f0 ?? 77.78 // fallback value
@@ -41,17 +43,17 @@ struct TunerScreen: View {
 //            harmonics: (2...5).map { userF0 * Double($0) }
 //        )
 //        .padding()
-//        TunerViewTemplate(
-//            tunerData: $tunerData,
-//            modifierPreference: modifierPreference,
-//            selectedTransposition: selectedTransposition
-//        ) 
-//        TunerViewZen(tunerData: $tunerData)
-        TunerView(
-            tunerData: $tunerData, // Pass as a binding
+        TunerViewTemplate(
+            tunerData: $tunerData,
             modifierPreference: modifierPreference,
             selectedTransposition: selectedTransposition
-        )
+        ) 
+//        TunerViewZen(tunerData: $tunerData)
+//        TunerView(
+//            tunerData: $tunerData, // Pass as a binding
+//            modifierPreference: modifierPreference,
+//            selectedTransposition: selectedTransposition
+//        )
         .onChange(of: pitchDetector.pitch) { newPitch in
             // Create a new TunerData instance for the update
             // This is important because TunerData is a struct.
