@@ -5,7 +5,7 @@ import Foundation
 /// Marked `public` so that tests and previews outside the main target can
 /// construct and reference `Pitch` values.
 public struct Pitch: Identifiable, Hashable {
-    let id = UUID()
+    public let id = UUID()
     let name: String
     let frequency: Double
 }
