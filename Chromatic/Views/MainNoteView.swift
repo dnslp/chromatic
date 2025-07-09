@@ -1,6 +1,12 @@
 import SwiftUI
 
+/// Displays the main detected note in large, bold text.
+///
+/// - Parameter note: The note name to show.
+/// - Note: The `.noteCenter` alignment guide forwards the text's horizontal
+///   center so other views can align precisely with this note.
 struct MainNoteView: View {
+    /// The note name to display.
     let note: String
 
     var body: some View {
