@@ -17,7 +17,7 @@ struct TunerView: View {
     @State private var showingProfileSelector = false
     @State private var countdown: Int? = nil
     let countdownSeconds = 3
-    
+
     // Timer State
     @State private var recordingStartedAt: Date?
     private var elapsed: TimeInterval {
@@ -37,9 +37,8 @@ struct TunerView: View {
     private let noteTicksHeight: CGFloat = 100
     private let amplitudeBarHeight: CGFloat = 32
     private let maxCentDistance: Double = 50
-    
+
     // MARK: - Helper Views
-    
     struct CalmingCountdownCircle: View {
         let secondsLeft: Int
         let totalSeconds: Int
@@ -75,54 +74,21 @@ struct TunerView: View {
             }
         }
     }
-    
+
     // MARK: - Main Body
-    
     var body: some View {
-        HStack(spacing: 1) {
+        HStack(spacing: 0) {
             // ────────── VERTICAL VISUALIZER ──────────
             PitchLineVisualizer(
                 tunerData: tunerData,
                 frequency: tunerData.pitch,
                 profile: profileManager.currentProfile
             )
-            .frame(width: 20)
+            .frame(width: 34)
             .padding(.vertical, 10)
             
             // ────────── MAIN CONTENT ──────────
             VStack(spacing: 0) {
-                // ───── AMPLITUDE BAR ─────
-                //                HStack(spacing: 8) {
-                //                    Text("Level")
-                //                        .font(.caption2)
-                //                        .foregroundColor(.secondary)
-                //                    GeometryReader { geo in
-                //                        ZStack(alignment: .leading) {
-                //                            Capsule()
-                //                                .frame(height: 6)
-                //                                .foregroundColor(Color.secondary.opacity(0.14))
-                //                            Capsule()
-                //                                .frame(
-                //                                    width: geo.size.width * CGFloat(micMuted ? 0 : tunerData.amplitude),
-                //                                    height: 6)
-                //                                .foregroundColor(
-                //                                    Color(hue: 0.1 - 0.1 * tunerData.amplitude,
-                //                                          saturation: 0.9,
-                //                                          brightness: 0.9)
-                //                                )
-                //                                .animation(.easeInOut, value: tunerData.amplitude)
-                //                        }
-                //                    }
-                //                    .frame(height: amplitudeBarHeight)
-                //                    .frame(maxWidth: .infinity)
-                //                }
-                //                .padding(.horizontal, 16)
-                //                .frame(height: amplitudeBarHeight)
-                //                .background(Color(.systemBackground).opacity(0.85))
-                //                .cornerRadius(8)
-                //                .shadow(radius: 2, y: -1)
-                
-                
                 // ───── NOTE DISPLAY ─────
                 VStack(spacing: contentSpacing) {
                     MatchedNoteView(match: match, modifierPreference: modifierPreference)
@@ -144,8 +110,7 @@ struct TunerView: View {
                     }
                 }
                 Spacer(minLength: 40)
-                
-                
+
                 VStack(spacing: 12) {
                     // ───── Visualizer with Conditional Overlay ─────
                     ZStack {
@@ -163,14 +128,12 @@ struct TunerView: View {
                                 .frame(width: 140, height: 140)
                         }
                     }
-
                     // Countdown text, only during countdown
                     if let c = countdown {
                         Text("Recording begins in \(c)…")
                             .font(.title3)
                             .foregroundColor(.secondary)
                     }
-
                     // ───── Always Show These Buttons ─────
                     HStack(spacing: 16) {
                         Button(action: {
@@ -225,17 +188,11 @@ struct TunerView: View {
                             )
                         }
                     }
-
-                    // ───── Always show Harmonic Graph and Timeline ─────
-                    HarmonicGraphView(tunerData: tunerData)
-                        .frame(height: 30)
+                    // PitchChakraTimelineView
                     PitchChakraTimelineView(pitches: tunerData.recordedPitches)
                         .frame(height: 48)
                 }
 
-
-                
-                
                 // ────────── PROFILE & TRANSPOSE CONTROLS ──────────
                 HStack {
                     Button {
@@ -264,9 +221,14 @@ struct TunerView: View {
                     Spacer()
                 }
                 .frame(height: menuHeight)
-                .padding(.horizontal, 8)
+                .padding(.horizontal, 0)
             }
             .frame(maxWidth: .infinity)
+            
+            // ────────── HARMONIC GRAPH ON RIGHT ──────────
+            HarmonicGraphView(tunerData: tunerData)
+                .frame(width: 4, height: 320) // <--- adjust width & height as needed
+                .padding(.vertical, 8)
         }
         .frame(height: nonWatchHeight)
         .background(
@@ -275,7 +237,6 @@ struct TunerView: View {
                 .shadow(color: Color.black.opacity(0.05), radius: 16, y: 4)
         )
         .padding(.horizontal, 0)
-        // Toolbar must be attached OUTSIDE main view
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
@@ -285,8 +246,6 @@ struct TunerView: View {
                 }
             }
         }
-        
-        
         .sheet(isPresented: $showingProfileSelector) {
             ProfileSelectionView(profileManager: profileManager, isPresented: $showingProfileSelector)
         }

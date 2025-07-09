@@ -6,6 +6,7 @@ struct ProfilesTabView: View {
     @State private var newProfileName: String = ""
     @State private var newProfileF0: Double = 77.78
     @State private var profileToEdit: UserProfile? = nil
+    @State private var selectedProfile: UserProfile? = nil // For showing full profile page
 
     struct EditProfileSheet: View {
         @Environment(\.dismiss) var dismiss
@@ -75,7 +76,7 @@ struct ProfilesTabView: View {
                     }
                     .contentShape(Rectangle())
                     .onTapGesture {
-                        profileManager.selectProfile(profile)
+                        selectedProfile = profile
                     }
                 }
                 .onDelete(perform: deleteProfile)
@@ -99,6 +100,7 @@ struct ProfilesTabView: View {
                     EditButton()
                 }
             }
+            // Edit Profile Sheet
             .sheet(item: $profileToEdit) { selectedProfile in
                 EditProfileSheet(
                     initialName: selectedProfile.name,
@@ -106,6 +108,10 @@ struct ProfilesTabView: View {
                 ) { newName, newF0 in
                     profileManager.updateProfile(id: selectedProfile.id, name: newName, f0: newF0)
                 }
+            }
+            // Full Profile Page Sheet
+            .sheet(item: $selectedProfile) { profile in
+                ProfileView(profileManager: profileManager, profile: profile)
             }
             .alert("New Profile", isPresented: $showingCreateProfileAlert, actions: {
                 TextField("Profile Name", text: $newProfileName)
