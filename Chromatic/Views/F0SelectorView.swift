@@ -33,14 +33,32 @@ struct F0SelectorView: View {
 /// Allows free text editing without slider overriding input, and shows closest note + cent deviation.
 struct F0EditorView: View {
     @Binding var f0Hz: Double
-    private var harmonics: [Double] {
-         (1...7).map { Double($0) * f0Hz }
-     }
     @Environment(\.presentationMode) private var presentationMode
     @FocusState private var isTextFocused: Bool
     @State private var editingText: String = ""
+    @State private var selectedPitch: PitchOption? = nil
 
-    // Formatter to ensure two decimals
+    // Generate options (C2–B5, adjust octaves as desired)
+    struct PitchOption: Identifiable, Hashable {
+        let id = UUID()
+        let name: String
+        let frequency: Double
+    }
+    private static let pitchOptions: [PitchOption] = {
+        let noteNames = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"]
+        var options = [PitchOption]()
+        for octave in 1...6 {
+            for (i, name) in noteNames.enumerated() {
+                let midi = octave * 12 + i
+                let freq = 440.0 * pow(2.0, Double(midi - 69) / 12.0)
+                options.append(PitchOption(name: "\(name)\(octave)", frequency: freq))
+            }
+        }
+        return options.sorted { $0.frequency < $1.frequency }
+    }()
+    private var pitchOptions: [PitchOption] { Self.pitchOptions }
+
+    private var harmonics: [Double] { (1...7).map { Double($0) * f0Hz } }
     private let hzFormatter: NumberFormatter = {
         let f = NumberFormatter()
         f.numberStyle = .decimal
@@ -64,42 +82,49 @@ struct F0EditorView: View {
                     Spacer()
                 }
 
-                // Text field bound to internal string
+                // Editable TextField
                 TextField("Hz", text: $editingText, onCommit: commitText)
                     .focused($isTextFocused)
                     .keyboardType(.decimalPad)
                     .textFieldStyle(.roundedBorder)
                     .multilineTextAlignment(.center)
                     .font(.largeTitle)
-                    .onAppear { editingText = String(format: "%.2f", f0Hz) }
+                    .onAppear {
+                        editingText = String(format: "%.2f", f0Hz)
+                        selectedPitch = pitchOptions.min(by: { abs($0.frequency - f0Hz) < abs($1.frequency - f0Hz) })
+                    }
+                    .onChange(of: f0Hz) { newHz in
+                        if !isTextFocused {
+                            editingText = String(format: "%.2f", newHz)
+                        }
+                        selectedPitch = pitchOptions.min(by: { abs($0.frequency - newHz) < abs($1.frequency - newHz) })
+                    }
                     .toolbar {
                         ToolbarItemGroup(placement: .keyboard) {
                             Spacer()
-                            Button("Done") {
-                                commitText()
-                            }
+                            Button("Done") { commitText() }
                         }
                     }
+
+                // Dropdown Picker for pitch
+                Picker("Choose Pitch", selection: $selectedPitch) {
+                    ForEach(pitchOptions) { option in
+                        Text("\(option.name) (\(option.frequency, specifier: "%.2f") Hz)").tag(Optional(option))
+                    }
+                }
+                .pickerStyle(MenuPickerStyle())
+                .onChange(of: selectedPitch) { newValue in
+                    if let selected = newValue {
+                        f0Hz = selected.frequency
+                        editingText = String(format: "%.2f", selected.frequency)
+                    }
+                }
 
                 // Closest note and cent deviation
                 Text("Closest: \(noteName) \(centOffset >= 0 ? "+" : "")\(centOffset, specifier: "%.1f")¢")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
 
-                // Slider updates both f0Hz and text when not editing
-                VStack {
-                    Text("Adjust with Slider")
-                        .font(.headline)
-                    Slider(value: $f0Hz, in: 20...500, step: 0.01)
-                        .onChange(of: f0Hz) { new in
-                            if !isTextFocused {
-                                editingText = String(format: "%.2f", new)
-                            }
-                        }
-                    Text("\(f0Hz, specifier: "%.2f") Hz")
-                        .font(.title2)
-                        .monospacedDigit()
-                }
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Harmonics:")
                         .font(.headline)
@@ -111,7 +136,6 @@ struct F0EditorView: View {
 
                 Spacer()
             }
-   
             .padding()
             .navigationTitle("Select f₀")
             .navigationBarTitleDisplayMode(.inline)
@@ -134,10 +158,12 @@ struct F0EditorView: View {
     private func commitText() {
         if let val = hzFormatter.number(from: editingText)?.doubleValue {
             f0Hz = val
+            selectedPitch = pitchOptions.min(by: { abs($0.frequency - val) < abs($1.frequency - val) })
         }
         isTextFocused = false
     }
 }
+
 
 struct F0SelectorView_Previews: PreviewProvider {
     @State static var previewHz: Double = 77.78

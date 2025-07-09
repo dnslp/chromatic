@@ -25,13 +25,13 @@ struct ProfileSelectionView: View {
                                 .foregroundColor(.gray)
                         }
                         Spacer()
-                        Button {
-                            profileToEdit = profile // Only set profileToEdit
-                        } label: {
-                            Image(systemName: "pencil.circle.fill")
-                                .foregroundColor(.accentColor)
-                        }
-                        .buttonStyle(BorderlessButtonStyle()) // To ensure button works in a list row
+//                        Button {
+//                            profileToEdit = profile // Only set profileToEdit
+//                        } label: {
+//                            Image(systemName: "pencil.circle.fill")
+//                                .foregroundColor(.accentColor)
+//                        }
+//                        .buttonStyle(BorderlessButtonStyle()) // To ensure button works in a list row
                     }
                     .contentShape(Rectangle()) // Make the whole row tappable for selection
                     .onTapGesture {

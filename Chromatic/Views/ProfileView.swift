@@ -4,6 +4,9 @@ struct ProfileView: View {
     @ObservedObject var profileManager: UserProfileManager
     @State var editingProfile: UserProfile // A copy for editing
     @StateObject private var tonePlayer = TonePlayer()
+    
+    @State private var expandedModes: Set<String> = ["Ionian (Major)"] // default expanded
+
 
     private var originalProfile: UserProfile // To compare for changes or revert
 
@@ -31,7 +34,9 @@ struct ProfileView: View {
     /// Returns (note name with octave, cents offset)
     private func noteNameAndCents(for frequency: Double) -> (String, Int) {
         guard frequency > 0 else { return ("–", 0) }
-        let noteNames = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"]
+        // Move noteNames out to a static property to help typechecker
+        let noteNames = ProfileView.noteNames
+        
         let freqRatio = frequency / 440.0
         let midiDouble = 69.0 + 12.0 * log2(freqRatio)
         let midi = Int(round(midiDouble))
@@ -44,6 +49,54 @@ struct ProfileView: View {
         return ("\(noteName)\(octave)", cents)
     }
 
+    private static let noteNames: [String] = [
+        "C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"
+    ]
+
+    // Define major scale intervals in semitones
+    private static let majorScaleIntervals: [Int] = [0, 2, 4, 5, 7, 9, 11, 12]
+    
+    // Each mode is defined by semitone intervals from the root (degrees 1–7, then octave)
+    private static let modeIntervals: [(name: String, intervals: [Int])] = [
+        ("Ionian (Major)",     [0, 2, 4, 5, 7, 9, 11, 12]),
+        ("Dorian",             [0, 2, 3, 5, 7, 9, 10, 12]),
+        ("Phrygian",           [0, 1, 3, 5, 7, 8, 10, 12]),
+        ("Lydian",             [0, 2, 4, 6, 7, 9, 11, 12]),
+        ("Mixolydian",         [0, 2, 4, 5, 7, 9, 10, 12]),
+        ("Aeolian (Minor)",    [0, 2, 3, 5, 7, 8, 10, 12]),
+        ("Locrian",            [0, 1, 3, 5, 6, 8, 10, 12]),
+    ]
+    private func scaleDegrees(for rootHz: Double, intervals: [Int]) -> [(degree: String, note: String, freq: Double, cents: Int)] {
+        let noteNames = ProfileView.noteNames
+        let rootFreqRatio = rootHz / 440.0
+        let rootMidi = 69.0 + 12.0 * log2(rootFreqRatio)
+        return intervals.enumerated().map { (i, interval) in
+            let midi = Int(round(rootMidi)) + interval
+            let freq = 440.0 * pow(2.0, Double(midi - 69) / 12.0)
+            let noteIndex = (midi + 120) % 12
+            let octave = (midi / 12) - 1
+            let noteName = noteNames[noteIndex]
+            let cents = Int(round(1200.0 * log2(freq / (rootHz * pow(2.0, Double(interval) / 12.0)))))
+            return ("\(i+1)", "\(noteName)\(octave)", freq, cents)
+        }
+    }
+
+    // Return scale notes and their info given a starting frequency
+    private func scaleDegrees(for rootHz: Double) -> [(degree: String, note: String, freq: Double, cents: Int)] {
+        let noteNames = ProfileView.noteNames
+        let rootFreqRatio = rootHz / 440.0
+        let rootMidi = 69.0 + 12.0 * log2(rootFreqRatio)
+        return ProfileView.majorScaleIntervals.enumerated().map { (i, interval) in
+            let midi = Int(round(rootMidi)) + interval
+            let freq = 440.0 * pow(2.0, Double(midi - 69) / 12.0)
+            let noteIndex = (midi + 120) % 12
+            let octave = (midi / 12) - 1
+            let noteName = noteNames[noteIndex]
+            let cents = Int(round(1200.0 * log2(freq / (rootHz * pow(2.0, Double(interval) / 12.0)))))
+            return ("\(i+1)", "\(noteName)\(octave)", freq, cents)
+        }
+    }
+
     
     var body: some View {
         NavigationView {
@@ -51,7 +104,8 @@ struct ProfileView: View {
                 Section(header: Text("Profile Details")) {
                     HStack {
                         Text("Name:")
-                        TextField("Profile Name", text: $editingProfile.name)
+                        Text(editingProfile.name)
+                            .foregroundColor(.primary)
                     }
                     let (f0Note, f0Cents) = noteNameAndCents(for: editingProfile.f0)
 
@@ -156,6 +210,49 @@ struct ProfileView: View {
                     }
 
                 }
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(ProfileView.modeIntervals, id: \.name) { mode in
+                        DisclosureGroup(
+                            isExpanded: Binding(
+                                get: { expandedModes.contains(mode.name) },
+                                set: { expanded in
+                                    if expanded {
+                                        expandedModes.insert(mode.name)
+                                    } else {
+                                        expandedModes.remove(mode.name)
+                                    }
+                                }
+                            ),
+                            content: {
+                                let degrees = scaleDegrees(for: editingProfile.f0, intervals: mode.intervals)
+                                ForEach(degrees, id: \.degree) { degree, note, freq, cents in
+                                    Button(action: { tonePlayer.play(frequency: freq) }) {
+                                        HStack {
+                                            Text("Degree \(degree):")
+                                            Spacer()
+                                            VStack(alignment: .trailing) {
+                                                Text("\(note)  \(freq, specifier: "%.2f") Hz")
+                                                Text("\(cents >= 0 ? "+" : "")\(cents)¢")
+                                                    .font(.caption)
+                                                    .foregroundColor(.secondary)
+                                            }
+                                            Image(systemName: "play.circle")
+                                                .foregroundColor(.accentColor)
+                                        }
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            },
+                            label: {
+                                Text("\(mode.name)")
+                                    .font(.headline)
+                            }
+                        )
+                        .padding(.vertical, 2)
+                    }
+                }
+                .padding(.top)
+
             }
             .navigationTitle("Profile Details")
             .toolbar {
@@ -208,20 +305,16 @@ struct ProfileView: View {
 
 struct ProfileView_Previews: PreviewProvider {
     static var previews: some View {
-        // Create a UserProfileManager instance for the preview
+        // Make a temporary manager with at least one profile.
         let manager = UserProfileManager()
-
-        // Ensure there's at least one profile to preview.
-        // If the manager initializes with a default profile, this might not be strictly necessary,
-        // but it's good for ensuring the preview always has data.
+        // Force at least one profile for preview (does nothing if already exists)
         if manager.profiles.isEmpty {
-            manager.addProfile(name: "Preview Profile", f0: 440.0)
+            manager.addProfile(name: "Preview Profile", f0: 220.0)
         }
-
-        // Select the first profile for the preview, or a default if none (though the above ensures one)
-        let profileToPreview = manager.profiles.first ?? UserProfile(id: UUID(), name: "Default Preview", f0: 261.63) // C4 as fallback
-
-        return ProfileView(profileManager: manager, profile: profileToPreview)
+        // Pick the first profile (always exists due to above)
+        let sampleProfile = manager.profiles.first!
+        return ProfileView(profileManager: manager, profile: sampleProfile)
             .preferredColorScheme(.dark)
+            .previewLayout(.sizeThatFits)
     }
 }
