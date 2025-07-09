@@ -6,6 +6,11 @@ struct TunerScreen: View {
     @State private var tunerData: TunerData
     @Binding var modifierPreference: ModifierPreference
     @Binding var selectedTransposition: Int
+    @EnvironmentObject var profileManager: UserProfileManager
+
+    var userF0: Double {
+        profileManager.currentProfile?.f0 ?? 77.78 // fallback value
+    }
     
     init(pitchDetector: MicrophonePitchDetector, modifierPreference: Binding<ModifierPreference>, selectedTransposition: Binding<Int>) {
         self.pitchDetector = pitchDetector
@@ -16,6 +21,32 @@ struct TunerScreen: View {
     
     var body: some View {
         
+//        TunerPlanet(
+//            tunerData: $tunerData, // <-- pass as a binding!
+//            modifierPreference: modifierPreference,
+//            selectedTransposition: selectedTransposition
+//        )
+//        PlanetaryPitchView(
+//            f0: userF0,
+//            liveHz: tunerData.pitch.measurement.value
+//        )
+//        .frame(width: 320, height: 320)
+//        .padding(.top, 16)
+        
+//        PitchOrbitView(
+//            liveHz: tunerData.pitch.measurement.value,
+//            f0: userF0,
+//            fourth: userF0 * 4 / 3,
+//            fifth: userF0 * 3 / 2,
+//            harmonics: (2...5).map { userF0 * Double($0) }
+//        )
+//        .padding()
+//        TunerViewTemplate(
+//            tunerData: $tunerData,
+//            modifierPreference: modifierPreference,
+//            selectedTransposition: selectedTransposition
+//        ) 
+//        TunerViewZen(tunerData: $tunerData)
         TunerView(
             tunerData: $tunerData, // Pass as a binding
             modifierPreference: modifierPreference,

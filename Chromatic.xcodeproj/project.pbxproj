@@ -218,6 +218,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		BE17A10F2E1EC530005C5154 /* TunerViews */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = TunerViews; sourceTree = "<group>"; };
 		BEED6ED72E143F3A00037881 /* Audio */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Audio; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
@@ -344,6 +345,7 @@
 		8FB571D425B722F2007C28BC /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				BE17A10F2E1EC530005C5154 /* TunerViews */,
 				BEDD83032E18A99500C46430 /* CircleWave.swift */,
 				BE15128E2E15F6A600BB9EC2 /* ConcentricCircleVisualizer.swift */,
 				8FB571EF25B73ECE007C28BC /* CurrentNoteMarker.swift */,
@@ -469,6 +471,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				BE17A10F2E1EC530005C5154 /* TunerViews */,
 				BEED6ED72E143F3A00037881 /* Audio */,
 			);
 			name = "Chromatic WatchKit Extension";
@@ -492,6 +495,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				BE17A10F2E1EC530005C5154 /* TunerViews */,
 				BEED6ED72E143F3A00037881 /* Audio */,
 			);
 			name = Chromatic;

@@ -6,7 +6,6 @@ struct ConcentricCircleVisualizer: View {
     let tunerData: TunerData
     let fundamentalHz: Double?  // optional user-defined fundamental frequency in Hz
     
-    
     private var percent: Double {
         max(0, 1 - abs(distance) / maxDistance)
     }
@@ -25,7 +24,7 @@ struct ConcentricCircleVisualizer: View {
         return Color(hue: Double(idx)/12.0, saturation: 1, brightness: 1)
     }
     
-    /// Check if live pitch is within ±5 cents of fundamental
+    /// Check if live pitch is within ±25 cents of fundamental
     private var isAtFundamental: Bool {
         guard let f0 = fundamentalHz else { return false }
         let ratio = tunerData.pitch.measurement.value / f0
@@ -34,7 +33,7 @@ struct ConcentricCircleVisualizer: View {
     }
     
     private var startOffset: CGFloat {
-        CGFloat((1 - percent) * 30)
+        CGFloat((1 - percent) * 0.22) // Now a fraction of size, not a fixed px value
     }
     
     enum PitchMatchLabel: String {
@@ -62,116 +61,122 @@ struct ConcentricCircleVisualizer: View {
     }
     
     var body: some View {
-        ZStack {
-   
+        GeometryReader { geo in
+            let size = min(geo.size.width, geo.size.height)
+            let offsetAmount = size * startOffset
+            let lineWidth = size * 0.06 + size * 0.12 * tunerData.amplitude
+            let waveSize1 = size * 1.1
+            let waveSize2 = size * 1.16
+            let waveSize3 = size * 1.24
+            
+            ZStack {
+                // 1) Static backdrop ring
+                Circle()
+                    .stroke(Color.secondary.opacity(0.2),
+                            lineWidth: lineWidth)
+                    .frame(width: size, height: size)
+                
+                // 2) Waving circle for amplitude (background)
+                WavingCircleBorder(
+                    strength: tunerData.amplitude * 5,
+                    frequency: 10,
+                    lineWidth: size * 0.018,
+                    color: fillColor.opacity(0.1 + 0.2 * tunerData.amplitude),
+                    animationDuration: 1.5,
+                    autoreverses: true
+                )
+                .frame(width: waveSize1, height: waveSize1)
+                
+                // 3) Two converging circles
+                Group {
+                    Circle()
+                        .fill(fillColor.opacity(0.5))
+                        .frame(width: size, height: size)
+                        .scaleEffect(CGFloat(0.8 + 0.2 * percent))
+                        .blur(radius: size * 0.05 * (1 - percent))
+                        .offset(x: -offsetAmount)
+                    
+                    Circle()
+                        .fill(fillColor.opacity(0.5))
+                        .frame(width: size, height: size)
+                        .scaleEffect(CGFloat(0.8 + 0.2 * percent))
+                        .blur(radius: size * 0.05 * (1 - percent))
+                        .offset(x: offsetAmount)
+                }
+                .blendMode(.plusLighter)
+                
+                // 4) Waving borders (main)
+                WavingCircleBorder(
+                    strength: 4,
+                    frequency: tunerData.pitch.measurement.value,
+                    lineWidth: max(0.5 - percent, 0.2) * size * 0.009, // scale with size, never 0
+                    color: fillColor.opacity(0.3),
+                    animationDuration: 0.8,
+                    autoreverses: false
+                )
+                .frame(width: waveSize2, height: waveSize2)
+                
+                WavingCircleBorder(
+                    strength: 9,
+                    frequency: tunerData.pitch.measurement.value,
+                    lineWidth: max(1 - percent, 0.4) * size * 0.009,
+                    color: fillColor.opacity(0.3),
+                    animationDuration: 0.6,
+                    autoreverses: false
+                )
+                .frame(width: waveSize3, height: waveSize3)
+                
+                // 5) Glowing accents when nearly in tune
+                if percent >= 0.8 {
+                    WavingCircleBorder(
+                        strength: 1,
+                        frequency: tunerData.pitch.measurement.value / 100,
+                        lineWidth: isAtFundamental ? size * 0.009 : size * 0.022,
+                        color: isAtFundamental ? .white : fillColor.opacity(0.9),
+                        animationDuration: 1,
+                        autoreverses: false
+                    )
+                    .frame(width: size * 1.3, height: size * 1.3)
+                    
+                    WavingCircleBorder(
+                        strength: 1,
+                        frequency: 1,
+                        lineWidth: isAtFundamental ? size * 0.13 : size * 0.022,
+                        color: isAtFundamental ? .white : fillColor.opacity(0.9),
+                        animationDuration: 0.9,
+                        autoreverses: false
+                    )
+                    .frame(width: size * 1.4, height: size * 1.4)
+                }
+                
+                // Center Label
+                let match = pitchMatchLabel(
+                    pitchHz: tunerData.pitch.measurement.value,
+                    f0: fundamentalHz ?? tunerData.pitch.measurement.value
+                )
+                let freqDifference = tunerData.pitch.measurement.value - (fundamentalHz ?? tunerData.pitch.measurement.value)
 
-            // 1) Static backdrop ring
-            Circle()
-                .stroke(Color.secondary.opacity(0.2),
-                        lineWidth: CGFloat(4 + 8 * tunerData.amplitude))
-                .frame(width: 100, height: 100)
-            
-            // 2) Waving circle for amplitude (background)
-            WavingCircleBorder(
-                strength: tunerData.amplitude * 5,
-                frequency: 10, // Lowered frequency for a gentler pulse
-                lineWidth: 2,
-                color: fillColor.opacity(0.1 + 0.2 * tunerData.amplitude),
-                animationDuration: 1.5, // Slower wave cycle
-                autoreverses: true
-            )
-            .frame(width: 110, height: 110)
-            
-            // 3) Two converging circles
-            Group {
-                Circle()
-                    .fill(fillColor.opacity(0.5))
-                    .frame(width: 100, height: 100)
-                    .scaleEffect(CGFloat(0.8 + 0.2 * percent))
-                    .blur(radius: CGFloat(5 * (1 - percent)))
-                    .offset(x: -startOffset)
-                
-                Circle()
-                    .fill(fillColor.opacity(0.5))
-                    .frame(width: 100, height: 100)
-                    .scaleEffect(CGFloat(0.8 + 0.2 * percent))
-                    .blur(radius: CGFloat(5 * (1 - percent)))
-                    .offset(x: startOffset)
-            }
-            .blendMode(.plusLighter)
-            
-            // 4) Waving borders (main)
-            WavingCircleBorder(
-                strength: 4,
-                frequency: tunerData.pitch.measurement.value,
-                lineWidth: 0.5 - percent, // Gets thinner when in tune
-                color: fillColor.opacity(0.3),
-                animationDuration: 0.8, // Slower wave cycle
-                autoreverses: false
-            )
-            .frame(width: 116, height: 116)
-            
-            WavingCircleBorder(
-                strength: 9,
-                frequency: tunerData.pitch.measurement.value,
-                lineWidth: 1 - percent, // Gets thinner when in tune
-                color: fillColor.opacity(0.3),
-                animationDuration: 0.6, // Slower wave cycle
-                autoreverses: false
-            )
-            .frame(width: 124, height: 124)
-            
-            // 5) Glowing accents when nearly in tune
-            if percent >= 0.8 {
-                WavingCircleBorder(
-                    strength: 1,
-                    frequency: tunerData.pitch.measurement.value / 100,
-                    lineWidth: isAtFundamental ? 1 : 3,
-                    color: isAtFundamental ? .white : fillColor.opacity(0.9),
-                    animationDuration: 1,
-                    autoreverses: false
+                Text(
+                    match != .none ?
+                        match.rawValue :
+                        "\(String(format: "%.2f", freqDifference)) Hz"
                 )
-                .frame(width: 130, height: 130)
-                
-                WavingCircleBorder(
-                    strength: 1,
-                    frequency: 1,
-                    lineWidth: isAtFundamental ? 18 : 3,
-                    color: isAtFundamental ? .white : fillColor.opacity(0.9),
-                    animationDuration: 0.9,
-                    autoreverses: false
-                )
-                .frame(width: 140, height: 140)
+                .font(.system(size: size * 0.17, weight: .bold, design: .rounded))
+                .foregroundColor(.primary)
+                .offset(y: -size * 0.13)
             }
+            .frame(width: geo.size.width, height: geo.size.height)
         }
+        .aspectRatio(1, contentMode: .fit)
+        // Animations outside for overall effect
         .compositingGroup()
-        // Apply animations to the ZStack for better coordination
-        .animation(.interpolatingSpring(stiffness: 80, damping: 20), value: percent) // Softer spring
-        .animation(.spring(response: 0.5, dampingFraction: 0.7), value: tunerData.amplitude) // Gentler spring
-        .animation(.easeInOut(duration: 0.3), value: tunerData.pitch.measurement.value) // Smooth pitch changes
+        .animation(.interpolatingSpring(stiffness: 80, damping: 20), value: percent)
+        .animation(.spring(response: 0.5, dampingFraction: 0.7), value: tunerData.amplitude)
+        .animation(.easeInOut(duration: 0.3), value: tunerData.pitch.measurement.value)
         .animation(.easeInOut(duration: 0.4), value: isAtFundamental)
-
-        let match = pitchMatchLabel(
-            pitchHz: tunerData.pitch.measurement.value,
-            f0: fundamentalHz ?? tunerData.pitch.measurement.value
-        )
-        let freqDifference = tunerData.pitch.measurement.value - (fundamentalHz ?? tunerData.pitch.measurement.value)
-
-        Text(
-            match != .none ?
-                match.rawValue :
-                "\(String(format: "%.2f", freqDifference)) Hz"
-        )
-        .font(.headline)
-        .bold()
-        .offset(y: -20)
-        // Individual animations for text if needed, but often benefits from container's animation
-        // For instance, if text content changes and needs its own transition:
-        // .animation(.easeInOut(duration: 0.2), value: match.rawValue)
-        // .animation(.easeInOut(duration: 0.2), value: freqDifference)
-        
     }
 }
+
 struct ConcentricCircleVisualizer_Previews: PreviewProvider {
     static var tunerA4 = TunerData(pitch: 200, amplitude: 0.5)
     static var tunerC4 = TunerData(pitch: 261.6, amplitude: 0.8)
@@ -180,12 +185,15 @@ struct ConcentricCircleVisualizer_Previews: PreviewProvider {
         VStack(spacing: 30) {
             Text("In Tune (A4)")
             ConcentricCircleVisualizer(distance:   0, maxDistance: 50, tunerData: tunerA4, fundamentalHz: 200)
-
+                .frame(width: 200, height: 200)
+            
             Text("Slightly Sharp (+20¢)")
-            ConcentricCircleVisualizer(distance:  20, maxDistance: 0, tunerData: tunerA4, fundamentalHz: 100)
-
+            ConcentricCircleVisualizer(distance:  20, maxDistance: 50, tunerData: tunerA4, fundamentalHz: 100)
+                .frame(width: 240, height: 240)
+            
             Text("Slightly Flat (–9¢)")
             ConcentricCircleVisualizer(distance: -9, maxDistance: 50, tunerData: tunerA4, fundamentalHz: 431)
+                .frame(width: 180, height: 180)
         }
         .padding()
         .previewLayout(.sizeThatFits)

@@ -120,8 +120,8 @@ struct TunerView: View {
                             tunerData: tunerData,
                             fundamentalHz: userF0
                         )
-                        .frame(width: 140, height: 140)
-                        .padding(.bottom, 2)
+                        .frame(width: 80, height: 80)
+                        .padding(.bottom, 20)
 
                         if let c = countdown {
                             CalmingCountdownCircle(secondsLeft: c, totalSeconds: countdownSeconds)
