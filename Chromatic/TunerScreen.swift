@@ -65,5 +65,6 @@ struct TunerScreen_Previews: PreviewProvider {
             modifierPreference: .constant(.preferSharps),
             selectedTransposition: .constant(0)
         )
+        .environmentObject(UserProfileManager())
     }
 }
