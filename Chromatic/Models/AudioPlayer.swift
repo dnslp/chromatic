@@ -5,7 +5,7 @@ import Foundation
 import AVFoundation
 import Combine
 
-class AudioPlayer: ObservableObject {
+class AudioPlayer: NSObject, ObservableObject {
     @Published var isPlaying = false
     @Published var currentSong: String = ""
     @Published var songList: [String] = []

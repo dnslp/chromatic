@@ -41,23 +41,43 @@ struct NowPlayingBarView_Previews: PreviewProvider {
         // Preview with a song
         let playingPlayer = AudioPlayer()
         playingPlayer.songList = ["Preview Song 1", "Preview Song 2"]
-        playingPlayer.currentSong = "Preview Song 1"
-        playingPlayer.isPlaying = true
+        if !playingPlayer.songList.isEmpty { // Ensure songList is not empty before accessing index 0
+            playingPlayer.currentSong = playingPlayer.songList[0]
+            playingPlayer.isPlaying = true
+        }
 
         // Preview when no song is loaded/available
         let emptyPlayer = AudioPlayer()
-        emptyPlayer.songList = []
-        emptyPlayer.currentSong = "No Audio Found"
+        // emptyPlayer.songList = [] // Already default
+        emptyPlayer.currentSong = "No Audio Found" // Simulate this state
 
-        VStack {
-            NowPlayingBarView(audioPlayer: playingPlayer)
-            Text("App Content Below (Playing)")
-            Spacer()
-            NowPlayingBarView(audioPlayer: emptyPlayer)
-            Text("App Content Below (No Audio)")
-            Spacer()
-            NowPlayingBarView(audioPlayer: AudioPlayer()) // Default init state
-            Text("App Content Below (Initial State)")
+        // Preview with a default initialized player
+        let defaultPlayer = AudioPlayer()
+
+        return Group {
+            VStack {
+                Text("Preview: Song Playing")
+                NowPlayingBarView(audioPlayer: playingPlayer)
+                Text("App Content Below")
+            }
+            .padding()
+            .previewDisplayName("Song Playing")
+
+            VStack {
+                Text("Preview: No Audio Found")
+                NowPlayingBarView(audioPlayer: emptyPlayer)
+                Text("App Content Below")
+            }
+            .padding()
+            .previewDisplayName("No Audio Found")
+
+            VStack {
+                Text("Preview: Initial State (No song selected yet)")
+                NowPlayingBarView(audioPlayer: defaultPlayer)
+                Text("App Content Below")
+            }
+            .padding()
+            .previewDisplayName("Initial State")
         }
         .previewLayout(.sizeThatFits)
     }
