@@ -51,28 +51,56 @@ struct PlayerView: View {
             Spacer()
 
             // Playback controls
-            HStack(spacing: 50) {
-                Button(action: { audioPlayer.previous() }) {
-                    Image(systemName: "backward.fill")
-                        .font(.system(size: 30))
-                }
+            VStack {
+                HStack(spacing: 40) { // Main controls: prev, play/pause, next
+                    Button(action: { audioPlayer.previous() }) {
+                        Image(systemName: "backward.fill")
+                            .font(.system(size: 35))
+                    }
 
-                Button(action: {
-                    audioPlayer.isPlaying ? audioPlayer.pause() : audioPlayer.play()
-                }) {
-                    Image(systemName: audioPlayer.isPlaying ? "pause.circle.fill" : "play.circle.fill")
-                        .font(.system(size: 60))
-                }
+                    Button(action: {
+                        audioPlayer.isPlaying ? audioPlayer.pause() : audioPlayer.play()
+                    }) {
+                        Image(systemName: audioPlayer.isPlaying ? "pause.circle.fill" : "play.circle.fill")
+                            .font(.system(size: 70))
+                    }
 
-                Button(action: { audioPlayer.next() }) {
-                    Image(systemName: "forward.fill")
-                        .font(.system(size: 30))
+                    Button(action: { audioPlayer.next() }) {
+                        Image(systemName: "forward.fill")
+                            .font(.system(size: 35))
+                    }
+                }
+                .padding(.bottom, 20)
+
+                HStack(spacing: 50) { // Secondary controls: shuffle, repeat
+                    Button(action: { audioPlayer.toggleShuffle() }) {
+                        Image(systemName: "shuffle")
+                            .font(.system(size: 22))
+                            .foregroundColor(audioPlayer.isShuffled ? .accentColor : .gray)
+                    }
+
+                    Button(action: { audioPlayer.cycleRepeatMode() }) {
+                        Image(systemName: repeatModeIcon())
+                            .font(.system(size: 22))
+                            .foregroundColor(audioPlayer.repeatMode == .none ? .gray : .accentColor)
+                    }
                 }
             }
             .padding(.bottom, 30)
         }
         // Pin PlayerView to the top
         .frame(maxHeight: .infinity, alignment: .top)
+    }
+
+    private func repeatModeIcon() -> String {
+        switch audioPlayer.repeatMode {
+        case .none:
+            return "repeat"
+        case .one:
+            return "repeat.1"
+        case .all:
+            return "repeat" // Using "repeat" for ".all" as well, but it will be colored by foregroundColor
+        }
     }
 }
 

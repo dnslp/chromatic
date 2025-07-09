@@ -16,23 +16,26 @@ struct ChromaticApp: App {
 
     var body: some Scene {
         WindowGroup {
-            
-            TabView {
-                TunerScreen(pitchDetector: pitchDetector, modifierPreference: $modifierPreference, selectedTransposition: $selectedTransposition)
-                    .tabItem { Label("Tuner", systemImage: "tuningfork") }
+            VStack(spacing: 0) {
+                NowPlayingBarView(audioPlayer: audioPlayer)
 
-                PlayerView(audioPlayer: audioPlayer, pitchDetector: pitchDetector, modifierPreference: $modifierPreference, selectedTransposition: $selectedTransposition)
-                    .tabItem { Label("Player", systemImage: "music.note") }
+                TabView {
+                    TunerScreen(pitchDetector: pitchDetector, modifierPreference: $modifierPreference, selectedTransposition: $selectedTransposition)
+                        .tabItem { Label("Tuner", systemImage: "tuningfork") }
 
-                ProfilesTabView()
-                    .tabItem { Label("Profiles", systemImage: "person.crop.circle") }
+                    PlayerView(audioPlayer: audioPlayer, pitchDetector: pitchDetector, modifierPreference: $modifierPreference, selectedTransposition: $selectedTransposition)
+                        .tabItem { Label("Player", systemImage: "music.note") }
 
-                SavedSessionsView() // Add SavedSessionsView as a new tab
-                    .tabItem { Label("Sessions", systemImage: "list.bullet.rectangle") }
+                    ProfilesTabView()
+                        .tabItem { Label("Profiles", systemImage: "person.crop.circle") }
+
+                    SavedSessionsView() // Add SavedSessionsView as a new tab
+                        .tabItem { Label("Sessions", systemImage: "list.bullet.rectangle") }
 
 //                FunctionGeneratorView(engine: FunctionGeneratorEngine())
 //                    .tabItem { Label("Func Gen", systemImage: "waveform.path") }
 //                SpectrogramView().tabItem { Label("Spectrum", systemImage: "waveform") }
+                }
             }
             .environmentObject(sessionStore) // Inject SessionStore into the environment
             .environmentObject(profileManager)
