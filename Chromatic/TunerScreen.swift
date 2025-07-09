@@ -43,11 +43,18 @@ struct TunerScreen: View {
 //            harmonics: (2...5).map { userF0 * Double($0) }
 //        )
 //        .padding()
-        TunerViewTemplate(
+//        TunerViewTemplate(
+//            tunerData: $tunerData,
+//            modifierPreference: modifierPreference,
+//            selectedTransposition: selectedTransposition
+//        )
+        
+        StringTheoryView(
             tunerData: $tunerData,
             modifierPreference: modifierPreference,
             selectedTransposition: selectedTransposition
-        ) 
+        )
+        .environmentObject(profileManager)
 //        TunerViewZen(tunerData: $tunerData)
 //        TunerView(
 //            tunerData: $tunerData, // Pass as a binding

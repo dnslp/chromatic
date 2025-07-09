@@ -41,7 +41,7 @@ struct CircleWave: Shape {
 }
 
 /// A SwiftUI view that draws a circle with an animated, continuously-moving border.
-struct WavingCircleBorder: View {
+struct WaveCircleBorder: View {
     /// How far the wave pushes in/out.
     var strength: CGFloat = 10
     /// Number of wave bumps around the circle.
@@ -82,11 +82,11 @@ struct WavingCircleBorder: View {
 }
 
 // MARK: - Preview
-struct WavingCircleBorder_Previews: PreviewProvider {
+struct WaveCircleBorder_Previews: PreviewProvider {
     static var previews: some View {
         VStack(spacing: 20) {
-            WavingCircleBorder()
-            WavingCircleBorder(strength: 1, frequency: 70, lineWidth: 4, color: .red, animationDuration: 1, autoreverses: false)
+            WaveCircleBorder()
+            WaveCircleBorder(strength: 1, frequency: 70, lineWidth: 4, color: .red, animationDuration: 1, autoreverses: false)
         }
         .padding()
     }
