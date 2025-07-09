@@ -31,6 +31,7 @@ final class TunerViewSnapshotTests: XCTestCase {
                 modifierPreference: .preferSharps,
                 selectedTransposition: 0
             )
+            .environmentObject(UserProfileManager())
             for device in SnapshotDevice.all {
                 assertSnapshot(
                     matching: view,

@@ -9,7 +9,7 @@ struct TunerView: View {
     @State var selectedTransposition: Int
     
     @State private var showingToneSettings = false
-    @StateObject private var profileManager = UserProfileManager()
+    @EnvironmentObject private var profileManager: UserProfileManager
     @State private var userF0: Double = 77.78
     @State private var micMuted = false
     @State private var sessionStats: SessionStatistics?
@@ -316,6 +316,7 @@ struct TunerView_Previews: PreviewProvider {
             modifierPreference: .preferSharps,
             selectedTransposition: 0
         )
+        .environmentObject(UserProfileManager())
         .previewLayout(.device)
         .padding()
     }
