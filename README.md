@@ -1,3 +1,12 @@
+
+# chromatic
+
+This project defines a global constant `pitchFrequencies` containing the
+equal-tempered tuning table.  Previews and unit tests rely on this constant to
+look up pitch information.  It is declared `public` in
+`Chromatic/Models/Pitch.swift` so external contexts can reference it directly or
+replace it with test data when needed.
+=======
 # Chromatic
 
 Chromatic is a cross-platform pitch tuner and practice tool written in SwiftUI. It features real‑time pitch detection, color‑coded feedback for accuracy, harmonic visualizations and the ability to record sessions for later analysis. A simple audio player is included so you can practice along with your own recordings.
@@ -33,4 +42,5 @@ Contributions are welcome! Please follow these steps:
 1. Fork the repository and create a topic branch.
 2. Make your changes and ensure `xcodebuild test` succeeds.
 3. Submit a pull request describing your changes.
+
 

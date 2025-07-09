@@ -144,10 +144,11 @@ struct StatsModalView_Previews: PreviewProvider {
     }
 }
 
-// Ensure pitchFrequencies is available for the preview context if it's defined globally or accessible.
-// If it's part of a class or struct, it might need to be mocked or provided.
-// For simplicity, assuming it's accessible or this part of preview won't crash.
-// If `pitchFrequencies` is not globally available, you might need to define a sample one here:
+// The preview uses the global `pitchFrequencies` constant from `Pitch.swift`.
+// Because that constant is `public`, tests and other modules can import it
+// directly. If you prefer to provide custom data, inject an array of `Pitch`
+// instances instead. A sample stub is shown below if you need to override it
+// locally:
 //let pitchFrequencies: [(name: String, frequency: Double)] = [
 //    ("A2", 110.00), ("A#2/Bb2", 116.54), ("B2", 123.47),
 //    ("C3", 130.81), ("C#3/Db3", 138.59), ("D3", 146.83),
