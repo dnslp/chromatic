@@ -32,7 +32,7 @@ struct ChromaticApp: App {
 
 //                FunctionGeneratorView(engine: FunctionGeneratorEngine())
 //                    .tabItem { Label("Func Gen", systemImage: "waveform.path") }
-//                SpectogramView().tabItem { Label("Spectrum", systemImage: "waveform") }
+//                SpectrogramView().tabItem { Label("Spectrum", systemImage: "waveform") }
             }
             .environmentObject(sessionStore) // Inject SessionStore into the environment
             .environmentObject(profileManager)
