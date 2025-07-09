@@ -6,8 +6,8 @@ import AVFoundation
 struct TunerView: View {
     @EnvironmentObject var profileManager: UserProfileManager
     @Binding var tunerData: TunerData
-    @State var modifierPreference: ModifierPreference
-    @State var selectedTransposition: Int
+    @Binding var modifierPreference: ModifierPreference // Changed to @Binding
+    @Binding var selectedTransposition: Int          // Changed to @Binding
     
     @State private var showingToneSettings = false
     @State private var userF0: Double = 77.78
@@ -313,8 +313,8 @@ struct TunerView_Previews: PreviewProvider {
     static var previews: some View {
         TunerView(
             tunerData: .constant(TunerData(pitch: 428, amplitude: 0.5)),
-            modifierPreference: .preferSharps,
-            selectedTransposition: 0
+            modifierPreference: .constant(.preferSharps), // Changed to .constant()
+            selectedTransposition: .constant(0)           // Changed to .constant()
         )
         .environmentObject(UserProfileManager()) // Add for preview
         .previewLayout(.device)

@@ -8,6 +8,7 @@ import AudioKit
 struct ChromaticApp: App {
     @StateObject private var audioPlayer = AudioPlayer()
     @StateObject private var pitchDetector = MicrophonePitchDetector()
+    @State private var tunerData = TunerData() // Added state for TunerData
     @StateObject private var sessionStore = SessionStore() // Initialize SessionStore
     @StateObject private var profileManager = UserProfileManager() // Initialize UserProfileManager
     @AppStorage("modifierPreference") private var modifierPreference = ModifierPreference.preferSharps
@@ -18,7 +19,7 @@ struct ChromaticApp: App {
         WindowGroup {
             
             TabView {
-                TunerView(pitchDetector: pitchDetector, modifierPreference: $modifierPreference, selectedTransposition: $selectedTransposition)
+                TunerView(tunerData: $tunerData, modifierPreference: $modifierPreference, selectedTransposition: $selectedTransposition)
                     .tabItem { Label("Tuner", systemImage: "tuningfork") }
 
                 PlayerView(audioPlayer: audioPlayer, pitchDetector: pitchDetector, modifierPreference: $modifierPreference, selectedTransposition: $selectedTransposition)
@@ -34,6 +35,12 @@ struct ChromaticApp: App {
             .environmentObject(sessionStore) // Inject SessionStore into the environment
             .environmentObject(profileManager) // Inject UserProfileManager into the environment
             .preferredColorScheme(.dark)
+            .onReceive(pitchDetector.$pitch) { newPitch in
+                self.tunerData = TunerData(pitch: newPitch, amplitude: self.tunerData.amplitude, harmonics: self.tunerData.harmonics)
+            }
+            .onReceive(pitchDetector.$amplitude) { newAmplitude in
+                self.tunerData = TunerData(pitch: self.tunerData.pitch.hertz, amplitude: newAmplitude, harmonics: self.tunerData.harmonics)
+            }
             .onAppear {
                 #if os(iOS)
                 UIApplication.shared.isIdleTimerDisabled = true
