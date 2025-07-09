@@ -1,13 +1,20 @@
 import Foundation
 
-struct Pitch: Identifiable, Hashable {
+/// Representation of a musical pitch.
+///
+/// Marked `public` so that tests and previews outside the main target can
+/// construct and reference `Pitch` values.
+public struct Pitch: Identifiable, Hashable {
     let id = UUID()
     let name: String
     let frequency: Double
 }
 
 /// All equal-tempered pitches from C0 through D#8/Eb8.
-let pitchFrequencies: [Pitch] = [
+///
+/// Declared `public` so that previews and unit tests can reference the same
+/// canonical list of pitches instead of hard-coding their own copies.
+public let pitchFrequencies: [Pitch] = [
     Pitch(name: "C0",   frequency: 16.35),
     Pitch(name: "C#0/Db0", frequency: 17.32),
     Pitch(name: "D0",   frequency: 18.35),

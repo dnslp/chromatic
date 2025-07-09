@@ -1,21 +1,18 @@
 import XCTest
 @testable import Chromatic
 
-// Dummy pitch data for testing, mirroring what might be in the app
-// In a real scenario, you might share the actual pitchFrequencies or use a mock.
-// For simplicity here, we'll redefine a small subset.
+// Dummy pitch data for testing. The production app exposes a public
+// `pitchFrequencies` constant (see `Pitch.swift`), so tests may use that
+// directly or provide their own subset as done here.
 let testPitchFrequencies: [Pitch] = [
     Pitch(name: "C4", frequency: 261.63),
     Pitch(name: "A4", frequency: 440.00),
     Pitch(name: "B4", frequency: 493.88)
 ]
 
-// Make pitchFrequencies accessible for testing if it's not already global
-// or provide a way to inject it. For this test, we'll assume the Channel
-// class can be modified or uses a globally accessible pitchFrequencies constant
-// that we can shadow or replace for testing.
-// For now, let's assume the real `pitchFrequencies` is accessible.
-// If not, the `Channel` class would need modification for testability (e.g., dependency injection).
+// The real application exposes `pitchFrequencies` publicly, so tests can use it
+// directly. If you need to provide custom test data, inject it by replacing the
+// constant or by adding parameters to the classes under test.
 
 class FunctionGeneratorEngineTests: XCTestCase {
 
