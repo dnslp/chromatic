@@ -9,6 +9,7 @@ struct ChromaticApp: App {
     @StateObject private var audioPlayer = AudioPlayer()
     @StateObject private var pitchDetector = MicrophonePitchDetector()
     @StateObject private var sessionStore = SessionStore() // Initialize SessionStore
+    @StateObject private var profileManager = UserProfileManager() // Initialize UserProfileManager
     @AppStorage("modifierPreference") private var modifierPreference = ModifierPreference.preferSharps
     @AppStorage("selectedTransposition") private var selectedTransposition = 0
     
@@ -17,7 +18,7 @@ struct ChromaticApp: App {
         WindowGroup {
             
             TabView {
-                TunerScreen(pitchDetector: pitchDetector, modifierPreference: $modifierPreference, selectedTransposition: $selectedTransposition)
+                TunerView(pitchDetector: pitchDetector, modifierPreference: $modifierPreference, selectedTransposition: $selectedTransposition)
                     .tabItem { Label("Tuner", systemImage: "tuningfork") }
 
                 PlayerView(audioPlayer: audioPlayer, pitchDetector: pitchDetector, modifierPreference: $modifierPreference, selectedTransposition: $selectedTransposition)
@@ -31,6 +32,7 @@ struct ChromaticApp: App {
 //                SpectogramView().tabItem { Label("Spectrum", systemImage: "waveform") }
             }
             .environmentObject(sessionStore) // Inject SessionStore into the environment
+            .environmentObject(profileManager) // Inject UserProfileManager into the environment
             .preferredColorScheme(.dark)
             .onAppear {
                 #if os(iOS)
