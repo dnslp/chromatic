@@ -172,7 +172,20 @@ struct ProfileView: View {
     }
 
     private func isProfileChanged() -> Bool {
-        return editingProfile.name != originalProfile.name || editingProfile.f0 != originalProfile.f0
+        let nameChanged = editingProfile.name != originalProfile.name
+        let f0Changed = editingProfile.f0 != originalProfile.f0
+        let result = nameChanged || f0Changed
+        print("""
+            isProfileChanged:
+                Editing Name: '\(editingProfile.name)'
+                Original Name: '\(originalProfile.name)'
+                Name Changed: \(nameChanged)
+                Editing f0: \(editingProfile.f0)
+                Original f0: \(originalProfile.f0)
+                f0 Changed: \(f0Changed)
+                Result (Name Changed || f0 Changed): \(result)
+            """)
+        return result
     }
 
     private var hzFormatter: NumberFormatter {
