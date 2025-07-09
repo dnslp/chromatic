@@ -54,18 +54,22 @@ struct ProfileView: View {
                         TextField("Profile Name", text: $editingProfile.name)
                     }
                     let (f0Note, f0Cents) = noteNameAndCents(for: editingProfile.f0)
-                    Button(action: { tonePlayer.play(frequency: editingProfile.f0) }) {
+
+                    VStack(alignment: .leading, spacing: 4) {
                         HStack {
                             Text("f₀ (Hz):")
+                            F0SelectorView(f0Hz: $editingProfile.f0)
                             Spacer()
-                            VStack(alignment: .trailing, spacing: 0) {
-                                Text("\(editingProfile.f0, specifier: "%.2f") Hz")
-                                Text("\(f0Note) (\(f0Cents >= 0 ? "+" : "")\(f0Cents)¢)")
-                                    .foregroundColor(.secondary)
-                                    .font(.footnote)
+                            Button(action: { tonePlayer.play(frequency: editingProfile.f0) }) {
+                                Image(systemName: "play.circle")
+                                    .foregroundColor(.accentColor)
                             }
-                            Image(systemName: "play.circle")
-                                .foregroundColor(.accentColor)
+                        }
+                        HStack {
+                            Spacer()
+                            Text("\(f0Note) (\(f0Cents >= 0 ? "+" : "")\(f0Cents)¢)")
+                                .foregroundColor(.secondary)
+                                .font(.footnote)
                         }
                     }
                 }
