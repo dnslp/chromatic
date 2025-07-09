@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ProfileSelectionView: View {
     @ObservedObject var profileManager: UserProfileManager
-    @Binding var isPresented: Bool // To dismiss the sheet
+    // @Binding var isPresented: Bool // Removed, as this view is now part of a TabView
 
     @State private var showingCreateProfileAlert = false
     @State private var newProfileName: String = ""
@@ -36,18 +36,18 @@ struct ProfileSelectionView: View {
                     .contentShape(Rectangle()) // Make the whole row tappable for selection
                     .onTapGesture {
                         profileManager.selectProfile(profile)
-                        isPresented = false // Dismiss this selection view
+                        // isPresented = false // No longer needed, view is not a sheet to be dismissed
                     }
                 }
                 .onDelete(perform: deleteProfile)
             }
             .navigationTitle("Select Profile")
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        isPresented = false
-                    }
-                }
+                // ToolbarItem(placement: .navigationBarLeading) { // Removed Cancel button
+                //     Button("Cancel") {
+                //         isPresented = false
+                //     }
+                // }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
                         // Reset for new profile entry
@@ -112,7 +112,7 @@ struct ProfileSelectionView_Previews: PreviewProvider {
              manager.addProfile(name: "Guitar E2", f0: 82.41)
         }
        
-
-        return ProfileSelectionView(profileManager: manager, isPresented: .constant(true))
+        // return ProfileSelectionView(profileManager: manager, isPresented: .constant(true)) // isPresented removed
+        return ProfileSelectionView(profileManager: manager)
     }
 }

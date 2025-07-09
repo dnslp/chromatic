@@ -1,7 +1,7 @@
 import SwiftUI
 
-// MARK: - Stats Modal View
-struct StatsModalView: View {
+// MARK: - Session Stats Modal View
+struct SessionStatsModalView: View {
     @EnvironmentObject var sessionStore: SessionStore
     let statistics: PitchStatistics
     let duration: TimeInterval
@@ -101,8 +101,8 @@ struct StatsModalView: View {
     }
 }
 
-// Preview for StatsModalView
-struct StatsModalView_Previews: PreviewProvider {
+// Preview for SessionStatsModalView
+struct SessionStatsModalView_Previews: PreviewProvider {
     static var previews: some View {
         PreviewWrapper()
             .environmentObject(SessionStore()) // Provide SessionStore for the preview
@@ -133,7 +133,7 @@ struct StatsModalView_Previews: PreviewProvider {
                 }
             }
             .sheet(isPresented: $showModal) {
-                StatsModalView(
+                SessionStatsModalView(
                     statistics: sampleStats,
                     duration: sampleDuration,
                     values: sampleValues,

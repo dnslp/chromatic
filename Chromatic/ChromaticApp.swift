@@ -26,6 +26,9 @@ struct ChromaticApp: App {
                 SavedSessionsView() // Add SavedSessionsView as a new tab
                     .tabItem { Label("Sessions", systemImage: "list.bullet.rectangle") }
 
+                ProfileTabView()
+                    .tabItem { Label("Profile", systemImage: "person.fill") }
+
 //                FunctionGeneratorView(engine: FunctionGeneratorEngine())
 //                    .tabItem { Label("Func Gen", systemImage: "waveform.path") }
 //                SpectogramView().tabItem { Label("Spectrum", systemImage: "waveform") }

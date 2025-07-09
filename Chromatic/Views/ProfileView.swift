@@ -4,6 +4,7 @@ struct ProfileView: View {
     @ObservedObject var profileManager: UserProfileManager
     @State var editingProfile: UserProfile // A copy for editing
     @StateObject private var tonePlayer = TonePlayer()
+    @State private var showingStatsModal = false // For presenting the stats modal
 
     private var originalProfile: UserProfile // To compare for changes or revert
 
@@ -152,8 +153,16 @@ struct ProfileView: View {
                     }
 
                 }
+
+                Section {
+                    Button {
+                        showingStatsModal = true
+                    } label: {
+                        Label("View Full Details", systemImage: "list.bullet.clipboard.fill")
+                    }
+                }
             }
-            .navigationTitle("Profile Details")
+            .navigationTitle("Edit Profile") // Changed title to reflect editing
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Cancel") {
@@ -167,6 +176,13 @@ struct ProfileView: View {
                     }
                     .disabled(!isProfileChanged())
                 }
+            }
+            .sheet(isPresented: $showingStatsModal) {
+                // Pass the original profile to the details view,
+                // as we don't want to show potentially unsaved edits from `editingProfile`
+                // or pass `editingProfile` if live changes are desired in the modal.
+                // For a "stats" or "details" view, original is often safer.
+                ProfileDetailsModalView(profile: originalProfile)
             }
         }
     }
