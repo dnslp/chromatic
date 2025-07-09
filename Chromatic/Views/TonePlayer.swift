@@ -108,26 +108,28 @@ class TonePlayer: ObservableObject {
         audioEngine.attach(eqNode)
 
         // Define standard EQ band frequencies
-        // These are typical values, can be adjusted.
         eqNode.bands[0].filterType = .parametric
-        eqNode.bands[0].frequency = 120.0  // Low shelf typically, but parametric gives more control
-        eqNode.bands[0].bandwidth = 1.0 // Broad Q
+        eqNode.bands[0].frequency = 120.0
+        eqNode.bands[0].bandwidth = 1.0
         eqNode.bands[0].bypass = false
 
         eqNode.bands[1].filterType = .parametric
-        eqNode.bands[1].frequency = 1000.0 // Mid
-        eqNode.bands[1].bandwidth = 1.0  // Broad Q
+        eqNode.bands[1].frequency = 1000.0
+        eqNode.bands[1].bandwidth = 1.0
         eqNode.bands[1].bypass = false
 
         eqNode.bands[2].filterType = .parametric
-        eqNode.bands[2].frequency = 8000.0 // High shelf typically
-        eqNode.bands[2].bandwidth = 1.0 // Broad Q
+        eqNode.bands[2].frequency = 8000.0
+        eqNode.bands[2].bandwidth = 1.0
         eqNode.bands[2].bypass = false
-        
-        let format = AVAudioFormat(standardFormatWithSampleRate: 44100, channels: 1)!
+
+        // *** FIX: Use actual device sample rate, NOT 44100! ***
+        let sampleRate = AVAudioSession.sharedInstance().sampleRate
+        let format = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1)!
+
         audioEngine.connect(player, to: eqNode, format: format)
         audioEngine.connect(eqNode, to: audioEngine.mainMixerNode, format: format)
-        
+
         do {
             try audioEngine.start()
         } catch {
@@ -135,6 +137,7 @@ class TonePlayer: ObservableObject {
         }
         isConfigured = true
     }
+
 
     private func updateEQParameters(lowGain: Double, midGain: Double, highGain: Double) {
         eqNode.bands[0].gain = Float(lowGain)
