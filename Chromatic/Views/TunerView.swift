@@ -60,10 +60,10 @@ struct TunerView: View {
                 Circle()
                     .stroke(
                         AngularGradient(gradient: Gradient(colors: [
-                            Color.blue.opacity(0.2),
-                            Color.blue.opacity(0.5),
-                            Color.purple.opacity(0.6),
-                            Color.blue.opacity(0.2)
+                            Color.white.opacity(0.2),
+                            Color.white.opacity(0.5),
+                            Color.white.opacity(0.6),
+                            Color.white.opacity(0.2)
                         ]), center: .center),
                         lineWidth: 8
                     )
@@ -146,32 +146,32 @@ struct TunerView: View {
                 Spacer(minLength: 40)
                 
                 
-                // ───── OTHER VISUALIZERS ─────
-                ConcentricCircleVisualizer(
-                    distance: Double(match.distance.cents),
-                    maxDistance: maxCentDistance,
-                    tunerData: tunerData,
-                    fundamentalHz: userF0
-                )
-                .frame(width: 100, height: 100)
-                .padding(.bottom, 2)
-                
-                HarmonicGraphView(tunerData: tunerData)
-                    .frame(height: 30)
-                PitchChakraTimelineView(pitches: tunerData.recordedPitches)
-                    .frame(height: 48)
-                
-                // MARK: RECORD / STATS WITH TIMER
-                if let c = countdown {
-                    VStack {
-                        CalmingCountdownCircle(secondsLeft: c, totalSeconds: countdownSeconds)
-                            .frame(width: 140, height: 140)
-                            .padding(.bottom, 8)
+                VStack(spacing: 12) {
+                    // ───── Visualizer with Conditional Overlay ─────
+                    ZStack {
+                        ConcentricCircleVisualizer(
+                            distance: Double(match.distance.cents),
+                            maxDistance: maxCentDistance,
+                            tunerData: tunerData,
+                            fundamentalHz: userF0
+                        )
+                        .frame(width: 140, height: 140)
+                        .padding(.bottom, 2)
+
+                        if let c = countdown {
+                            CalmingCountdownCircle(secondsLeft: c, totalSeconds: countdownSeconds)
+                                .frame(width: 140, height: 140)
+                        }
+                    }
+
+                    // Countdown text, only during countdown
+                    if let c = countdown {
                         Text("Recording begins in \(c)…")
                             .font(.title3)
                             .foregroundColor(.secondary)
                     }
-                } else {
+
+                    // ───── Always Show These Buttons ─────
                     HStack(spacing: 16) {
                         Button(action: {
                             if tunerData.isRecording {
@@ -225,7 +225,15 @@ struct TunerView: View {
                             )
                         }
                     }
+
+                    // ───── Always show Harmonic Graph and Timeline ─────
+                    HarmonicGraphView(tunerData: tunerData)
+                        .frame(height: 30)
+                    PitchChakraTimelineView(pitches: tunerData.recordedPitches)
+                        .frame(height: 48)
                 }
+
+
                 
                 
                 // ────────── PROFILE & TRANSPOSE CONTROLS ──────────
