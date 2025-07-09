@@ -282,9 +282,6 @@ struct TunerView: View {
         .sheet(isPresented: $showingProfileSelector) {
             ProfileSelectionView(profileManager: profileManager, isPresented: $showingProfileSelector)
         }
-        .sheet(isPresented: $showingProfileSelector) {
-            ProfileSelectionView(profileManager: profileManager, isPresented: $showingProfileSelector)
-        }
         .onAppear {
             if let currentF0 = profileManager.currentProfile?.f0 {
                 userF0 = currentF0
