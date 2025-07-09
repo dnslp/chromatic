@@ -114,6 +114,15 @@
 		BEED70102E14528D00037881 /* FunctionGeneratorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEED700E2E14528D00037881 /* FunctionGeneratorView.swift */; };
 		BEED70182E1462D300037881 /* Pitch.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEED70172E1462D300037881 /* Pitch.swift */; };
 		BEED70192E1462D300037881 /* Pitch.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEED70172E1462D300037881 /* Pitch.swift */; };
+                8D3E71AE353F55E4E07B5C71 /* PitchDisplayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 450289EEB6C610F10F9DF557 /* PitchDisplayView.swift */; };
+                E3ECCECF318597F32F3C0907 /* PitchDisplayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 450289EEB6C610F10F9DF557 /* PitchDisplayView.swift */; };
+                B99960C1947A88AD63F26046 /* CenteringRingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619B9E38D972864537297F6C /* CenteringRingView.swift */; };
+                2E2DB46F77A14F8B55B09F0C /* CenteringRingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619B9E38D972864537297F6C /* CenteringRingView.swift */; };
+                52DBB9891CAF5FC8EFB1B0F8 /* RecordControlsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2219788F6949039DB33D68C /* RecordControlsView.swift */; };
+                C598850D659F5AAD7DB5F498 /* RecordControlsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2219788F6949039DB33D68C /* RecordControlsView.swift */; };
+                91A864AE36D0025A15AC5B8C /* ProfileMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F030ECBEA8BD08F33A705FCC /* ProfileMenuView.swift */; };
+                E9359776BF08EE8CE1CFC3D2 /* ProfileMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F030ECBEA8BD08F33A705FCC /* ProfileMenuView.swift */; };
+
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -215,6 +224,11 @@
 		BEED700B2E14526400037881 /* FunctionGeneratorEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionGeneratorEngine.swift; sourceTree = "<group>"; };
 		BEED700E2E14528D00037881 /* FunctionGeneratorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionGeneratorView.swift; sourceTree = "<group>"; };
 		BEED70172E1462D300037881 /* Pitch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Pitch.swift; sourceTree = "<group>"; };
+                450289EEB6C610F10F9DF557 /* PitchDisplayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchDisplayView.swift; sourceTree = "<group>"; };
+                619B9E38D972864537297F6C /* CenteringRingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CenteringRingView.swift; sourceTree = "<group>"; };
+                A2219788F6949039DB33D68C /* RecordControlsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordControlsView.swift; sourceTree = "<group>"; };
+                F030ECBEA8BD08F33A705FCC /* ProfileMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileMenuView.swift; sourceTree = "<group>"; };
+
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -368,7 +382,11 @@
 				BE026B2A2E1C67670088BD78 /* TonePlayer.swift */,
 				BE026CBF2E1DA6DE0088BD78 /* TonePlayerControlPanel.swift */,
 				8F693E3825B87DB20054DB16 /* TranspositionMenu.swift */,
-				8FB571F425B73ECF007C28BC /* TunerView.swift */,
+				450289EEB6C610F10F9DF557 /* PitchDisplayView.swift */,
+                                619B9E38D972864537297F6C /* CenteringRingView.swift */,
+                                A2219788F6949039DB33D68C /* RecordControlsView.swift */,
+                                F030ECBEA8BD08F33A705FCC /* ProfileMenuView.swift */,
+                                8FB571F425B73ECF007C28BC /* TunerView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -637,7 +655,11 @@
 				BE1512922E15F6A600BB9EC2 /* EQBarsView.swift in Sources */,
 				BE1512932E15F6A600BB9EC2 /* PitchLineVisualizer.swift in Sources */,
 				BE3766542E1C229D005CFA44 /* PitchChakraTimelineView.swift in Sources */,
-				8F3ECD2A2682838D00415B9F /* TunerView.swift in Sources */,
+                                8D3E71AE353F55E4E07B5C71 /* PitchDisplayView.swift in Sources */,
+                                B99960C1947A88AD63F26046 /* CenteringRingView.swift in Sources */,
+                                52DBB9891CAF5FC8EFB1B0F8 /* RecordControlsView.swift in Sources */,
+                                91A864AE36D0025A15AC5B8C /* ProfileMenuView.swift in Sources */,
+                                8F3ECD2A2682838D00415B9F /* TunerView.swift in Sources */,
 				BE026CC32E1DA8080088BD78 /* ToneSettingsManager.swift in Sources */,
 				8F3ECD262682838D00415B9F /* MatchedNoteView.swift in Sources */,
 				8F3ECD282682838D00415B9F /* MainNoteView.swift in Sources */,
@@ -711,8 +733,12 @@
 				8FB571DF25B73E9A007C28BC /* ModifierPreference.swift in Sources */,
 				8FB571F725B73ECF007C28BC /* MainNoteView.swift in Sources */,
 				BE0541CC2E19759100E8A38E /* F0SelectorView.swift in Sources */,
-				8F693E3925B87DB20054DB16 /* TranspositionMenu.swift in Sources */,
-				8FB571FB25B73ECF007C28BC /* MatchedNoteFrequency.swift in Sources */,
+				8F693E3925B87DB20054DB16 /* (TranspositionMenu.swift in Sources */,
+                                E3ECCECF318597F32F3C0907 /* PitchDisplayView.swift in Sources */,
+                                2E2DB46F77A14F8B55B09F0C /* CenteringRingView.swift in Sources */,
+                                C598850D659F5AAD7DB5F498 /* RecordControlsView.swift in Sources */,
+                                E9359776BF08EE8CE1CFC3D2 /* ProfileMenuView.swift in Sources */,
+)				8FB571FB25B73ECF007C28BC /* MatchedNoteFrequency.swift in Sources */,
 				8F2D97592693930000B512D0 /* NoteTicks.swift in Sources */,
 				BEED70102E14528D00037881 /* FunctionGeneratorView.swift in Sources */,
 				8F44F7FF26939F13007DBE1E /* Color+MusicalDistance.swift in Sources */,
