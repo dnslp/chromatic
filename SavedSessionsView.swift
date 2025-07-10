@@ -1,0 +1,567 @@
+import SwiftUI
+import AVFoundation
+
+struct SavedSessionsView: View {
+    @EnvironmentObject var sessionStore: SessionStore
+    @State private var showingDeleteAlert = false
+    @State private var sessionToDelete: SessionData?
+    @State private var expandedDays: Set<Date> = []
+    @State private var showingToneSettings = false
+    @State private var groupedSessions: [(day: Date, sessions: [SessionData])] = []
+
+    // Group sessions by day (ignoring time)
+    // This computation is now handled by updateGroupedSessions() and stored in groupedSessions
+    /*
+    private var sessionsByDay: [(day: Date, sessions: [SessionData])] {
+        let grouped = Dictionary(grouping: sessionStore.sessions) { session in
+            Calendar.current.startOfDay(for: session.date)
+        }
+        return grouped
+            .sorted { $0.key > $1.key }
+            .map { ($0.key, $0.value.sorted { $0.date > $1.date }) }
+    }
+    */
+
+    // Format for the group header
+    private static var dayFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        return formatter
+    }()
+
+    private func formattedDay(_ date: Date) -> String {
+        return SavedSessionsView.dayFormatter.string(from: date)
+    }
+
+    private static var fullDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        return formatter
+    }()
+
+    var body: some View {
+        NavigationView {
+            List {
+                if groupedSessions.isEmpty {
+                    Text("No saved sessions yet.")
+                        .foregroundColor(.gray)
+                } else {
+                    ForEach(groupedSessions, id: \.day) { (day, sessions) in
+                        Section {
+                            DisclosureGroup(
+                                isExpanded: Binding(
+                                    get: { expandedDays.contains(day) },
+                                    set: { expanded in
+                                        if expanded { expandedDays.insert(day) }
+                                        else { expandedDays.remove(day) }
+                                    }
+                                ),
+                                content: {
+                                    ForEach(sessions) { session in
+                                        SessionRowView(session: session)
+                                            .environmentObject(ToneSettingsManager.shared)
+                                            .swipeActions {
+                                                Button(role: .destructive) {
+                                                    self.sessionToDelete = session
+                                                    self.showingDeleteAlert = true
+                                                } label: {
+                                                    Label("Delete", systemImage: "trash")
+                                                }
+                                            }
+                                    }
+                                    .onDelete { offsets in
+                                        let ids = offsets.map { sessions[$0].id }
+                                        ids.forEach { sessionStore.deleteSession(id: $0) }
+                                    }
+                                },
+                                label: {
+                                    HStack {
+                                        Text(formattedDay(day))
+                                            .font(.headline)
+                                            .foregroundColor(.primary)
+                                        Spacer()
+                                        Text("\(sessions.count)")
+                                            .font(.subheadline.bold())
+                                            .padding(.horizontal, 8)
+                                            .padding(.vertical, 2)
+                                            .background(Capsule().fill(Color.accentColor.opacity(0.18)))
+                                    }
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Saved Sessions")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        showingToneSettings = true
+                    } label: {
+                        Label("Tone Settings", systemImage: "slider.horizontal.3")
+                    }
+                }
+                ToolbarItem(placement: .navigationBarLeading) {
+                    if !sessionStore.sessions.isEmpty {
+                        EditButton()
+                    }
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    if !sessionStore.sessions.isEmpty {
+                        Menu {
+                            Button("Expand All") {
+                                expandedDays = Set(groupedSessions.map { $0.day })
+                            }
+                            Button("Collapse All") {
+                                expandedDays.removeAll()
+                            }
+                        } label: {
+                            Label("Options", systemImage: "ellipsis.circle")
+                        }
+                    }
+                }
+            }
+            .sheet(isPresented: $showingToneSettings) {
+                TonePlayerControlPanel()
+                    .environmentObject(ToneSettingsManager.shared)
+            }
+            .alert("Delete Session?", isPresented: $showingDeleteAlert, presenting: sessionToDelete) { sessionData in
+                Button("Delete", role: .destructive) {
+                    sessionStore.deleteSession(id: sessionData.id)
+                }
+                Button("Cancel", role: .cancel) { }
+            } message: { sessionData in
+                Text("Are you sure you want to delete the session from \(formattedDate(sessionData.date))? This action cannot be undone.")
+            }
+            .onAppear {
+                updateGroupedSessions()
+            }
+            .onChange(of: sessionStore.sessions) { _ in
+                updateGroupedSessions()
+            }
+        }
+        .environmentObject(ToneSettingsManager.shared)
+    }
+
+    private func updateGroupedSessions() {
+        let grouped = Dictionary(grouping: sessionStore.sessions) { session in
+            Calendar.current.startOfDay(for: session.date)
+        }
+        groupedSessions = grouped
+            .sorted { $0.key > $1.key }
+            .map { ($0.key, $0.value.sorted { $0.date > $1.date }) }
+    }
+
+    private func formattedDate(_ date: Date) -> String {
+        return SavedSessionsView.fullDateFormatter.string(from: date)
+    }
+}
+
+// MARK: - Session Row
+
+extension VoicePrintStats {
+    static func fromSession(
+        pitches: [Double],
+        amplitudes: [Double],
+        start: Date,
+        end: Date,
+        inTuneHz: Double,
+        inTuneCents: Double = 35.0
+    ) -> VoicePrintStats {
+        guard !pitches.isEmpty else {
+            return VoicePrintStats(
+                minPitch: 0,
+                maxPitch: 0,
+                avgPitch: 0,
+                stdDev: 0,
+                uniquePitchCount: 0,
+                outlierCount: 0,
+                amplitude: 0,
+                sessionDuration: end.timeIntervalSince(start),
+                inTunePercent: 0
+            )
+        }
+
+        let minPitch = pitches.min() ?? 0
+        let maxPitch = pitches.max() ?? 0
+        let avgPitch = pitches.reduce(0, +) / Double(pitches.count)
+
+        // Standard deviation
+        let mean = avgPitch
+        let stdDev = sqrt(pitches.reduce(0) { $0 + pow($1 - mean, 2) } / Double(pitches.count))
+
+        // Unique pitch count (rounded to nearest integer Hz for stability)
+        let uniquePitchCount = Set(pitches.map { Int(round($0)) }).count
+
+        // Outlier count (2 SD from mean)
+        let outlierCount = pitches.filter { abs($0 - mean) > stdDev * 2 }.count
+
+        // Amplitude (average of amplitudes array, fallback to 0.6 if missing)
+        let amplitude: Double = (amplitudes.isEmpty ? 0.6 : (amplitudes.reduce(0, +) / Double(amplitudes.count)))
+
+        // Session duration
+        let sessionDuration = end.timeIntervalSince(start)
+
+        // In-tune percent: % of pitches within `inTuneCents` of inTuneHz
+        let inTuneCount = pitches.filter {
+            let cents = 1200.0 * log2($0 / inTuneHz)
+            return abs(cents) <= inTuneCents
+        }.count
+        let inTunePercent = 100 * (pitches.isEmpty ? 0 : Double(inTuneCount) / Double(pitches.count))
+
+        return VoicePrintStats(
+            minPitch: minPitch,
+            maxPitch: maxPitch,
+            avgPitch: avgPitch,
+            stdDev: stdDev,
+            uniquePitchCount: uniquePitchCount,
+            outlierCount: outlierCount,
+            amplitude: amplitude,
+            sessionDuration: sessionDuration,
+            inTunePercent: inTunePercent
+        )
+    }
+}
+
+private struct SessionRowView: View {
+    let session: SessionData
+    @State private var showVoicePrint = false
+    @State private var calculatedVoicePrintStats: VoicePrintStats? = nil // Cached stats
+
+    @EnvironmentObject private var toneSettings: ToneSettingsManager
+    @StateObject private var tonePlayer = TonePlayer()
+    @State private var isPlaying = false
+    @State private var playbackChunks: [(Double, Int)] = []
+    @State private var cachedPlaybackChunks: [(Double, Int)]? = nil // Cached chunks
+    @State private var playbackChunkIndex = 0
+    @State private var playbackTimer: Timer? = nil
+    @State private var showStats = false
+
+    // Sparkline chunking
+    private func chunkPitches(_ values: [Double], tolerance: Double = 7.0) -> [(Double, Int)] {
+        guard !values.isEmpty else { return [] }
+        var result: [(Double, Int)] = []
+        var currentFreq = values[0]
+        var count = 1
+        for val in values.dropFirst() {
+            if abs(val - currentFreq) <= tolerance {
+                count += 1
+            } else {
+                result.append((currentFreq, count))
+                currentFreq = val
+                count = 1
+            }
+        }
+        result.append((currentFreq, count))
+        return result
+    }
+
+    private func startPlayback() {
+        guard !session.values.isEmpty else { return }
+        isPlaying = true
+
+        if let cachedChunks = cachedPlaybackChunks {
+            playbackChunks = cachedChunks
+        } else {
+            let chunks = chunkPitches(session.values)
+            cachedPlaybackChunks = chunks
+            playbackChunks = chunks
+        }
+
+        playbackChunkIndex = 0
+        playbackTimer?.invalidate()
+        playNextChunk()
+    }
+
+    private func playNextChunk() {
+        guard playbackChunkIndex < playbackChunks.count else {
+            stopPlayback()
+            return
+        }
+        let (freq, count) = playbackChunks[playbackChunkIndex]
+        let dur = Double(count) * 0.055
+        if freq > 30 {
+            tonePlayer.play(
+                frequency: freq,
+                duration: dur,
+                amplitudes: toneSettings.amplitudes,
+                attack: toneSettings.attack,
+                release: toneSettings.release
+            )
+        }
+        playbackChunkIndex += 1
+        playbackTimer = Timer.scheduledTimer(withTimeInterval: dur, repeats: false) { _ in
+            playNextChunk()
+        }
+    }
+
+    private func stopPlayback() {
+        playbackTimer?.invalidate()
+        playbackTimer = nil
+        isPlaying = false
+        tonePlayer.stop()
+    }
+
+    // Display helpers
+    private static var sessionDateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateStyle = .medium; f.timeStyle = .short
+        return f
+    }()
+
+    private var dateString: String {
+        return SessionRowView.sessionDateFormatter.string(from: session.date)
+    }
+    private var durationString: String {
+        let secs = Int(max(0, session.duration))
+        let h = secs / 3600, m = (secs % 3600) / 60, s = secs % 60
+        if h > 0 {
+            return String(format: "%d:%02d:%02d", h, m, s)
+        } else {
+            return String(format: "%02d:%02d", m, s)
+        }
+    }
+    private var stats: PitchStatistics { session.statistics }
+
+
+
+    var body: some View {
+
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Date: \(dateString)").bold()
+                    Text("Duration: \(durationString)").bold()
+                    Text("Profile: \(session.profileName)")
+                        .font(.subheadline).foregroundColor(.secondary)
+                }
+                Button(action: {
+                    if self.calculatedVoicePrintStats == nil {
+                        self.calculatedVoicePrintStats = VoicePrintStats.fromSession(
+                            pitches: session.values,
+                            amplitudes: Array(repeating: 0.8, count: session.values.count), // Default amplitudes
+                            start: session.date,
+                            end: session.date.addingTimeInterval(session.duration),
+                            inTuneHz: session.statistics.avg // Assuming this is the target
+                        )
+                    }
+                    showVoicePrint = true
+                }) {
+                    Image(systemName: "circle.hexagongrid.fill")
+                        .font(.title3)
+                        .foregroundColor(.accentColor)
+                        .padding(.leading, 6)
+                        .accessibilityLabel("Show Voice Print")
+                }
+                .buttonStyle(.plain)
+                .sheet(isPresented: $showVoicePrint) {
+                    if let stats = calculatedVoicePrintStats {
+                        VoicePrintDemoView(stats: stats)
+                    } else {
+                        // This fallback should ideally not be reached if the button action logic is correct.
+                        // Consider a more robust loading state or error message if needed.
+                        Text("Loading voice print data...")
+                            .onAppear {
+                                // Attempt to calculate if somehow missed, though less ideal here.
+                                if self.calculatedVoicePrintStats == nil {
+                                    self.calculatedVoicePrintStats = VoicePrintStats.fromSession(
+                                        pitches: session.values,
+                                        amplitudes: Array(repeating: 0.8, count: session.values.count),
+                                        start: session.date,
+                                        end: session.date.addingTimeInterval(session.duration),
+                                        inTuneHz: session.statistics.avg
+                                    )
+                                }
+                            }
+                    }
+                }
+                Spacer()
+                if let timeline = session.chakraTimeline {
+                    PitchChakraTimelineView(pitches: timeline.pitches)
+                        .frame(height: 48).padding(.top, 6)
+                }
+                if !session.values.isEmpty {
+                    ZStack {
+                        Sparkline(data: session.values)
+                            .stroke(isPlaying ? Color.green : Color.accentColor, lineWidth: 2)
+                            .frame(width: 100, height: 32)
+                            .background(RoundedRectangle(cornerRadius: 4)
+                                            .fill(Color(.systemBackground)))
+                            .onTapGesture {
+                                isPlaying ? stopPlayback() : startPlayback()
+                            }
+                            .animation(.easeInOut(duration: 0.2), value: isPlaying)
+
+                        VStack {
+                            Image(systemName: isPlaying ? "stop.fill" : "play.fill")
+                                .foregroundColor(isPlaying ? .red : .accentColor)
+                                .opacity(0.88)
+                                .padding(.top, 2)
+                            Spacer()
+                        }
+                        .frame(width: 100, height: 32)
+                        .allowsHitTesting(false)
+                    }
+                }
+            }
+
+            Divider().padding(.vertical, 2)
+
+            DisclosureGroup("Show Stats", isExpanded: $showStats) {
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
+                    StatChunk(label: "Min", frequency: stats.min, playAction: { tonePlayer.play(frequency: stats.min) })
+                    StatChunk(label: "Max", frequency: stats.max, playAction: { tonePlayer.play(frequency: stats.max) })
+                    StatChunk(label: "Median", frequency: stats.median, playAction: { tonePlayer.play(frequency: stats.median) })
+                    StatChunk(label: "Avg", frequency: stats.avg, playAction: { tonePlayer.play(frequency: stats.avg) })
+                    SimpleStatChunk(label: "Std Dev", value: stats.stdDev, unit: "Hz")
+                    SimpleStatChunk(label: "IQR", value: stats.iqr, unit: "Hz")
+                    SimpleStatChunk(label: "RMS", value: stats.rms, unit: "Hz")
+                }
+                .padding(.top, 4)
+            }
+            .accentColor(.accentColor)
+            .padding(.top, 4)
+        }
+        .padding()
+        .background(RoundedRectangle(cornerRadius: 18)
+                        .fill(Color(.tertiarySystemBackground)))
+        .padding(.vertical, 6)
+    }
+}
+
+// MARK: - Helper Chunks and Sparkline
+
+func noteNameAndCents(for frequency: Double) -> (String, Int) {
+    guard frequency > 0 else { return ("–", 0) }
+    let noteNames = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"]
+    let midi = 69 + 12 * log2(frequency / 440)
+    let noteNum = Int(round(midi))
+    let noteIndex = (noteNum + 120) % 12
+    let noteName = noteNames[noteIndex]
+    let noteHz = 440 * pow(2.0, Double(noteNum - 69) / 12)
+    let cents = Int(round(1200 * log2(frequency / noteHz)))
+    return (noteName, cents)
+}
+
+struct StatChunk: View {
+    let label: String
+    let frequency: Double
+    let playAction: (() -> Void)?
+
+    var body: some View {
+        let (note, cents) = noteNameAndCents(for: frequency)
+        let centsString = cents == 0 ? " (in tune)" : String(format: " (%+d¢)", cents)
+        Button(action: { playAction?() }) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(label)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text(String(format: "%.2f Hz", frequency))
+                        .font(.headline)
+                    Text("\(note)\(centsString)")
+                        .font(.subheadline)
+                        .foregroundColor(.accentColor)
+                }
+            }
+            .padding(10)
+            .background(RoundedRectangle(cornerRadius: 14)
+                            .fill(Color(.secondarySystemBackground))
+                            .shadow(radius: 1, y: 1))
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+struct SimpleStatChunk: View {
+    let label: String
+    let value: Double
+    let unit: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(label)
+                .font(.caption)
+                .foregroundColor(.secondary)
+            Text(String(format: "%.2f %@", value, unit))
+                .font(.headline)
+        }
+        .padding(10)
+        .background(RoundedRectangle(cornerRadius: 14)
+                        .fill(Color(.secondarySystemBackground))
+                        .shadow(radius: 1, y: 1))
+    }
+}
+
+struct Sparkline: Shape {
+    let data: [Double]
+    func path(in rect: CGRect) -> Path {
+        guard data.count > 1 else { return Path() }
+        let minY = data.min() ?? 0
+        let maxY = data.max() ?? 1
+        let yRange = maxY - minY == 0 ? 1 : maxY - minY
+        let stepX = rect.width / CGFloat(data.count - 1)
+        let scaleY = rect.height / CGFloat(yRange)
+        var path = Path()
+        for (i, value) in data.enumerated() {
+            let x = CGFloat(i) * stepX
+            let y = rect.height - (CGFloat(value - minY) * scaleY)
+            if i == 0 {
+                path.move(to: CGPoint(x: x, y: y))
+            } else {
+                path.addLine(to: CGPoint(x: x, y: y))
+            }
+        }
+        return path
+    }
+}
+
+struct SavedSessionsView_Previews: PreviewProvider {
+    static var previews: some View {
+        let mockStore = SessionStore()
+        let sampleStats = PitchStatistics(min: 100, max: 200, avg: 150, median: 145, stdDev: 20, iqr: 30, rms: 160)
+        let date1 = Calendar.current.date(byAdding: .day, value: 0, to: Date())!
+        let date2 = Calendar.current.date(byAdding: .day, value: -1, to: Date())!
+
+        // Split into smaller chunks for preview speed/type-check
+        let pitches1: [Double] = {
+            var array: [Double] = []
+            for i in 0..<32 {
+                array.append(220 + 50 * sin(Double(i)/4) + Double.random(in: -5...5))
+            }
+            return array
+        }()
+        let pitches2: [Double] = {
+            var array: [Double] = []
+            for i in 0..<40 {
+                array.append(330 + 80 * cos(Double(i)/7) + Double.random(in: -8...8))
+            }
+            return array
+        }()
+
+        mockStore.sessions.append(SessionData(
+            id: UUID(),
+            date: date1,
+            duration: 300,
+            statistics: sampleStats,
+            values: pitches1,
+            profileName: "User1",
+            chakraTimeline: PitchChakraTimeline(pitches: pitches1)
+        ))
+        mockStore.sessions.append(SessionData(
+            id: UUID(),
+            date: date2,
+            duration: 650,
+            statistics: sampleStats,
+            values: pitches2,
+            profileName: "User2",
+            chakraTimeline: PitchChakraTimeline(pitches: pitches2)
+        ))
+
+        return SavedSessionsView()
+            .environmentObject(mockStore)
+            .preferredColorScheme(.dark)
+    }
+}
