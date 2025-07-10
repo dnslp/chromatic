@@ -45,7 +45,19 @@ class AudioPlayer: ObservableObject {
     private func configureAudioSession() {
         let session = AVAudioSession.sharedInstance()
         do {
-            try session.setCategory(.playback, mode: .default, options: [])
+            // Using .playAndRecord as the app also uses the microphone.
+            // Adding .allowBluetoothA2DP for high-quality Bluetooth audio.
+            // Adding .defaultToSpeaker to match AudioEngine's behavior.
+            // Keeping .mixWithOthers if it was implicitly desired through AudioEngine.
+            var options: AVAudioSession.CategoryOptions = [.allowBluetoothA2DP, .defaultToSpeaker]
+            // Check if mixWithOthers should be included - this depends on overall app requirements
+            // For now, let's assume it's desired if AudioEngine uses it.
+            // A more robust solution would be a shared configuration.
+            // If MicrophonePitchDetector is guaranteed to run its config, this might be redundant here,
+            // but it's safer to be consistent.
+            options.insert(.mixWithOthers) // Add this to be consistent with AudioEngine
+
+            try session.setCategory(.playAndRecord, mode: .default, options: options)
             try session.setActive(true)
         } catch {
             print("⚠️ AVAudioSession setup failed: \(error)")

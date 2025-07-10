@@ -63,7 +63,8 @@ final class AudioEngine {
         let bufferDuration = preferredFrames / AVAudioFormat.stereo.sampleRate
 #if !os(watchOS)
         try session.setPreferredIOBufferDuration(bufferDuration)
-        try session.setCategory(.playAndRecord, options: [.defaultToSpeaker, .mixWithOthers])
+         // Ensure A2DP is allowed for better Bluetooth audio quality.
+         try session.setCategory(.playAndRecord, options: [.allowBluetoothA2DP, .defaultToSpeaker, .mixWithOthers])
 #endif
         try session.setActive(true)
     }
