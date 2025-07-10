@@ -49,11 +49,12 @@ struct TunerScreen: View {
 //            selectedTransposition: selectedTransposition
 //        )
         
-        StringTheoryView(
-            tunerData: $tunerData,
-            modifierPreference: modifierPreference,
-            selectedTransposition: selectedTransposition
-        )
+//        StringTheoryView(
+//            tunerData: $tunerData,
+//            modifierPreference: modifierPreference,
+//            selectedTransposition: selectedTransposition
+//        )
+        GeneratorView()
         .environmentObject(profileManager)
 //        TunerViewZen(tunerData: $tunerData)
 //        TunerView(
