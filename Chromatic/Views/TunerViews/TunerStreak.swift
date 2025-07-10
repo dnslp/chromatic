@@ -139,6 +139,7 @@ struct TunerStreak: View {
 
     @State private var showingProfileSelector = false
 
+    
     // -- Preview/Mock Colors
     private let spectrumColors: [Color] = (0..<12).map { tunerStreakChromaColor(for: 220 * pow(2, Double($0)/12.0)) }
 
@@ -323,6 +324,10 @@ struct TunerStreak: View {
 
             // -- Pitch/Streak Text
             VStack(spacing: 8) {
+                TuningOverlapCirclesView(
+                    targetF0: userF0,
+                    liveF0: tunerData.pitch.measurement.value
+                )
                 Text("Target f₀: \(String(format: "%.2f", userF0)) Hz")
                     .font(.headline.weight(.medium))
                     .foregroundColor(.white.opacity(0.8))

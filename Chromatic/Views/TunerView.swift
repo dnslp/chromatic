@@ -37,6 +37,8 @@ struct TunerView: View {
     private let noteTicksHeight: CGFloat = 100
     private let amplitudeBarHeight: CGFloat = 32
     private let maxCentDistance: Double = 50
+    
+    
 
     // MARK: - Helper Views
     struct CalmingCountdownCircle: View {

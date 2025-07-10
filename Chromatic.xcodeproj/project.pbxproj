@@ -90,6 +90,8 @@
 		BE3766542E1C229D005CFA44 /* PitchChakraTimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE3766522E1C229D005CFA44 /* PitchChakraTimelineView.swift */; };
 		BE477BE62E1F670600F991F2 /* VoicePrintDemoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE477BE52E1F670600F991F2 /* VoicePrintDemoView.swift */; };
 		BE477BE72E1F670600F991F2 /* VoicePrintDemoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE477BE52E1F670600F991F2 /* VoicePrintDemoView.swift */; };
+		BE7C15962E2040DC00292671 /* TuningOverlapCirclesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE7C15952E2040DC00292671 /* TuningOverlapCirclesView.swift */; };
+		BE7C15972E2040DC00292671 /* TuningOverlapCirclesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE7C15952E2040DC00292671 /* TuningOverlapCirclesView.swift */; };
 		BEDD824A2E16B6E300C46430 /* HarmonicGraphView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEDD82492E16B6E300C46430 /* HarmonicGraphView.swift */; };
 		BEDD824B2E16B6E300C46430 /* HarmonicGraphView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEDD82492E16B6E300C46430 /* HarmonicGraphView.swift */; };
 		BEDD83042E18A99500C46430 /* CircleWave.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEDD83032E18A99500C46430 /* CircleWave.swift */; };
@@ -205,6 +207,7 @@
 		BE37664C2E1C2270005CFA44 /* SavedSessionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedSessionsView.swift; sourceTree = "<group>"; };
 		BE3766522E1C229D005CFA44 /* PitchChakraTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchChakraTimelineView.swift; sourceTree = "<group>"; };
 		BE477BE52E1F670600F991F2 /* VoicePrintDemoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoicePrintDemoView.swift; sourceTree = "<group>"; };
+		BE7C15952E2040DC00292671 /* TuningOverlapCirclesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TuningOverlapCirclesView.swift; sourceTree = "<group>"; };
 		BEDD82492E16B6E300C46430 /* HarmonicGraphView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HarmonicGraphView.swift; sourceTree = "<group>"; };
 		BEDD83032E18A99500C46430 /* CircleWave.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleWave.swift; sourceTree = "<group>"; };
 		BEE6D7E82E1B263F00B3B886 /* PitchStatistics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchStatistics.swift; sourceTree = "<group>"; };
@@ -348,6 +351,7 @@
 		8FB571D425B722F2007C28BC /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				BE7C15952E2040DC00292671 /* TuningOverlapCirclesView.swift */,
 				BE477BE52E1F670600F991F2 /* VoicePrintDemoView.swift */,
 				BE17A10F2E1EC530005C5154 /* TunerViews */,
 				BEDD83032E18A99500C46430 /* CircleWave.swift */,
@@ -652,6 +656,7 @@
 				8F3ECD282682838D00415B9F /* MainNoteView.swift in Sources */,
 				BEE6D7F22E1B265600B3B886 /* StatsModalView.swift in Sources */,
 				BEED700C2E14526400037881 /* FunctionGeneratorEngine.swift in Sources */,
+				BE7C15962E2040DC00292671 /* TuningOverlapCirclesView.swift in Sources */,
 				BEED6ED32E143EEB00037881 /* AudioPlayer.swift in Sources */,
 				BE026C072E1D620A0088BD78 /* UserProfile.swift in Sources */,
 				BE026CC12E1DA6DE0088BD78 /* TonePlayerControlPanel.swift in Sources */,
@@ -677,6 +682,7 @@
 			files = (
 				8FB571E525B73E9A007C28BC /* TunerData.swift in Sources */,
 				8FB571F525B73ECF007C28BC /* CurrentNoteMarker.swift in Sources */,
+				BE7C15972E2040DC00292671 /* TuningOverlapCirclesView.swift in Sources */,
 				BE37664B2E1C224E005CFA44 /* SessionStore.swift in Sources */,
 				BEED700D2E14526400037881 /* FunctionGeneratorEngine.swift in Sources */,
 				BE0F24742E1AE569003DE109 /* SpectrogramView.swift in Sources */,
