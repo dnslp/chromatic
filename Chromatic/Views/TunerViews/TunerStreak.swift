@@ -18,16 +18,34 @@ struct RingOverlay: View {
         ForEach(1...ringCount, id: \.self) { i in
             let isActive = i == ringCount // Highlight the outermost ring
             let colorIndex = (i - 1) % spectrumColors.count
+
+            let phi = 1.618
+
+            // Animation Duration Logic
+            let baseAnimDuration = 1.8 // Slightly slower base for more noticeable variations
+            let durationFactors = [1.0, 1.0/phi, phi] // Cycle through these
+            let currentDurationFactor = durationFactors[(i-1) % durationFactors.count]
+            let calculatedAnimDuration = baseAnimDuration * currentDurationFactor
+
+            // Frequency Logic
+            let baseFrequency: CGFloat = 8.0
+            // Using phi to create distinct steps for frequency, adding to base
+            // Smaller multiplier for phi for frequency as it's more sensitive
+            let frequencySteps: [CGFloat] = [0.0, CGFloat(phi * 0.5), CGFloat(phi * 1.0), CGFloat(phi * 1.5), CGFloat(phi * 0.25)]
+            let currentFrequencyOffset = frequencySteps[(i-1) % frequencySteps.count]
+            let calculatedFrequency = baseFrequency + currentFrequencyOffset
+
             WavingCircleBorder(
-                strength: 2,
-                frequency: CGFloat(10 + i * 2), // Vary frequency for visual interest
-                lineWidth: isActive ? 4 : 2.5,
+                strength: isActive ? 2.5 : 2, // Slightly more strength if active
+                frequency: calculatedFrequency,
+                lineWidth: isActive ? 3.5 : 2.5, // Thicker line if active
                 color: spectrumColors[colorIndex],
-                animationDuration: 1.5 + Double(i) * 0.2,
-                highlighted: isActive && currentStreak % 10 != 0 && currentStreak > 0 // Highlight if it's the current target ring
+                animationDuration: calculatedAnimDuration,
+                highlighted: isActive && currentStreak % 10 != 0 && currentStreak > 0
             )
-            .frame(width: 100 + CGFloat(i) * 30, // Increased spacing for WavingCircleBorder
-                   height: 100 + CGFloat(i) * 30)
+            // Adjusted sizing: Start smaller, increment slightly more
+            .frame(width: 60 + CGFloat(i) * 35,
+                   height: 60 + CGFloat(i) * 35)
         }
     }
 }
