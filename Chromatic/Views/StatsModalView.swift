@@ -61,7 +61,7 @@ struct StatsModalView: View {
         NavigationView {
             List {
                 // --- Visual summary at the top ---
-                VoicePrintDemoView(stats: voicePrintStats)
+                VoicePr(stats: voicePrintStats)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
 
