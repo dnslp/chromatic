@@ -2,12 +2,11 @@ import SwiftUI
 
 struct ProfilesTabView: View {
     @EnvironmentObject var profileManager: UserProfileManager
-    @State private var showingCreateProfileAlert = false
+    @State private var showingCreateProfileSheet = false // Changed from showingCreateProfileAlert
     @State private var newProfileName: String = ""
+    // newProfileF0 is still used to initialize the picker's selection indirectly via selectedPitchId
+    // and potentially by EditProfileSheet if it expects an f0.
     @State private var newProfileF0: Double = 77.78
-    // Default to C2 if no profile exists or current profile has no f0
-    // We find the frequency for D#2/Eb2 from the pitchFrequencies list.
-    // If not found, fallback to a sensible default (e.g., 77.78 or the first pitch's frequency).
     @State private var selectedPitchId: UUID = pitchFrequencies.first(where: { $0.name == "D#2/Eb2" })?.id ?? pitchFrequencies.first?.id ?? UUID()
     @State private var profileToEdit: UserProfile? = nil
     @State private var selectedProfile: UserProfile? = nil // For showing full profile page
@@ -99,9 +98,9 @@ struct ProfilesTabView: View {
                             // Default to D#2/Eb2 if no current profile or no matching pitch
                             let defaultPitch = pitchFrequencies.first(where: { $0.name == "D#2/Eb2" }) ?? pitchFrequencies.first!
                             selectedPitchId = defaultPitch.id
-                            newProfileF0 = defaultPitch.frequency
+                            newProfileF0 = defaultPitch.frequency // Keep newProfileF0 for initial consistency if needed elsewhere
                         }
-                        showingCreateProfileAlert = true
+                        showingCreateProfileSheet = true // Present the sheet
                     } label: {
                         Image(systemName: "plus.circle.fill")
                     }
@@ -123,31 +122,15 @@ struct ProfilesTabView: View {
             .sheet(item: $selectedProfile) { profile in
                 ProfileView(profileManager: profileManager, profile: profile)
             }
-            .alert("New Profile", isPresented: $showingCreateProfileAlert, actions: {
-                TextField("Profile Name", text: $newProfileName)
-                Picker("Fundamental Frequency (f₀)", selection: $selectedPitchId) {
-                    ForEach(pitchFrequencies) { pitch in
-                        Text("\(pitch.name) (\(pitch.frequency, specifier: "%.2f") Hz)").tag(pitch.id)
-                    }
-                }
-                .onChange(of: selectedPitchId) { newId in
-                    if let selectedPitch = pitchFrequencies.first(where: { $0.id == newId }) {
-                        newProfileF0 = selectedPitch.frequency
-                    }
-                }
-                Button("Create") {
-                    // Ensure newProfileF0 is updated before creating the profile
-                    if let selectedPitch = pitchFrequencies.first(where: { $0.id == selectedPitchId }) {
-                        newProfileF0 = selectedPitch.frequency
-                    }
-                    if !newProfileName.isEmpty {
-                        profileManager.addProfile(name: newProfileName, f0: newProfileF0)
-                    }
-                }
-                Button("Cancel", role: .cancel) { }
-            }, message: {
-                Text("Enter a name and select the fundamental frequency (f₀) for the new profile.")
-            })
+            // Sheet for creating a new profile
+            .sheet(isPresented: $showingCreateProfileSheet) {
+                CreateProfileSheet(
+                    profileName: $newProfileName,
+                    selectedPitchId: $selectedPitchId,
+                    profileManager: profileManager
+                )
+            }
+            // Removed the .alert for new profile creation
         }
     }
 
