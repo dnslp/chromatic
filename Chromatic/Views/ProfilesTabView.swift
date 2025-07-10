@@ -5,6 +5,10 @@ struct ProfilesTabView: View {
     @State private var showingCreateProfileAlert = false
     @State private var newProfileName: String = ""
     @State private var newProfileF0: Double = 77.78
+    // Default to C2 if no profile exists or current profile has no f0
+    // We find the frequency for D#2/Eb2 from the pitchFrequencies list.
+    // If not found, fallback to a sensible default (e.g., 77.78 or the first pitch's frequency).
+    @State private var selectedPitchId: UUID = pitchFrequencies.first(where: { $0.name == "D#2/Eb2" })?.id ?? pitchFrequencies.first?.id ?? UUID()
     @State private var profileToEdit: UserProfile? = nil
     @State private var selectedProfile: UserProfile? = nil // For showing full profile page
 
@@ -86,10 +90,16 @@ struct ProfilesTabView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
                         newProfileName = ""
-                        if let currentF0 = profileManager.currentProfile?.f0 {
-                            newProfileF0 = currentF0
+                        // Attempt to find a pitch matching the current profile's f0 or default to D#2/Eb2
+                        if let currentF0 = profileManager.currentProfile?.f0,
+                           let matchingPitch = pitchFrequencies.first(where: { abs($0.frequency - currentF0) < 0.01 }) {
+                            selectedPitchId = matchingPitch.id
+                            newProfileF0 = matchingPitch.frequency
                         } else {
-                            newProfileF0 = 77.78
+                            // Default to D#2/Eb2 if no current profile or no matching pitch
+                            let defaultPitch = pitchFrequencies.first(where: { $0.name == "D#2/Eb2" }) ?? pitchFrequencies.first!
+                            selectedPitchId = defaultPitch.id
+                            newProfileF0 = defaultPitch.frequency
                         }
                         showingCreateProfileAlert = true
                     } label: {
@@ -115,16 +125,28 @@ struct ProfilesTabView: View {
             }
             .alert("New Profile", isPresented: $showingCreateProfileAlert, actions: {
                 TextField("Profile Name", text: $newProfileName)
-                TextField("f₀ (Hz)", value: $newProfileF0, formatter: hzFormatter)
-                    .keyboardType(.decimalPad)
+                Picker("Fundamental Frequency (f₀)", selection: $selectedPitchId) {
+                    ForEach(pitchFrequencies) { pitch in
+                        Text("\(pitch.name) (\(pitch.frequency, specifier: "%.2f") Hz)").tag(pitch.id)
+                    }
+                }
+                .onChange(of: selectedPitchId) { newId in
+                    if let selectedPitch = pitchFrequencies.first(where: { $0.id == newId }) {
+                        newProfileF0 = selectedPitch.frequency
+                    }
+                }
                 Button("Create") {
+                    // Ensure newProfileF0 is updated before creating the profile
+                    if let selectedPitch = pitchFrequencies.first(where: { $0.id == selectedPitchId }) {
+                        newProfileF0 = selectedPitch.frequency
+                    }
                     if !newProfileName.isEmpty {
                         profileManager.addProfile(name: newProfileName, f0: newProfileF0)
                     }
                 }
                 Button("Cancel", role: .cancel) { }
             }, message: {
-                Text("Enter a name and fundamental frequency (f₀) for the new profile.")
+                Text("Enter a name and select the fundamental frequency (f₀) for the new profile.")
             })
         }
     }
@@ -133,6 +155,10 @@ struct ProfilesTabView: View {
         profileManager.deleteProfile(at: offsets)
     }
 
+    // hzFormatter is no longer needed here as the Picker handles formatting.
+    // If it's used elsewhere, it can remain, otherwise it can be removed.
+    // For now, I will leave it commented out in case it's used by EditProfileSheet or other parts.
+    /*
     private var hzFormatter: NumberFormatter {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
@@ -140,6 +166,7 @@ struct ProfilesTabView: View {
         formatter.minimumFractionDigits = 2
         return formatter
     }
+    */
 }
 
 struct ProfilesTabView_Previews: PreviewProvider {
