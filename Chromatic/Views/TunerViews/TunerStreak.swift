@@ -7,120 +7,71 @@
 
 import SwiftUI
 
-// MARK: - Helper Structs (assuming spectrumColors, CircleWave, WavingCircleBorder, AtomicCountdownView are globally available)
-
-// If WavingCircleBorder, CircleWave etc. are confirmed to be in StringTheoryView.swift or another global spot,
-// these comments should ideally be added to those original definitions.
-// For now, adding them here if we were to temporarily redefine/use it locally during refactoring.
-// NOTE: If these structs are indeed global, this edit block should be applied to their source files, not here.
-
-/*
-struct WavingCircleBorder: View {
-    /// `strength`: Defines the amplitude of the wave. Higher values create more pronounced inward/outward movement.
-    /// Example: 0.5 = subtle, 5 = very wavy.
-    var strength: CGFloat = 1
-
-    /// `frequency`: Number of wave crests around the circle's circumference.
-    /// Example: 2 = two large waves, 20 = twenty small ripples.
-    var frequency: CGFloat = 2
-
-    /// `lineWidth`: The thickness of the circular line being drawn.
-    var lineWidth: CGFloat = 3
-
-    /// `color`: The base color of the waving line (when not highlighted).
-    var color: Color = .green
-
-    /// `animationDuration`: The time in seconds for one full wave cycle to complete (e.g., for a crest to travel all the way around).
-    /// Shorter duration means faster animation.
-    var animationDuration: Double = 2
-
-    /// `highlighted`: When true, typically changes appearance (e.g., color to yellow, increased wave strength/lineWidth via internal logic).
-    var highlighted: Bool = false
-
-    /// `autoreverses`: If true, the animation will play forwards then backwards. StringTheoryView kept this false for continuous flow.
-    var autoreverses: Bool = false
-
-    @State private var phase: CGFloat = 0
-
-    var body: some View {
-        ZStack {
-            Circle() // Static background portion of the circle
-                .stroke(color.opacity(0.13), lineWidth: lineWidth)
-
-            CircleWave( // The animated part
-                // When highlighted, wave strength is amplified (e.g., by 2.2x)
-                strength: highlighted ? strength * 2.2 : strength,
-                frequency: frequency,
-                phase: phase
-            )
-            // When highlighted, stroke color changes (e.g., to yellow) and line width doubles
-            .stroke(highlighted ? .yellow : color, lineWidth: highlighted ? lineWidth * 2 : lineWidth)
-            // Shadow effect, more pronounced when highlighted
-            .shadow(color: highlighted ? .yellow : color.opacity(0.4), radius: highlighted ? 20 : 6)
-            .animation(
-                Animation.linear(duration: animationDuration)
-                    .repeatForever(autoreverses: autoreverses), // Set to true to see back-and-forth
-                value: phase
-            )
-        }
-        .frame(width: highlighted ? 135 : 110, height: highlighted ? 135 : 110) // Default frame, can be overridden
-        .onAppear { phase = .pi * 2 } // Start animation
-    }
-}
-*/
-
-// Data structure for solidified layers in the accretion model
+/// Represents one concentric ring corresponding to a single streak point.
 struct StreakLayer: Identifiable {
     let id = UUID()
-    let milestoneIndex: Int // e.g., 0 for first 10 pts, 1 for 11-20 pts
-    var size: CGFloat        // Size at the time of solidification
-    var color: Color
-    // Add any other properties needed for layer-specific animation or appearance
-    var animationStrength: CGFloat = 1.0
-    var animationFrequency: CGFloat = 6.0
-    var animationDuration: Double = 2.5
+    let milestoneIndex: Int    // Zero-based index: 0 for the first point, 1 for the second, etc.
+    let size: CGFloat          // Diameter of this ring
+    let color: Color           // Base color for the ring
+    let animationStrength: CGFloat   // Amplitude of the waviness
+    let animationFrequency: CGFloat  // Frequency of the waviness
+    let animationDuration: Double    // Duration of one wave cycle
 }
 
-
+/// A view that visualizes the user’s tuning streak as a series of hypnotic concentric rings.
 struct TunerStreak: View {
     // MARK: – Inputs
+
+    // Contains live pitch measurements and recording controls
     @Binding var tunerData: TunerData
+    // User’s preference for sharp/flat note modifiers (unused here but passed through)
     @State var modifierPreference: ModifierPreference
+    // Transposition selector (passed through)
     @State var selectedTransposition: Int
 
     // MARK: – Recording State
-    @State private var sessionStats: SessionStatistics?
-    @State private var showStatsModal = false
-    @State private var countdown: Int?
-    let countdownSeconds = 3
-    @State private var recordingStartedAt: Date?
 
-    // MARK: – Profile & F₀
-    @EnvironmentObject private var profileManager: UserProfileManager
-    @State private var userF0: Double = 77.78
+    @State private var sessionStats: SessionStatistics?   // Stores stats to show in modal
+    @State private var showStatsModal = false            // Controls stats modal presentation
+    @State private var countdown: Int?                   // Optional 3-2-1 countdown
+    let countdownSeconds = 3                             // Total countdown seconds
+    @State private var recordingStartedAt: Date?         // Timestamp when recording begins
+
+    // MARK: – Profile & Target Pitch (F₀)
+
+    @EnvironmentObject private var profileManager: UserProfileManager  // Provides saved profiles
+    @State private var userF0: Double = 77.78           // Target fundamental frequency
 
     // MARK: – Streak Tracking
-    @State private var currentStreak: Int = 0
-    @State private var bestStreak: Int = 0
-    @State private var updateCount: Int = 0 // Tracks pitch updates for streak points
-    private let updatesPerPoint: Int = 5    // Number of in-tune updates to earn 1 streak point
-    private let inTuneThreshold: Double = 5.0 // Cents tolerance for being in-tune
 
-    // Accretion Model State
-    @State private var solidifiedLayers: [StreakLayer] = []
-    private var currentMilestoneIndex: Int { currentStreak / 10 }
-    private var pointsInCurrentMilestone: Int { currentStreak % 10 }
+    @State private var currentStreak: Int = 0    // Number of points earned
+    @State private var bestStreak: Int = 0       // Maximum streak achieved
+    @State private var updateCount: Int = 0      // Counts in-tune updates toward next point
+    private let updatesPerPoint: Int = 5         // Number of in-tune samples per streak point
+    private let inTuneThreshold: Double = 5.0    // Cents tolerance for being “in tune”
 
-    // Constants for Core Element visualization
-    private let coreBaseSize: CGFloat = 35
-    private let coreGrowthFactor: CGFloat = 5
+    // MARK: – Accretion Model State
 
-    // MARK: – Profile Sheet
-    @State private var showingProfileSelector = false
+    @State private var solidifiedLayers: [StreakLayer] = []  // Rings that have “solidified”
+    private var pointsInCurrentStreak: Int { currentStreak } // Alias for clarity
+
+    // MARK: – Visualization Constants
+
+    private let coreBaseSize: CGFloat = 35       // Base diameter of the inner core
+    private let coreGrowthFactor: CGFloat = 5    // Increment per streak point
+
+    // MARK: – Hypnotic Animation State
+
+    @State private var rotationAngle: Double = 0 // Controls continuous rotation of rings
+    @State private var pulse = false            // Toggles core pulsing scale
+
+    // MARK: – Profile Selector Sheet
+
+    @State private var showingProfileSelector = false  // Controls profile-selection sheet
 
     var body: some View {
         VStack(spacing: 28) {
-            // Profile selector
+            // Profile selection bar at top
             HStack {
                 Button(action: { showingProfileSelector = true }) {
                     Label(
@@ -134,115 +85,122 @@ struct TunerStreak: View {
                 }
                 Spacer()
             }
-            .padding(.top)
             .padding(.horizontal)
+            .padding(.top)
 
-            // Countdown
+            // 3-2-1 Countdown Display
             if let c = countdown {
                 AtomicCountdownView(countdown: c, total: countdownSeconds, color: .cyan)
                     .transition(.scale.combined(with: .opacity))
             }
 
-            // Planetary Accretion Visualizer
+            // MARK: – Hypnotic Accretion Visualizer
             ZStack {
-                // Part 1: Render Solidified Layers
+                // 1) Rotating halo with an angular gradient
+                WavingCircleBorder(
+                    strength: 1, frequency: 7, lineWidth: 4, color: .green, animationDuration: 1, autoreverses: false
+                )
+                Circle()
+                    .stroke(
+                        AngularGradient(
+                            gradient: Gradient(colors: [.green, .blue, .green]),
+                            center: .center
+                        ),
+                        lineWidth: 20   // Fixed thin halo
+                    )
+                    .frame(width: 230, height: 230 )
+                    .rotationEffect(.degrees(rotationAngle))
+
+                // 2) Solidified rings for each past streak point
                 ForEach(solidifiedLayers) { layer in
                     WavingCircleBorder(
                         strength: layer.animationStrength,
                         frequency: layer.animationFrequency,
-                        lineWidth: 2.0, // Solidified layers have a consistent, thinner line
+                        lineWidth: 2,  // Uniform stroke thickness for past layers
                         color: layer.color,
                         animationDuration: layer.animationDuration,
-                        highlighted: false // Solidified layers are never "yellow" highlighted
+                        highlighted: false
                     )
                     .frame(width: layer.size, height: layer.size)
-                    .opacity(0.3 + (0.7 * (CGFloat(layer.milestoneIndex + 1) / CGFloat(solidifiedLayers.count + 1)))) // Older layers slightly fainter
+                    .opacity(0.3 + 0.7 * (CGFloat(layer.milestoneIndex + 1) / CGFloat(solidifiedLayers.count + 1)))
+                    .rotationEffect(.degrees(rotationAngle / Double(layer.milestoneIndex + 1)))
                 }
 
-                // Part 2: Render the Active Growing Core Element
-                // coreBaseSize and coreGrowthFactor are now struct-level constants
-                let coreCurrentSize = coreBaseSize + CGFloat(pointsInCurrentMilestone) * coreGrowthFactor
-
-                let coreColor = spectrumColors[currentMilestoneIndex % spectrumColors.count]
-                let isCoreHighlighted = abs(tunerData.pitch.measurement.value - userF0) <= inTuneThreshold && tunerData.isRecording
+                // 3) Pulsing active core that grows with current streak
+                let coreSize = coreBaseSize + CGFloat(pointsInCurrentStreak) * coreGrowthFactor
+                let coreColor = spectrumColors[pointsInCurrentStreak % spectrumColors.count]
+                let isInTune = abs(tunerData.pitch.measurement.value - userF0) <= inTuneThreshold && tunerData.isRecording
 
                 WavingCircleBorder(
-                    strength: 1.5 + CGFloat(pointsInCurrentMilestone) * 0.1,
-                    frequency: 10 + CGFloat(pointsInCurrentMilestone) * 0.5, // Slower frequency change
-                    lineWidth: 2.5 + CGFloat(pointsInCurrentMilestone) * 0.15, // Slower lineWidth change
+                    strength: 1.5 + CGFloat(pointsInCurrentStreak) * 0.1,
+                    frequency: 10 + CGFloat(pointsInCurrentStreak) * 0.005,
+                    lineWidth: 2.5 + CGFloat(pointsInCurrentStreak) * 0.005, // Adjust if too large
                     color: coreColor,
-                    animationDuration: 1.6 - Double(pointsInCurrentMilestone) * 0.06, // Slower duration change
-                    highlighted: isCoreHighlighted
+                    animationDuration: max(0.5, 1.6 - Double(pointsInCurrentStreak) * 0.6),
+                    highlighted: isInTune
+        
                 )
-                .frame(width: coreCurrentSize, height: coreCurrentSize)
-                .animation(.spring(response: 0.5, dampingFraction: 0.6), value: coreCurrentSize) // Animate size change
-                .animation(.easeInOut, value: isCoreHighlighted) // Animate highlight change
+                .frame(width: coreSize, height: coreSize)
+                .scaleEffect(pulse ? 1.1 : 0.9)
+                .animation(.spring(response: 0.5, dampingFraction: 0.6), value: coreSize)
+                .animation(.easeInOut, value: isInTune)
 
-
-                // Guidance Chevrons (if not in tune and not highlighted)
-                let diff = tunerData.pitch.measurement.value - userF0
-                if !isCoreHighlighted && tunerData.isRecording { // Show chevrons only if recording and not in tune
-                    if diff < -inTuneThreshold {
-                        Image(systemName: "chevron.left.2")
-                            .font(.system(size: 30, weight: .bold))
-                            .foregroundColor(.red.opacity(0.8))
-                            // Adjust offset based on core size or fixed position
-                            .offset(x: -(coreCurrentSize/2 + 25))
-                            .transition(.opacity.combined(with: .scale))
-                            .animation(.easeInOut, value: diff)
-                    } else if diff > inTuneThreshold {
-                        Image(systemName: "chevron.right.2")
-                            .font(.system(size: 30, weight: .bold))
-                            .foregroundColor(.red.opacity(0.8))
-                            .offset(x: coreCurrentSize/2 + 25)
-                            .transition(.opacity.combined(with: .scale))
-                            .animation(.easeInOut, value: diff)
-                    }
+                // 4) Directional chevrons guiding user if off-pitch
+                if !isInTune && tunerData.isRecording {
+                    let diff = tunerData.pitch.measurement.value - userF0
+                    let chevron = diff < -inTuneThreshold ? "chevron.left.2" : "chevron.right.2"
+                    Image(systemName: chevron)
+                        .font(.system(size: 30, weight: .bold))
+                        .foregroundColor(.red.opacity(0.8))
+                        .offset(x: diff < 0 ? -(coreSize/2 + 25) : (coreSize/2 + 25))
+                        .transition(.opacity.combined(with: .scale))
+                        .animation(.easeInOut, value: diff)
                 }
             }
-            .frame(width: 280, height: 280) // Main ZStack frame
+            .frame(width: 280, height: 280)
             .padding(.top)
             .opacity(countdown == nil ? 1 : 0.25)
+            .onAppear {
+                withAnimation(.linear(duration: 20).repeatForever(autoreverses: false)) {
+                    rotationAngle = 360
+                }
+                withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
+                    pulse.toggle()
+                }
+            }
             .onChange(of: tunerData.pitch.measurement.value) { newPitch in
                 guard tunerData.isRecording, countdown == nil else { return }
                 updateCount += 1
-                if abs(newPitch - userF0) <= inTuneThreshold {
-                    if updateCount % updatesPerPoint == 0 {
-                        var oldMilestoneIndex = currentMilestoneIndex
-                         oldMilestoneIndex = self.currentMilestoneIndex
-                        currentStreak += 1
-                        bestStreak = max(bestStreak, currentStreak)
+                if abs(newPitch - userF0) <= inTuneThreshold,
+                   updateCount % updatesPerPoint == 0 {
+                    currentStreak += 1
+                    bestStreak = max(bestStreak, currentStreak)
 
-                        if self.currentMilestoneIndex > oldMilestoneIndex {
-                            // Milestone completed, solidify a new layer
-                            let layerSize = coreBaseSize + CGFloat(9) * coreGrowthFactor // Size at 9 points
-                            let layerColor = spectrumColors[oldMilestoneIndex % spectrumColors.count]
-
-                            // Apply golden ratio to animation params of solidified layers for variety
-                            let phi = 1.618
-                            let baseLayerAnimDuration = 2.5
-                            let durationFactors = [1.0, 1.0/phi, phi]
-                            let layerAnimDuration = baseLayerAnimDuration * durationFactors[oldMilestoneIndex % durationFactors.count]
-
-                            let baseLayerFreq: CGFloat = 4.0
-                            let freqFactors: [CGFloat] = [1.0, 1.0/phi, phi]
-                            let layerFreq = baseLayerFreq * freqFactors[oldMilestoneIndex % freqFactors.count]
-
-                            let newLayer = StreakLayer(
-                                milestoneIndex: oldMilestoneIndex,
-                                size: layerSize,
-                                color: layerColor,
-                                animationStrength: 1.0, // Less strength for solidified layers
-                                animationFrequency: layerFreq,
-                                animationDuration: layerAnimDuration
-                            )
-                            solidifiedLayers.append(newLayer)
-                        }
-                    }
+                    // Compute new ring and append
+                    let streakIndex = currentStreak - 1
+                    let layerSize = coreBaseSize + CGFloat(streakIndex) * coreGrowthFactor
+                    let layerColor = spectrumColors[streakIndex % spectrumColors.count]
+                    let phi = 1.618
+                    let baseDur = 2.5
+                    let durFactors: [Double] = [1, 1/phi, phi]
+                    let layerAnimDuration = baseDur * durFactors[streakIndex % durFactors.count]
+                    let baseFreq: CGFloat = 4
+                    let freqFactors: [CGFloat] = [1, 1/CGFloat(phi), CGFloat(phi)]
+                    let layerFreq = baseFreq * freqFactors[streakIndex % freqFactors.count]
+                    solidifiedLayers.append(
+                        StreakLayer(
+                            milestoneIndex: streakIndex,
+                            size: layerSize,
+                            color: layerColor,
+                            animationStrength: 1.0,
+                            animationFrequency: layerFreq,
+                            animationDuration: layerAnimDuration
+                        )
+                    )
                 }
             }
 
-            // Pitch and streak text below visualizer
+            // MARK: – Pitch & Streak Text
             VStack(spacing: 10) {
                 Text("Target f₀: \(String(format: "%.2f", userF0)) Hz")
                     .font(.headline.weight(.medium))
@@ -251,22 +209,20 @@ struct TunerStreak: View {
                     .font(.title2.weight(.semibold))
                     .foregroundColor(.cyan)
                     .shadow(color: .cyan.opacity(0.7), radius: 3)
-
                 Text("🔥 Streak: \(currentStreak) 🔥")
                     .font(.system(size: 28, weight: .bold, design: .rounded))
                     .foregroundColor(currentStreak > 0 ? .yellow : .gray)
                     .shadow(color: currentStreak > 0 ? .orange.opacity(0.8) : .clear, radius: 5)
                     .animation(.spring(), value: currentStreak)
-
                 if bestStreak > 0 {
                     Text("Best: \(bestStreak)")
                         .font(.caption.weight(.medium))
                         .foregroundColor(.white.opacity(0.6))
                 }
             }
-            .padding(.top, 5) // Add some space above the text block
+            .padding(.top, 5)
 
-            // Recording controls
+            // MARK: – Recording Controls
             HStack(spacing: 18) {
                 Button(action: toggleRecording) {
                     Text(
@@ -299,7 +255,6 @@ struct TunerStreak: View {
                         duration: stats.duration,
                         values: tunerData.recordedPitches,
                         profileName: profileManager.currentProfile?.name ?? "Guest"
-             
                     )
                 }
             }
@@ -315,10 +270,10 @@ struct TunerStreak: View {
         .onAppear(perform: syncF0WithProfile)
         .onChange(of: profileManager.currentProfile) { _ in syncF0WithProfile() }
         .padding()
-        .background(Color.black.ignoresSafeArea(.all)) // Dark background
+        .background(Color.black.ignoresSafeArea(.all))
     }
 
-    // MARK: – Helpers
+    // MARK: – Helper Methods
 
     private func toggleRecording() {
         if tunerData.isRecording {
@@ -341,7 +296,7 @@ struct TunerStreak: View {
                     currentStreak = 0
                     bestStreak = 0
                     updateCount = 0
-                    solidifiedLayers.removeAll() // Clear layers on new recording
+                    solidifiedLayers.removeAll()
                 }
             }
         }
@@ -354,7 +309,7 @@ struct TunerStreak: View {
         currentStreak = 0
         bestStreak = 0
         updateCount = 0
-        solidifiedLayers.removeAll() // Clear layers
+        solidifiedLayers.removeAll()
     }
 
     private func syncF0WithProfile() {
@@ -364,35 +319,60 @@ struct TunerStreak: View {
     }
 }
 
-struct TunerStreak_Previews: PreviewProvider {
-    static var previews: some View {
-        let mockTunerData: TunerData = {
-            var data = TunerData(pitch: 220, amplitude: 0.4)
-            data.isRecording = true // Set isRecording for active state preview
-            return data
-        }()
+// MARK: – Preview Helpers and Multiple States
 
-        NavigationView { // Added for better preview context if needed
-            TunerStreak(
-                tunerData: .constant(mockTunerData),
-                modifierPreference: .preferSharps,
-                selectedTransposition: 0
+extension TunerStreak {
+    /// Initializes a preview instance with a preset streak count.
+    init(previewStreak: Int) {
+        let mock = TunerData(pitch: 220, amplitude: 0.4)
+        _tunerData = .constant(mock)
+        _modifierPreference = State(initialValue: .preferSharps)
+        _selectedTransposition = State(initialValue: 0)
+        // Build layers matching previewStreak
+        let layers = (0..<previewStreak).map { idx in
+            StreakLayer(
+                milestoneIndex: idx,
+                size: 35 + CGFloat(idx) * 5,
+                color: spectrumColors[idx % spectrumColors.count],
+                animationStrength: 1.0,
+                animationFrequency: 4.0,
+                animationDuration: 2.5
             )
-            .environmentObject(UserProfileManager.mock) // Using a mock for consistency
         }
-        .preferredColorScheme(.dark) // Preview in dark mode
+        _currentStreak = State(initialValue: previewStreak)
+        _bestStreak = State(initialValue: previewStreak)
+        _solidifiedLayers = State(initialValue: layers)
+        _rotationAngle = State(initialValue: 0)
+        _pulse = State(initialValue: false)
     }
 }
 
-// Mock UserProfileManager for preview
+struct TunerStreak_Previews: PreviewProvider {
+    static var previews: some View {
+        Group {
+            TunerStreak(previewStreak: 10)
+                .previewDisplayName("Streak: 10")
+            TunerStreak(previewStreak: 20)
+                .previewDisplayName("Streak: 20")
+            TunerStreak(previewStreak: 30)
+                .previewDisplayName("Streak: 30")
+            TunerStreak(previewStreak: 40)
+                .previewDisplayName("Streak: 40")
+        }
+        .environmentObject(UserProfileManager.mock)
+        .preferredColorScheme(.dark)
+    }
+}
+
+// Mock for Preview
 extension UserProfileManager {
     static var mock: UserProfileManager {
-        let manager = UserProfileManager()
-        manager.profiles = [
+        let m = UserProfileManager()
+        m.profiles = [
             UserProfile(name: "Tenor", f0: 146.83),
             UserProfile(name: "Soprano", f0: 329.63)
         ]
-        manager.currentProfile = manager.profiles.first
-        return manager
+        m.currentProfile = m.profiles.first
+        return m
     }
 }

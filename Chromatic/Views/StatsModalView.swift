@@ -72,9 +72,9 @@ struct StatsModalView: View {
                     Text(String(format: "IQR: %.2f Hz", statistics.iqr))
                     Text(String(format: "RMS: %.2f Hz", statistics.rms))
                 }
-                Section("Tuning Accuracy") {
+                Section("Tuning Accuracy To Median") {
                     let pct = statistics.percentWithin(
-                        target: values.average ?? 0,
+                        target: values.median ?? 0,
                         toleranceCents: 5,
                         values: values)
                     Text(String(format: "Within ±5¢: %.1f%%", pct))
