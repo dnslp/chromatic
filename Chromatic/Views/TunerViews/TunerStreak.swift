@@ -9,45 +9,76 @@ import SwiftUI
 
 // MARK: - Helper Structs (assuming spectrumColors, CircleWave, WavingCircleBorder, AtomicCountdownView are globally available)
 
-/// Renders concentric rings for each 10-point milestone
-struct RingOverlay: View {
-    let ringCount: Int
-    let currentStreak: Int // Pass currentStreak to highlight the "active" ring
+// If WavingCircleBorder, CircleWave etc. are confirmed to be in StringTheoryView.swift or another global spot,
+// these comments should ideally be added to those original definitions.
+// For now, adding them here if we were to temporarily redefine/use it locally during refactoring.
+// NOTE: If these structs are indeed global, this edit block should be applied to their source files, not here.
+
+/*
+struct WavingCircleBorder: View {
+    /// `strength`: Defines the amplitude of the wave. Higher values create more pronounced inward/outward movement.
+    /// Example: 0.5 = subtle, 5 = very wavy.
+    var strength: CGFloat = 1
+
+    /// `frequency`: Number of wave crests around the circle's circumference.
+    /// Example: 2 = two large waves, 20 = twenty small ripples.
+    var frequency: CGFloat = 2
+
+    /// `lineWidth`: The thickness of the circular line being drawn.
+    var lineWidth: CGFloat = 3
+
+    /// `color`: The base color of the waving line (when not highlighted).
+    var color: Color = .green
+
+    /// `animationDuration`: The time in seconds for one full wave cycle to complete (e.g., for a crest to travel all the way around).
+    /// Shorter duration means faster animation.
+    var animationDuration: Double = 2
+
+    /// `highlighted`: When true, typically changes appearance (e.g., color to yellow, increased wave strength/lineWidth via internal logic).
+    var highlighted: Bool = false
+
+    /// `autoreverses`: If true, the animation will play forwards then backwards. StringTheoryView kept this false for continuous flow.
+    var autoreverses: Bool = false
+
+    @State private var phase: CGFloat = 0
 
     var body: some View {
-        ForEach(1...ringCount, id: \.self) { i in
-            let isActive = i == ringCount // Highlight the outermost ring
-            let colorIndex = (i - 1) % spectrumColors.count
+        ZStack {
+            Circle() // Static background portion of the circle
+                .stroke(color.opacity(0.13), lineWidth: lineWidth)
 
-            let phi = 1.618
-
-            // Animation Duration Logic
-            let baseAnimDuration = 1.8 // Slightly slower base for more noticeable variations
-            let durationFactors = [1.0, 1.0/phi, phi] // Cycle through these
-            let currentDurationFactor = durationFactors[(i-1) % durationFactors.count]
-            let calculatedAnimDuration = baseAnimDuration * currentDurationFactor
-
-            // Frequency Logic
-            let baseFrequency: CGFloat = 8.0
-            // Using phi to create distinct steps for frequency, adding to base
-            // Smaller multiplier for phi for frequency as it's more sensitive
-            let frequencySteps: [CGFloat] = [0.0, CGFloat(phi * 0.5), CGFloat(phi * 1.0), CGFloat(phi * 1.5), CGFloat(phi * 0.25)]
-            let currentFrequencyOffset = frequencySteps[(i-1) % frequencySteps.count]
-            let calculatedFrequency = baseFrequency + currentFrequencyOffset
-
-            WavingCircleBorder(
-                strength: isActive ? 2.5 : 2, // Slightly more strength if active
-                frequency: calculatedFrequency,
-                lineWidth: isActive ? 3.5 : 2.5, // Thicker line if active
-                color: spectrumColors[colorIndex],
-                animationDuration: calculatedAnimDuration,
-                highlighted: isActive && currentStreak % 10 != 0 && currentStreak > 0
+            CircleWave( // The animated part
+                // When highlighted, wave strength is amplified (e.g., by 2.2x)
+                strength: highlighted ? strength * 2.2 : strength,
+                frequency: frequency,
+                phase: phase
             )
-            // Adjusted sizing: Start smaller, increment slightly more
-            .frame(width: 60 + CGFloat(i) * 35,
-                   height: 60 + CGFloat(i) * 35)
+            // When highlighted, stroke color changes (e.g., to yellow) and line width doubles
+            .stroke(highlighted ? .yellow : color, lineWidth: highlighted ? lineWidth * 2 : lineWidth)
+            // Shadow effect, more pronounced when highlighted
+            .shadow(color: highlighted ? .yellow : color.opacity(0.4), radius: highlighted ? 20 : 6)
+            .animation(
+                Animation.linear(duration: animationDuration)
+                    .repeatForever(autoreverses: autoreverses), // Set to true to see back-and-forth
+                value: phase
+            )
         }
+        .frame(width: highlighted ? 135 : 110, height: highlighted ? 135 : 110) // Default frame, can be overridden
+        .onAppear { phase = .pi * 2 } // Start animation
     }
+}
+*/
+
+// Data structure for solidified layers in the accretion model
+struct StreakLayer: Identifiable {
+    let id = UUID()
+    let milestoneIndex: Int // e.g., 0 for first 10 pts, 1 for 11-20 pts
+    var size: CGFloat        // Size at the time of solidification
+    var color: Color
+    // Add any other properties needed for layer-specific animation or appearance
+    var animationStrength: CGFloat = 1.0
+    var animationFrequency: CGFloat = 6.0
+    var animationDuration: Double = 2.5
 }
 
 
@@ -71,10 +102,14 @@ struct TunerStreak: View {
     // MARK: – Streak Tracking
     @State private var currentStreak: Int = 0
     @State private var bestStreak: Int = 0
-    @State private var updateCount: Int = 0
-    private let updatesPerPoint: Int = 5
-    private let inTuneThreshold: Double = 5.0
-    private var ringCount: Int { currentStreak / 10 }
+    @State private var updateCount: Int = 0 // Tracks pitch updates for streak points
+    private let updatesPerPoint: Int = 5    // Number of in-tune updates to earn 1 streak point
+    private let inTuneThreshold: Double = 5.0 // Cents tolerance for being in-tune
+
+    // Accretion Model State
+    @State private var solidifiedLayers: [StreakLayer] = []
+    private var currentMilestoneIndex: Int { currentStreak / 10 }
+    private var pointsInCurrentMilestone: Int { currentStreak % 10 }
 
     // MARK: – Profile Sheet
     @State private var showingProfileSelector = false
@@ -104,63 +139,107 @@ struct TunerStreak: View {
                     .transition(.scale.combined(with: .opacity))
             }
 
-            // Concentric rings & tuning indicator
+            // Planetary Accretion Visualizer
             ZStack {
-                // Rings based on streak milestones
-                if ringCount > 0 {
-                    RingOverlay(ringCount: ringCount, currentStreak: currentStreak)
+                // Part 1: Render Solidified Layers
+                ForEach(solidifiedLayers) { layer in
+                    WavingCircleBorder(
+                        strength: layer.animationStrength,
+                        frequency: layer.animationFrequency,
+                        lineWidth: 2.0, // Solidified layers have a consistent, thinner line
+                        color: layer.color,
+                        animationDuration: layer.animationDuration,
+                        highlighted: false // Solidified layers are never "yellow" highlighted
+                    )
+                    .frame(width: layer.size, height: layer.size)
+                    .opacity(0.3 + (0.7 * (CGFloat(layer.milestoneIndex + 1) / CGFloat(solidifiedLayers.count + 1)))) // Older layers slightly fainter
                 }
 
-                // Central In-Tune/Guidance Indicator
-                let isTuned = abs(tunerData.pitch.measurement.value - userF0) <= inTuneThreshold
-                let diff = tunerData.pitch.measurement.value - userF0
+                // Part 2: Render the Active Growing Core Element
+                let coreBaseSize: CGFloat = 35 // Made core slightly smaller to ensure visibility inside last layer
+                let coreGrowthFactor: CGFloat = 5
+                let coreCurrentSize = coreBaseSize + CGFloat(pointsInCurrentMilestone) * coreGrowthFactor
+
+                let coreColor = spectrumColors[currentMilestoneIndex % spectrumColors.count]
+                let isCoreHighlighted = abs(tunerData.pitch.measurement.value - userF0) <= inTuneThreshold && tunerData.isRecording
 
                 WavingCircleBorder(
-                    strength: 1.5,
-                    frequency: 12,
-                    lineWidth: 3,
-                    color: isTuned ? .green : .gray.opacity(0.7),
-                    animationDuration: isTuned ? 1.0 : 2.5,
-                    highlighted: isTuned
+                    strength: 1.5 + CGFloat(pointsInCurrentMilestone) * 0.1,
+                    frequency: 10 + CGFloat(pointsInCurrentMilestone) * 0.5, // Slower frequency change
+                    lineWidth: 2.5 + CGFloat(pointsInCurrentMilestone) * 0.15, // Slower lineWidth change
+                    color: coreColor,
+                    animationDuration: 1.6 - Double(pointsInCurrentMilestone) * 0.06, // Slower duration change
+                    highlighted: isCoreHighlighted
                 )
-                .frame(width: isTuned ? 90 : 80, height: isTuned ? 90 : 80) // Smaller central element
-                .animation(.spring(), value: isTuned)
+                .frame(width: coreCurrentSize, height: coreCurrentSize)
+                .animation(.spring(response: 0.5, dampingFraction: 0.6), value: coreCurrentSize) // Animate size change
+                .animation(.easeInOut, value: isCoreHighlighted) // Animate highlight change
 
-                // Guidance Chevrons (if not in tune)
-                if !isTuned {
+
+                // Guidance Chevrons (if not in tune and not highlighted)
+                let diff = tunerData.pitch.measurement.value - userF0
+                if !isCoreHighlighted && tunerData.isRecording { // Show chevrons only if recording and not in tune
                     if diff < -inTuneThreshold {
-                        Image(systemName: "chevron.left.2") // Using double chevron for more emphasis
+                        Image(systemName: "chevron.left.2")
                             .font(.system(size: 30, weight: .bold))
                             .foregroundColor(.red.opacity(0.8))
-                            .offset(x: -65) // Adjusted offset for central element
+                            // Adjust offset based on core size or fixed position
+                            .offset(x: -(coreCurrentSize/2 + 25))
                             .transition(.opacity.combined(with: .scale))
+                            .animation(.easeInOut, value: diff)
                     } else if diff > inTuneThreshold {
                         Image(systemName: "chevron.right.2")
                             .font(.system(size: 30, weight: .bold))
                             .foregroundColor(.red.opacity(0.8))
-                            .offset(x: 65) // Adjusted offset for central element
+                            .offset(x: coreCurrentSize/2 + 25)
                             .transition(.opacity.combined(with: .scale))
+                            .animation(.easeInOut, value: diff)
                     }
                 }
             }
-            .frame(width: 280, height: 280) // Slightly larger frame to accommodate larger rings
+            .frame(width: 280, height: 280) // Main ZStack frame
             .padding(.top)
             .opacity(countdown == nil ? 1 : 0.25)
             .onChange(of: tunerData.pitch.measurement.value) { newPitch in
-                guard tunerData.isRecording, countdown == nil else { return } // Ensure countdown is not active
+                guard tunerData.isRecording, countdown == nil else { return }
                 updateCount += 1
                 if abs(newPitch - userF0) <= inTuneThreshold {
                     if updateCount % updatesPerPoint == 0 {
+                        let oldMilestoneIndex = currentMilestoneIndex
+                        let oldMilestoneIndex = self.currentMilestoneIndex
                         currentStreak += 1
                         bestStreak = max(bestStreak, currentStreak)
+
+                        if self.currentMilestoneIndex > oldMilestoneIndex {
+                            // Milestone completed, solidify a new layer
+                            let layerSize = coreBaseSize + CGFloat(9) * coreGrowthFactor // Size at 9 points
+                            let layerColor = spectrumColors[oldMilestoneIndex % spectrumColors.count]
+
+                            // Apply golden ratio to animation params of solidified layers for variety
+                            let phi = 1.618
+                            let baseLayerAnimDuration = 2.5
+                            let durationFactors = [1.0, 1.0/phi, phi]
+                            let layerAnimDuration = baseLayerAnimDuration * durationFactors[oldMilestoneIndex % durationFactors.count]
+
+                            let baseLayerFreq: CGFloat = 4.0
+                            let freqFactors: [CGFloat] = [1.0, 1.0/phi, phi]
+                            let layerFreq = baseLayerFreq * freqFactors[oldMilestoneIndex % freqFactors.count]
+
+                            let newLayer = StreakLayer(
+                                milestoneIndex: oldMilestoneIndex,
+                                size: layerSize,
+                                color: layerColor,
+                                animationStrength: 1.0, // Less strength for solidified layers
+                                animationFrequency: layerFreq,
+                                animationDuration: layerAnimDuration
+                            )
+                            solidifiedLayers.append(newLayer)
+                        }
                     }
-                } else {
-                    // Optional: Reset streak if out of tune for a certain period, or just pause.
-                    // For now, streak only increments when in tune.
                 }
             }
 
-            // Pitch and streak text below rings
+            // Pitch and streak text below visualizer
             VStack(spacing: 10) {
                 Text("Target f₀: \(String(format: "%.2f", userF0)) Hz")
                     .font(.headline.weight(.medium))
@@ -259,6 +338,7 @@ struct TunerStreak: View {
                     currentStreak = 0
                     bestStreak = 0
                     updateCount = 0
+                    solidifiedLayers.removeAll() // Clear layers on new recording
                 }
             }
         }
@@ -271,6 +351,7 @@ struct TunerStreak: View {
         currentStreak = 0
         bestStreak = 0
         updateCount = 0
+        solidifiedLayers.removeAll() // Clear layers
     }
 
     private func syncF0WithProfile() {
