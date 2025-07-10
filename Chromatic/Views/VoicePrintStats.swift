@@ -1,13 +1,6 @@
-//
-//  VoicePrintStats.swift
-//  Chromatic
-//
-//  Created by David Nyman on 7/9/25.
-//
-
-
 import SwiftUI
 
+// MARK: - Data Model
 struct VoicePrintStats {
     var minPitch: Double
     var maxPitch: Double
@@ -20,35 +13,89 @@ struct VoicePrintStats {
     var inTunePercent: Double
 }
 
-extension Color {
-    /// Maps f₀ (avgPitch) to a hue from blue (low) to red (high)
-    static func voicePrintColor(avgPitch: Double, minPitch: Double = 60, maxPitch: Double = 350, inTune: Double = 1.0, amplitude: Double = 1.0) -> Color {
-        // Normalize avgPitch
-        let norm = min(max((avgPitch - minPitch) / (maxPitch - minPitch), 0), 1)
-        let hue = 10 - norm * 0.6 // 0.6 is blue, 0.0 is red on SwiftUI’s hue scale
-        let saturation = 0.2 + inTune * 0.5 // Vivid if in tune
-        let brightness = 0.5 + amplitude * 0.5
-        return Color(hue: hue, saturation: saturation, brightness: brightness)
+// MARK: - Hue Mapping
+func hueForPitch(_ pitch: Double, minHz: Double = 65, maxHz: Double = 1046) -> Double {
+    let clamped = max(minHz, min(pitch, maxHz))
+    let norm = (clamped - minHz) / (maxHz - minHz)
+    // Map: low Hz = blue (0.7), high Hz = red (0.0)
+    return 0.7 - norm * 0.7
+}
+
+func hueForPitchCircular(_ pitch: Double) -> Double {
+    let midi = 69 + 12 * log2(pitch / 440)
+    let noteIndex = (Int(round(midi)) + 120) % 12
+    // Map notes C→B in a color wheel, C=0.7, B=0.0
+    return 0.7 - (Double(noteIndex) / 12.0) * 0.7
+}
+
+// MARK: - Shape
+struct VoicePrintShape: Shape {
+    var baseRadius: CGFloat
+    var waviness: CGFloat
+    var lobes: Int
+    var inTunePercent: Double
+
+    func path(in rect: CGRect) -> Path {
+        let center = CGPoint(x: rect.midX, y: rect.midY)
+        let points = 360
+        let angleStep = (2 * .pi) / CGFloat(points)
+
+        var path = Path()
+        for i in 0..<points {
+            let angle = angleStep * CGFloat(i)
+            let lobeEffect = sin(angle * CGFloat(lobes))
+            let smoothness = CGFloat(inTunePercent)
+            let radius = baseRadius + (lobeEffect * waviness * smoothness)
+            let x = center.x + radius * cos(angle)
+            let y = center.y + radius * sin(angle)
+            if i == 0 {
+                path.move(to: CGPoint(x: x, y: y))
+            } else {
+                path.addLine(to: CGPoint(x: x, y: y))
+            }
+        }
+        path.closeSubpath()
+        return path
     }
 }
 
+// MARK: - Demo View With Toggleable Hue Mapping
 struct VoicePrintDemoView: View {
     let stats: VoicePrintStats
     @State private var animateScale = false
     @State private var animateRotation = false
+    @State private var useChromaMapping = false
 
-    @State private var animate = false
+    // Unified color calculation
+    private func colorForPitch(_ pitch: Double, amplitude: Double = 1.0, inTune: Double = 1.0) -> Color {
+        let hue: Double = useChromaMapping
+            ? hueForPitchCircular(pitch)
+            : hueForPitch(pitch)
+        let saturation = 0.5 + inTune * 0.5
+        let brightness = 0.5 + amplitude * 0.5
+        return Color(hue: hue, saturation: saturation, brightness: brightness)
+    }
 
     var body: some View {
-        VStack(spacing: 28) {
+        VStack(spacing: 24) {
+            // Toggle
+            HStack {
+                Text("Color Mapping:")
+                Picker("", selection: $useChromaMapping) {
+                    Text("Linear (Hz)").tag(false)
+                    Text("Circular (Chroma)").tag(true)
+                }
+                .pickerStyle(.segmented)
+                .frame(width: 220)
+            }
+            .padding(.top, 4)
+
             ZStack {
-                // Background
                 Circle()
                     .fill(Color.blue.opacity(0.07))
                     .frame(width: 320, height: 320)
                 
                 ZStack {
-                    // Background
                     Circle()
                         .fill(Color.green.opacity(0.07))
                         .frame(width: 320, height: 320)
@@ -61,14 +108,11 @@ struct VoicePrintDemoView: View {
                         inTunePercent: stats.inTunePercent / 100
                     )
                     .stroke(
-                        Color.voicePrintColor(
-                            avgPitch: stats.avgPitch,
-                            minPitch: stats.minPitch,
-                            maxPitch: stats.maxPitch,
-                            inTune: stats.inTunePercent / 100,
-                            amplitude: stats.amplitude
-                        )
-                        .opacity(0.85),
+                        colorForPitch(
+                            stats.avgPitch,
+                            amplitude: stats.amplitude,
+                            inTune: stats.inTunePercent / 100
+                        ).opacity(0.85),
                         lineWidth: CGFloat(5 + stats.amplitude * 8)
                     )
                     .background(
@@ -79,14 +123,11 @@ struct VoicePrintDemoView: View {
                             inTunePercent: stats.inTunePercent / 100
                         )
                         .stroke(
-                            Color.voicePrintColor(
-                                avgPitch: stats.avgPitch,
-                                minPitch: stats.minPitch,
-                                maxPitch: stats.maxPitch,
-                                inTune: stats.inTunePercent / 100,
-                                amplitude: stats.amplitude * 0.7
-                            )
-                            .opacity(0.28),
+                            colorForPitch(
+                                stats.avgPitch,
+                                amplitude: stats.amplitude * 0.1,
+                                inTune: stats.inTunePercent / 100
+                            ).opacity(0.28),
                             lineWidth: 10
                         )
                     )
@@ -181,50 +222,16 @@ struct VoicePrintDemoView: View {
     }
 }
 
-// MARK: - Custom Shape
-
-struct VoicePrintShape: Shape {
-    var baseRadius: CGFloat
-    var waviness: CGFloat
-    var lobes: Int
-    var inTunePercent: Double
-
-    func path(in rect: CGRect) -> Path {
-        let center = CGPoint(x: rect.midX, y: rect.midY)
-        let points = 360
-        let angleStep = (2 * .pi) / CGFloat(points)
-
-        var path = Path()
-        for i in 0..<points {
-            let angle = angleStep * CGFloat(i)
-            // Lobe = unique pitches; waviness = stddev
-            let lobeEffect = sin(angle * CGFloat(lobes))
-            // "In-tune" adds smoothness; out-of-tune increases the effect
-            let smoothness = CGFloat(inTunePercent)
-            let radius = baseRadius + (lobeEffect * waviness * smoothness)
-            let x = center.x + radius * cos(angle)
-            let y = center.y + radius * sin(angle)
-            if i == 0 {
-                path.move(to: CGPoint(x: x, y: y))
-            } else {
-                path.addLine(to: CGPoint(x: x, y: y))
-            }
-        }
-        path.closeSubpath()
-        return path
-    }
-}
-
 #Preview {
     VoicePrintDemoView(stats: VoicePrintStats(
-        minPitch: 77,
-        maxPitch: 100,
-        avgPitch: 186,
-        stdDev: 3.2,
+        minPitch: 130,
+        maxPitch: 300,
+        avgPitch: 150,
+        stdDev: 10.2,
         uniquePitchCount: 8,
         outlierCount: 4,
         amplitude: 0.82,
         sessionDuration: 38.0,
-        inTunePercent: 89.5
+        inTunePercent: 77.5
     ))
 }
