@@ -81,7 +81,6 @@ struct SavedSessionsView: View {
             }
             .navigationTitle("Saved Sessions")
             .toolbar {
-                // Tone Settings button
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
                         showingToneSettings = true
@@ -89,7 +88,6 @@ struct SavedSessionsView: View {
                         Label("Tone Settings", systemImage: "slider.horizontal.3")
                     }
                 }
-                // Edit / Options menu
                 ToolbarItem(placement: .navigationBarLeading) {
                     if !sessionStore.sessions.isEmpty {
                         EditButton()
@@ -123,7 +121,6 @@ struct SavedSessionsView: View {
                 Text("Are you sure you want to delete the session from \(formattedDate(session.date))? This action cannot be undone.")
             }
         }
-        // Inject the shared ToneSettingsManager into the entire view hierarchy
         .environmentObject(ToneSettingsManager.shared)
     }
 
@@ -137,8 +134,73 @@ struct SavedSessionsView: View {
 
 // MARK: - Session Row
 
+extension VoicePrintStats {
+    static func fromSession(
+        pitches: [Double],
+        amplitudes: [Double],
+        start: Date,
+        end: Date,
+        inTuneHz: Double,
+        inTuneCents: Double = 35.0
+    ) -> VoicePrintStats {
+        guard !pitches.isEmpty else {
+            return VoicePrintStats(
+                minPitch: 0,
+                maxPitch: 0,
+                avgPitch: 0,
+                stdDev: 0,
+                uniquePitchCount: 0,
+                outlierCount: 0,
+                amplitude: 0,
+                sessionDuration: end.timeIntervalSince(start),
+                inTunePercent: 0
+            )
+        }
+        
+        let minPitch = pitches.min() ?? 0
+        let maxPitch = pitches.max() ?? 0
+        let avgPitch = pitches.reduce(0, +) / Double(pitches.count)
+        
+        // Standard deviation
+        let mean = avgPitch
+        let stdDev = sqrt(pitches.reduce(0) { $0 + pow($1 - mean, 2) } / Double(pitches.count))
+        
+        // Unique pitch count (rounded to nearest integer Hz for stability)
+        let uniquePitchCount = Set(pitches.map { Int(round($0)) }).count
+        
+        // Outlier count (2 SD from mean)
+        let outlierCount = pitches.filter { abs($0 - mean) > stdDev * 2 }.count
+        
+        // Amplitude (average of amplitudes array, fallback to 0.6 if missing)
+        let amplitude: Double = (amplitudes.isEmpty ? 0.6 : (amplitudes.reduce(0, +) / Double(amplitudes.count)))
+        
+        // Session duration
+        let sessionDuration = end.timeIntervalSince(start)
+        
+        // In-tune percent: % of pitches within `inTuneCents` of inTuneHz
+        let inTuneCount = pitches.filter {
+            let cents = 1200.0 * log2($0 / inTuneHz)
+            return abs(cents) <= inTuneCents
+        }.count
+        let inTunePercent = 100 * (pitches.isEmpty ? 0 : Double(inTuneCount) / Double(pitches.count))
+        
+        return VoicePrintStats(
+            minPitch: minPitch,
+            maxPitch: maxPitch,
+            avgPitch: avgPitch,
+            stdDev: stdDev,
+            uniquePitchCount: uniquePitchCount,
+            outlierCount: outlierCount,
+            amplitude: amplitude,
+            sessionDuration: sessionDuration,
+            inTunePercent: inTunePercent
+        )
+    }
+}
+
 private struct SessionRowView: View {
     let session: SessionData
+    @State private var showVoicePrint = false
 
     @EnvironmentObject private var toneSettings: ToneSettingsManager
     @StateObject private var tonePlayer = TonePlayer()
@@ -221,8 +283,11 @@ private struct SessionRowView: View {
         }
     }
     private var stats: PitchStatistics { session.statistics }
+    
+    
 
     var body: some View {
+        
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
@@ -230,6 +295,27 @@ private struct SessionRowView: View {
                     Text("Duration: \(durationString)").bold()
                     Text("Profile: \(session.profileName)")
                         .font(.subheadline).foregroundColor(.secondary)
+                }
+                Button(action: {
+                    showVoicePrint = true
+                }) {
+                    Image(systemName: "circle.hexagongrid.fill")
+                        .font(.title3)
+                        .foregroundColor(.accentColor)
+                        .padding(.leading, 6)
+                        .accessibilityLabel("Show Voice Print")
+                }
+                .buttonStyle(.plain)
+                .sheet(isPresented: $showVoicePrint) {
+                    VoicePrintDemoView(
+                        stats: VoicePrintStats.fromSession(
+                            pitches: session.values,
+                            amplitudes: Array(repeating: 0.8, count: session.values.count),
+                            start: session.date,
+                            end: session.date.addingTimeInterval(session.duration),
+                            inTuneHz: session.statistics.avg
+                        )
+                    )
                 }
                 Spacer()
                 if let timeline = session.chakraTimeline {
@@ -263,8 +349,6 @@ private struct SessionRowView: View {
 
             Divider().padding(.vertical, 2)
 
-         
-
             DisclosureGroup("Show Stats", isExpanded: $showStats) {
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
                     StatChunk(label: "Min", frequency: stats.min, playAction: { tonePlayer.play(frequency: stats.min) })
@@ -286,7 +370,6 @@ private struct SessionRowView: View {
         .padding(.vertical, 6)
     }
 }
-
 
 // MARK: - Helper Chunks and Sparkline
 

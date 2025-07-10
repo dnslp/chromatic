@@ -9,13 +9,22 @@ struct StatsModalView: View {
     let profileName: String // Added profileName property
     @Environment(\.dismiss) private var dismiss
 
+    // --- VoicePrint visual summary for this session
+    private var voicePrintStats: VoicePrintStats {
+        VoicePrintStats.fromSession(
+            pitches: values,
+            amplitudes: Array(repeating: 0.8, count: values.count), // Substitute with real amplitudes if available
+            start: Date(), // Replace with actual session start if available
+            end: Date().addingTimeInterval(duration),
+            inTuneHz: statistics.avg
+        )
+    }
+
     // Helper to find the closest pitch and cents difference for a given frequency
     private func closestPitchInfo(to frequency: Double) -> (name: String, centsDifference: Double) {
         guard !pitchFrequencies.isEmpty else { return ("N/A", 0.0) }
-
         var closestPitch = pitchFrequencies[0]
         var smallestAbsDifference = abs(pitchFrequencies[0].frequency - frequency)
-
         for pitch in pitchFrequencies.dropFirst() {
             let absDifference = abs(pitch.frequency - frequency)
             if absDifference < smallestAbsDifference {
@@ -23,9 +32,7 @@ struct StatsModalView: View {
                 closestPitch = pitch
             }
         }
-        
         let centsDifference = 1200 * log2(frequency / closestPitch.frequency)
-        
         // Prefer sharps for display if dual-named
         let name = closestPitch.name.components(separatedBy: "/").first ?? closestPitch.name
         return (name, centsDifference)
@@ -36,7 +43,7 @@ struct StatsModalView: View {
         let roundedCents = Int(round(cents))
         return String(format: "%+d", roundedCents)
     }
-    
+
     // Helper to format time as MM:SS or H:MM:SS
     private func formatTime(_ interval: TimeInterval) -> String {
         let totalSeconds = Int(max(0, interval))
@@ -53,9 +60,15 @@ struct StatsModalView: View {
     var body: some View {
         NavigationView {
             List {
+                // --- Visual summary at the top ---
+                VoicePrintDemoView(stats: voicePrintStats)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+
                 Section("Session Info") {
                     let safeDuration = max(0, duration)
                     Text("Duration: \(formatTime(safeDuration))")
+                    Text("Profile: \(profileName)")
                 }
                 Section("Pitch Range & Central Tendency") {
                     let minInfo = closestPitchInfo(to: statistics.min)
@@ -101,62 +114,4 @@ struct StatsModalView: View {
     }
 }
 
-// Preview for StatsModalView
-struct StatsModalView_Previews: PreviewProvider {
-    static var previews: some View {
-        PreviewWrapper()
-            .environmentObject(SessionStore()) // Provide SessionStore for the preview
-    }
-
-    struct PreviewWrapper: View {
-        @State private var showModal = true
-
-        // Create sample data for the preview
-        let sampleStats = PitchStatistics(
-            min: 110.0, // A2
-            max: 440.0, // A4
-            avg: 220.0, // A3
-            median: 200.0,
-            stdDev: 50.0,
-            iqr: 80.0,
-            rms: 230.0
-        )
-        let sampleDuration: TimeInterval = 125 // 2 minutes 5 seconds
-        let sampleValues: [Double] = (0..<50).map { _ in Double.random(in: 100.0...500.0) }
-        let sampleProfileName = "Guitar Standard"
-
-        var body: some View {
-            VStack {
-                Text("This view presents the StatsModalView.")
-                Button("Show Stats Modal") {
-                    showModal = true
-                }
-            }
-            .sheet(isPresented: $showModal) {
-                StatsModalView(
-                    statistics: sampleStats,
-                    duration: sampleDuration,
-                    values: sampleValues,
-                    profileName: sampleProfileName
-                )
-            }
-        }
-    }
-}
-
-// The preview uses the global `pitchFrequencies` constant from `Pitch.swift`.
-// Because that constant is `public`, tests and other modules can import it
-// directly. If you prefer to provide custom data, inject an array of `Pitch`
-// instances instead. A sample stub is shown below if you need to override it
-// locally:
-//let pitchFrequencies: [(name: String, frequency: Double)] = [
-//    ("A2", 110.00), ("A#2/Bb2", 116.54), ("B2", 123.47),
-//    ("C3", 130.81), ("C#3/Db3", 138.59), ("D3", 146.83),
-//    ("D#3/Eb3", 155.56), ("E3", 164.81), ("F3", 174.61),
-//    ("F#3/Gb3", 185.00), ("G3", 196.00), ("G#3/Ab3", 207.65),
-//    ("A3", 220.00), ("A#3/Bb3", 233.08), ("B3", 246.94),
-//    ("C4", 261.63), ("C#4/Db4", 277.18), ("D4", 293.66),
-//    ("D#4/Eb4", 311.13), ("E4", 329.63), ("F4", 349.23),
-//    ("F#4/Gb4", 369.99), ("G4", 392.00), ("G#4/Ab4", 415.30),
-//    ("A4", 440.00)
-//]
+// --- Helper Extension: Compute VoicePrintStats from a session ---

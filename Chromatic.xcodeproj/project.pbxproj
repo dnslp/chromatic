@@ -88,8 +88,8 @@
 		BE37664E2E1C2270005CFA44 /* SavedSessionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE37664C2E1C2270005CFA44 /* SavedSessionsView.swift */; };
 		BE3766532E1C229D005CFA44 /* PitchChakraTimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE3766522E1C229D005CFA44 /* PitchChakraTimelineView.swift */; };
 		BE3766542E1C229D005CFA44 /* PitchChakraTimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE3766522E1C229D005CFA44 /* PitchChakraTimelineView.swift */; };
-		BE477BE62E1F670600F991F2 /* VoicePrintStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE477BE52E1F670600F991F2 /* VoicePrintStats.swift */; };
-		BE477BE72E1F670600F991F2 /* VoicePrintStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE477BE52E1F670600F991F2 /* VoicePrintStats.swift */; };
+		BE477BE62E1F670600F991F2 /* VoicePrintDemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE477BE52E1F670600F991F2 /* VoicePrintDemo.swift */; };
+		BE477BE72E1F670600F991F2 /* VoicePrintDemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE477BE52E1F670600F991F2 /* VoicePrintDemo.swift */; };
 		BEDD824A2E16B6E300C46430 /* HarmonicGraphView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEDD82492E16B6E300C46430 /* HarmonicGraphView.swift */; };
 		BEDD824B2E16B6E300C46430 /* HarmonicGraphView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEDD82492E16B6E300C46430 /* HarmonicGraphView.swift */; };
 		BEDD83042E18A99500C46430 /* CircleWave.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEDD83032E18A99500C46430 /* CircleWave.swift */; };
@@ -204,7 +204,7 @@
 		BE3766492E1C224E005CFA44 /* SessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
 		BE37664C2E1C2270005CFA44 /* SavedSessionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedSessionsView.swift; sourceTree = "<group>"; };
 		BE3766522E1C229D005CFA44 /* PitchChakraTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchChakraTimelineView.swift; sourceTree = "<group>"; };
-		BE477BE52E1F670600F991F2 /* VoicePrintStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoicePrintStats.swift; sourceTree = "<group>"; };
+		BE477BE52E1F670600F991F2 /* VoicePrintDemo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoicePrintDemo.swift; sourceTree = "<group>"; };
 		BEDD82492E16B6E300C46430 /* HarmonicGraphView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HarmonicGraphView.swift; sourceTree = "<group>"; };
 		BEDD83032E18A99500C46430 /* CircleWave.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleWave.swift; sourceTree = "<group>"; };
 		BEE6D7E82E1B263F00B3B886 /* PitchStatistics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchStatistics.swift; sourceTree = "<group>"; };
@@ -348,7 +348,7 @@
 		8FB571D425B722F2007C28BC /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				BE477BE52E1F670600F991F2 /* VoicePrintStats.swift */,
+				BE477BE52E1F670600F991F2 /* VoicePrintDemo.swift */,
 				BE17A10F2E1EC530005C5154 /* TunerViews */,
 				BEDD83032E18A99500C46430 /* CircleWave.swift */,
 				BE15128E2E15F6A600BB9EC2 /* ConcentricCircleVisualizer.swift */,
@@ -622,7 +622,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BE477BE62E1F670600F991F2 /* VoicePrintStats.swift in Sources */,
+				BE477BE62E1F670600F991F2 /* VoicePrintDemo.swift in Sources */,
 				8F3ECD222682834700415B9F /* ScaleNote.swift in Sources */,
 				BE0541CD2E19759100E8A38E /* F0SelectorView.swift in Sources */,
 				8F3ECD252682838D00415B9F /* NoteDistanceMarkers.swift in Sources */,
@@ -703,7 +703,7 @@
 				BEED70062E144B7D00037881 /* MixerEngine.swift in Sources */,
 				8FB571FD25B73ECF007C28BC /* NoteDistanceMarkers.swift in Sources */,
 				BEE6D7EE2E1B264000B3B886 /* SessionStatistics.swift in Sources */,
-				BE477BE72E1F670600F991F2 /* VoicePrintStats.swift in Sources */,
+				BE477BE72E1F670600F991F2 /* VoicePrintDemo.swift in Sources */,
 				BEE6D7EF2E1B264000B3B886 /* PitchStatistics.swift in Sources */,
 				BEE6D7F02E1B264000B3B886 /* TunerData+Statistics.swift in Sources */,
 				BEDD83052E18A99500C46430 /* CircleWave.swift in Sources */,

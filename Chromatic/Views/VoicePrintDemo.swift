@@ -25,7 +25,7 @@ extension Color {
     static func voicePrintColor(avgPitch: Double, minPitch: Double = 60, maxPitch: Double = 350, inTune: Double = 1.0, amplitude: Double = 1.0) -> Color {
         // Normalize avgPitch
         let norm = min(max((avgPitch - minPitch) / (maxPitch - minPitch), 0), 1)
-        let hue = 10 - norm * 0.6 // 0.6 is blue, 0.0 is red on SwiftUI’s hue scale
+        let hue = 0.9 - norm * 0.6 // 0.6 is blue, 0.0 is red on SwiftUI’s hue scale
         let saturation = 0.2 + inTune * 0.5 // Vivid if in tune
         let brightness = 0.5 + amplitude * 0.5
         return Color(hue: hue, saturation: saturation, brightness: brightness)
@@ -83,7 +83,7 @@ struct VoicePrintDemoView: View {
                                 avgPitch: stats.avgPitch,
                                 minPitch: stats.minPitch,
                                 maxPitch: stats.maxPitch,
-                                inTune: stats.inTunePercent / 100,
+                                inTune: stats.inTunePercent / 1,
                                 amplitude: stats.amplitude * 0.7
                             )
                             .opacity(0.28),
@@ -225,6 +225,6 @@ struct VoicePrintShape: Shape {
         outlierCount: 4,
         amplitude: 0.82,
         sessionDuration: 38.0,
-        inTunePercent: 89.5
+        inTunePercent: 10.5
     ))
 }
