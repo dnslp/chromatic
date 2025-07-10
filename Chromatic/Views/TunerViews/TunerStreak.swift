@@ -7,124 +7,9 @@
 
 import SwiftUI
 
-// MARK: - Helpers from StringTheoryView & CircleWave
-
-let spectrumColors: [Color] = [
-    .red, .orange, .yellow, .green, .cyan, .blue, .indigo, .purple
-]
-
-/// A circle whose radius is modulated by a wave function with uniform amplitude.
-struct CircleWave: Shape {
-    var strength: CGFloat
-    var frequency: CGFloat
-    var phase: CGFloat
-
-    var animatableData: CGFloat {
-        get { phase }
-        set { phase = newValue }
-    }
-
-    func path(in rect: CGRect) -> Path {
-        let center = CGPoint(x: rect.midX, y: rect.midY)
-        let baseRadius = min(rect.width, rect.height) / 2
-        let steps = 200
-        let twoPi = CGFloat.pi * 2
-
-        var path = Path()
-        for i in 0...steps {
-            let pct = CGFloat(i) / CGFloat(steps)
-            let angle = pct * twoPi
-
-            // Uniform wave amplitude (no tapering)
-            let displacement = sin(angle * frequency + phase) * strength
-            let radius = baseRadius + displacement
-
-            let x = center.x + cos(angle) * radius
-            let y = center.y + sin(angle) * radius
-
-            if i == 0 {
-                path.move(to: CGPoint(x: x, y: y))
-            } else {
-                path.addLine(to: CGPoint(x: x, y: y))
-            }
-        }
-        path.closeSubpath()
-        return path
-    }
-}
-
-// Animated Waving Aura (from StringTheoryView)
-struct WavingCircleBorder: View {
-    var strength: CGFloat = 1
-    var frequency: CGFloat = 2
-    var lineWidth: CGFloat = 3
-    var color: Color = .green
-    var animationDuration: Double = 2
-    var highlighted: Bool = false
-    var autoreverses: Bool = false // StringTheoryView didn't use this, but good to have
-
-    @State private var phase: CGFloat = 0
-
-    var body: some View {
-        ZStack {
-            Circle()
-                .stroke(color.opacity(0.13), lineWidth: lineWidth)
-            CircleWave(strength: highlighted ? strength*2.2 : strength,
-                       frequency: frequency,
-                       phase: phase)
-                .stroke(highlighted ? .yellow : color, lineWidth: highlighted ? lineWidth * 2 : lineWidth)
-                .shadow(color: highlighted ? .yellow : color.opacity(0.4), radius: highlighted ? 20 : 6)
-                .animation(
-                    Animation.linear(duration: animationDuration)
-                        .repeatForever(autoreverses: false), // Explicitly false like StringTheoryView
-                    value: phase
-                )
-        }
-        // Default frame from StringTheoryView, can be overridden
-        .frame(width: highlighted ? 135 : 110, height: highlighted ? 135 : 110)
-        .onAppear { phase = .pi * 2 }
-    }
-}
-
-// Animated Atomic Countdown (from StringTheoryView)
-struct AtomicCountdownView: View {
-    let countdown: Int
-    let total: Int
-    let color: Color
-
-    var progress: CGFloat { CGFloat(countdown) / CGFloat(total) }
-
-    var body: some View {
-        ZStack {
-            // Animated atomic orbits
-            ForEach(0..<3) { i in
-                Circle()
-                    .stroke(color.opacity(0.45), lineWidth: CGFloat(2 + i))
-                    .scaleEffect(1 + CGFloat(i) * 0.17)
-                    .rotationEffect(.degrees(Double(countdown + i) * 32))
-                    .blur(radius: CGFloat(i))
-                    .animation(.easeInOut(duration: 0.6), value: countdown)
-            }
-            // Countdown number
-            Text("\(countdown)")
-                .font(.system(size: 70, weight: .black, design: .rounded))
-                .foregroundColor(color)
-                .shadow(color: color.opacity(0.6), radius: 9)
-            // Progress ring
-            Circle()
-                .trim(from: 0, to: progress)
-                .stroke(color, style: StrokeStyle(lineWidth: 7, lineCap: .round))
-                .rotationEffect(.degrees(-90))
-                .frame(width: 95, height: 95)
-                .opacity(0.9)
-        }
-        .frame(width: 140, height: 140) // Default frame from StringTheoryView
-    }
-}
-
+// MARK: - Helper Structs (assuming spectrumColors, CircleWave, WavingCircleBorder, AtomicCountdownView are globally available)
 
 /// Renders concentric rings for each 10-point milestone
-// This will be replaced or modified to use WavingCircleBorder
 struct RingOverlay: View {
     let ringCount: Int
     let currentStreak: Int // Pass currentStreak to highlight the "active" ring
@@ -379,9 +264,15 @@ struct TunerStreak: View {
 
 struct TunerStreak_Previews: PreviewProvider {
     static var previews: some View {
+        let mockTunerData: TunerData = {
+            var data = TunerData(pitch: 220, amplitude: 0.4)
+            data.isRecording = true // Set isRecording for active state preview
+            return data
+        }()
+
         NavigationView { // Added for better preview context if needed
             TunerStreak(
-                tunerData: .constant(TunerData(pitch: 220, amplitude: 0.4, isRecording: true)), //isRecording true to see active state
+                tunerData: .constant(mockTunerData),
                 modifierPreference: .preferSharps,
                 selectedTransposition: 0
             )
