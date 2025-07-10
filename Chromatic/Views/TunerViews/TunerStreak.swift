@@ -111,6 +111,10 @@ struct TunerStreak: View {
     private var currentMilestoneIndex: Int { currentStreak / 10 }
     private var pointsInCurrentMilestone: Int { currentStreak % 10 }
 
+    // Constants for Core Element visualization
+    private let coreBaseSize: CGFloat = 35
+    private let coreGrowthFactor: CGFloat = 5
+
     // MARK: – Profile Sheet
     @State private var showingProfileSelector = false
 
@@ -156,8 +160,7 @@ struct TunerStreak: View {
                 }
 
                 // Part 2: Render the Active Growing Core Element
-                let coreBaseSize: CGFloat = 35 // Made core slightly smaller to ensure visibility inside last layer
-                let coreGrowthFactor: CGFloat = 5
+                // coreBaseSize and coreGrowthFactor are now struct-level constants
                 let coreCurrentSize = coreBaseSize + CGFloat(pointsInCurrentMilestone) * coreGrowthFactor
 
                 let coreColor = spectrumColors[currentMilestoneIndex % spectrumColors.count]
