@@ -208,8 +208,8 @@ struct TunerStreak: View {
                 updateCount += 1
                 if abs(newPitch - userF0) <= inTuneThreshold {
                     if updateCount % updatesPerPoint == 0 {
-                        let oldMilestoneIndex = currentMilestoneIndex
-                        let oldMilestoneIndex = self.currentMilestoneIndex
+                        var oldMilestoneIndex = currentMilestoneIndex
+                         oldMilestoneIndex = self.currentMilestoneIndex
                         currentStreak += 1
                         bestStreak = max(bestStreak, currentStreak)
 
