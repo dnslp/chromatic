@@ -8,7 +8,7 @@
 import SwiftUI
 import Foundation
 
-// MARK: - Unique Supporting Types for TunerStreak
+// MARK: - Supporting Types for TunerStreak
 
 struct TunerStreakStats {
     var minPitch: Double
@@ -32,7 +32,7 @@ struct TunerStreakLayer: Identifiable {
     let animationDuration: Double
 }
 
-// MARK: - Unique Chroma Color Function
+// MARK: - Chroma Color Function
 
 func tunerStreakChromaColor(for pitch: Double, saturation: Double = 0.38, brightness: Double = 0.92) -> Color {
     guard pitch > 0 else { return Color.gray }
@@ -87,7 +87,7 @@ struct TunerStreakWavingCircleBorder: View {
     var body: some View {
         TunerStreakVoicePrintShape(
             baseRadius: 0.5 * 120,
-            waviness: strength * 6,
+            waviness: strength * 1,
             lobes: Int(frequency),
             inTunePercent: 0.5 + 0.5 * CGFloat(sin(Double(phase)))
         )
@@ -128,7 +128,6 @@ struct TunerStreak: View {
     private let inTuneThreshold: Double = 5.0
 
     @State private var solidifiedLayers: [TunerStreakLayer] = []
-    
     @State private var milestoneRings: [Int] = []
 
     private let coreBaseSize: CGFloat = 40
@@ -139,7 +138,24 @@ struct TunerStreak: View {
 
     @State private var showingProfileSelector = false
 
+    // --- NEW/CHANGED STATE FOR RING ANIMATION ---
+    @State private var ringRotation: Double = 0
+    @State private var isStreaking: Bool = false
+    @State private var ringAnimating: Bool = false
+    @State private var lastStreakValue: Int = 0
     
+    private func startRingAnimation() {
+        guard !ringAnimating else { return }
+        ringAnimating = true
+        withAnimation(.linear(duration: 5).repeatForever(autoreverses: false)) {
+            ringRotation += 360
+        }
+    }
+    private func stopRingAnimation() {
+        ringAnimating = false
+        // Do not reset ringRotation so the ring "freezes" at its current spot
+    }
+
     // -- Preview/Mock Colors
     private let spectrumColors: [Color] = (0..<12).map { tunerStreakChromaColor(for: 220 * pow(2, Double($0)/12.0)) }
 
@@ -193,10 +209,29 @@ struct TunerStreak: View {
             .padding(.top)
 
             ZStack {
+                // --- PROGRESS RING (grows & spins only while streaking) ---
+                let progressLevel = currentStreak / 10
+                let ringBaseSize: CGFloat = 220
+                let ringSize = ringBaseSize + CGFloat(progressLevel) * 16
+
+                Circle()
+                    .stroke(
+                        AngularGradient(
+                            gradient: Gradient(colors: [.white, tunerStreakChromaColor(for: liveVoicePrintStats.avgPitch, saturation: 0.6), .white]),
+                            center: .center
+                        ),
+                        style: StrokeStyle(lineWidth: CGFloat(min(Double(currentStreak % 10) / 10.0, 1.0)), lineCap: .round)
+                    )
+                    .rotationEffect(.degrees(-90 + ringRotation))
+                    .frame(width: ringSize, height: ringSize)
+                    .opacity(0.75)
+                    .animation(.easeInOut(duration: 0.4), value: currentStreak)
+
+
                 // "Work-in-progress" liquid voice print
                 TunerStreakVoicePrintShape(
                     baseRadius: 68 + CGFloat(liveVoicePrintStats.amplitude * 45),
-                    waviness: 18 + CGFloat(liveVoicePrintStats.stdDev * 6),
+                    waviness: 1 + CGFloat(liveVoicePrintStats.stdDev * 6),
                     lobes: max(13, liveVoicePrintStats.uniquePitchCount / 2),
                     inTunePercent: 0.5 - (liveVoicePrintStats.inTunePercent / 200)
                 )
@@ -211,33 +246,33 @@ struct TunerStreak: View {
                 .animation(.linear(duration: 11).repeatForever(autoreverses: false), value: rotationAngle)
 
                 // -- Solidified streak rings --
-                ForEach(solidifiedLayers) { layer in
-                    TunerStreakWavingCircleBorder(
-                        strength: layer.animationStrength,
-                        frequency: layer.animationFrequency,
-                        lineWidth: 4.2,
-                        color: layer.color,
-                        animationDuration: layer.animationDuration
-                    )
-                    .frame(width: layer.size, height: layer.size)
-                    .opacity(0.45 + 0.4 * (CGFloat(layer.milestoneIndex + 1) / CGFloat(solidifiedLayers.count + 1)))
-                    .rotationEffect(.degrees(rotationAngle / Double(layer.milestoneIndex + 2)))
-                }
+//                ForEach(solidifiedLayers) { layer in
+//                    TunerStreakWavingCircleBorder(
+//                        strength: layer.animationStrength,
+//                        frequency: layer.animationFrequency,
+//                        lineWidth: 4.2,
+//                        color: layer.color,
+//                        animationDuration: layer.animationDuration
+//                    )
+//                    .frame(width: layer.size, height: layer.size)
+//                    .opacity(0.45 + 0.4 * (CGFloat(layer.milestoneIndex + 1) / CGFloat(solidifiedLayers.count + 1)))
+//                    .rotationEffect(.degrees(rotationAngle / Double(layer.milestoneIndex + 2)))
+//                }
                 // -- Milestone ring at every 10 --
-                ForEach(milestoneRings, id: \.self) { milestone in
-                    Circle()
-                        .stroke(
-                            LinearGradient(
-                                colors: [.yellow, .orange, .yellow],
-                                startPoint: .leading, endPoint: .trailing
-                            ),
-                            lineWidth: 11
-                        )
-                        .frame(width: 228, height: 228)
-                        .shadow(color: .yellow.opacity(0.18), radius: 15)
-                        .scaleEffect(pulse ? 1.09 : 1.0)
-                        .animation(.easeInOut(duration: 3.2).repeatForever(autoreverses: true), value: pulse)
-                }
+//                ForEach(milestoneRings, id: \.self) { milestone in
+//                    Circle()
+//                        .stroke(
+//                            LinearGradient(
+//                                colors: [.yellow, .orange, .yellow],
+//                                startPoint: .leading, endPoint: .trailing
+//                            ),
+//                            lineWidth: 11
+//                        )
+//                        .frame(width: 228, height: 228)
+//                        .shadow(color: .yellow.opacity(0.18), radius: 15)
+//                        .scaleEffect(pulse ? 1.09 : 1.0)
+//                        .animation(.easeInOut(duration: 3.2).repeatForever(autoreverses: true), value: pulse)
+//                }
                 // -- Active, growing core --
                 let coreSize = coreBaseSize + CGFloat(currentStreak) * coreGrowthFactor
                 let coreColor = tunerStreakChromaColor(for: liveVoicePrintStats.avgPitch, saturation: 0.62)
@@ -265,11 +300,11 @@ struct TunerStreak: View {
                         .background(Color.clear)
                 }
             }
-            .frame(width: 270, height: 270)
+            .frame(width: 200, height: 200)
             .padding(.top)
             .onAppear {
-                withAnimation(.linear(duration: 19).repeatForever(autoreverses: false)) {
-                    rotationAngle = 360
+                if isStreaking {
+                    startRingAnimation()
                 }
                 withAnimation(.easeInOut(duration: 1.3).repeatForever(autoreverses: true)) {
                     pulse.toggle()
@@ -278,12 +313,20 @@ struct TunerStreak: View {
             .onChange(of: tunerData.pitch.measurement.value) { newPitch in
                 guard tunerData.isRecording, countdown == nil else { return }
                 updateCount += 1
-                if abs(newPitch - userF0) <= inTuneThreshold,
-                   updateCount % updatesPerPoint == 0 {
+                let isInTune = abs(newPitch - userF0) <= inTuneThreshold
+
+                if isInTune, updateCount % updatesPerPoint == 0 {
                     currentStreak += 1
+                    bestStreak = max(bestStreak, currentStreak)
+                    if currentStreak > lastStreakValue {
+                        lastStreakValue = currentStreak
+                        isStreaking = true
+                        ringRotation = ringRotation.truncatingRemainder(dividingBy: 360)
+                        startRingAnimation()
+                    }                    // --- milestone and layer logic ---
                     if currentStreak > 0 && currentStreak % 10 == 0 {
-                        let outerSize = 228 + CGFloat(currentStreak) * 3 // or another factor you like
-                        let lineW = 11 + CGFloat(currentStreak) * 0.2    // subtle width scaling if desired
+                        let outerSize = 228 + CGFloat(currentStreak) * 3
+                        let lineW = 11 + CGFloat(currentStreak) * 0.2
                         Circle()
                             .stroke(
                                 LinearGradient(
@@ -297,8 +340,6 @@ struct TunerStreak: View {
                             .scaleEffect(pulse ? 1.09 : 1.0)
                             .animation(.easeInOut(duration: 3.2).repeatForever(autoreverses: true), value: pulse)
                     }
-                    bestStreak = max(bestStreak, currentStreak)
-                    // Add a new ring!
                     let streakIndex = currentStreak - 1
                     let layerSize = coreBaseSize + CGFloat(streakIndex) * coreGrowthFactor
                     let layerColor = spectrumColors[streakIndex % spectrumColors.count]
@@ -319,6 +360,10 @@ struct TunerStreak: View {
                             animationDuration: layerAnimDuration
                         )
                     )
+                } else if !isInTune {
+                    // Pause/freeze animation when out of tune
+                    isStreaking = false
+                     stopRingAnimation()
                 }
             }
 
@@ -415,6 +460,10 @@ struct TunerStreak: View {
             sessionStats = tunerData.calculateStatisticsExtended(duration: max(0, duration))
             showStatsModal = true
             recordingStartedAt = nil
+            // --- Reset streak animation state on stop ---
+            isStreaking = false
+            ringRotation = 0
+            lastStreakValue = 0
         } else {
             countdown = countdownSeconds
             Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { timer in
@@ -430,6 +479,10 @@ struct TunerStreak: View {
                     bestStreak = 0
                     updateCount = 0
                     solidifiedLayers.removeAll()
+                    // --- Reset streak animation state on start ---
+                    isStreaking = false
+                    ringRotation = 0
+                    lastStreakValue = 0
                 }
             }
         }
@@ -444,6 +497,10 @@ struct TunerStreak: View {
         updateCount = 0
         solidifiedLayers.removeAll()
         milestoneRings.removeAll()
+        // --- Reset streak animation state on clear ---
+        isStreaking = false
+        ringRotation = 0
+        lastStreakValue = 0
     }
 
     private func syncF0WithProfile() {

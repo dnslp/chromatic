@@ -6,6 +6,9 @@ struct TunerViewTemplate: View {
     @State var modifierPreference: ModifierPreference
     @State var selectedTransposition: Int
 
+    // --- INTERNAL STREAK STATE ---
+    @State private var streak: Int = 0
+
     // Recording State
     @State private var sessionStats: SessionStatistics?
     @State private var showStatsModal = false
@@ -19,6 +22,9 @@ struct TunerViewTemplate: View {
 
     // Sheet for profile selection
     @State private var showingProfileSelector = false
+    
+    // Used for streak logic
+    @State private var lastMatched: Bool = false
 
     var body: some View {
         VStack(spacing: 28) {
@@ -55,6 +61,9 @@ struct TunerViewTemplate: View {
             .padding(.top)
             .opacity(countdown == nil ? 1 : 0.25) // Fade during countdown
 
+            // ------- Streak Visualization -------
+            StreakBar(streak: streak)
+
             // ------- Recording Controls -------
             HStack(spacing: 18) {
                 Button(action: {
@@ -90,13 +99,13 @@ struct TunerViewTemplate: View {
                     .foregroundColor(.white)
                     .cornerRadius(8)
                 }
-                // Disable the button during countdown, unless you're stopping
                 .disabled(countdown != nil && !tunerData.isRecording)
 
                 Button(action: {
                     tunerData.clearRecording()
                     sessionStats = nil
                     recordingStartedAt = nil
+                    streak =  0
                 }) {
                     Text("Clear Data")
                         .padding(.horizontal)
@@ -136,11 +145,118 @@ struct TunerViewTemplate: View {
                 userF0 = newF0
             }
         }
+        // ---- THE STREAK LOGIC ----
+        .onChange(of: tunerData.pitch.measurement.value) { newPitch in
+            // Only update if recording and not during countdown
+            guard tunerData.isRecording && countdown == nil else { return }
+            let percentTolerance = 0.02 // 2%
+            let threshold = userF0 * percentTolerance
+            let isMatching = abs(newPitch - userF0) < threshold
+            if isMatching {
+                streak += 1
+            }
+        }
         .padding()
     }
 }
 
-// Example preview (requires sample TunerData/UserProfileManager in your project)
+struct SpiralArcShape: Shape {
+    var progress: CGFloat      // 0...1, how much of the current lap
+    var laps: Int              // How many full turns have been completed
+    var turnsPerCycle: Int     // How many turns to complete one lap (e.g., 1 = 360º/cycle)
+    var spiralSpacing: CGFloat // Distance between spiral arms
+
+    // This animatableData enables smooth transitions
+    var animatableData: CGFloat {
+        get { progress }
+        set { progress = newValue }
+    }
+
+    func path(in rect: CGRect) -> Path {
+        let center = CGPoint(x: rect.midX, y: rect.midY)
+        let maxRadius = min(rect.width, rect.height) / 2 - spiralSpacing
+        let totalLaps = CGFloat(laps) + progress
+        let angleEnd = 2 * .pi * totalLaps * CGFloat(turnsPerCycle)
+
+        var path = Path()
+        let steps = max(200, Int(angleEnd * 40)) // Smoothness
+
+        for step in 0...steps {
+            let t = CGFloat(step) / CGFloat(steps)
+            let theta = angleEnd * t
+            let radius = (theta / (2 * .pi * CGFloat(turnsPerCycle))) * spiralSpacing
+            let clampedRadius = min(radius, maxRadius)
+            let point = CGPoint(
+                x: center.x + clampedRadius * cos(theta - .pi / 2),
+                y: center.y + clampedRadius * sin(theta - .pi / 2)
+            )
+            if step == 0 {
+                path.move(to: point)
+            } else {
+                path.addLine(to: point)
+            }
+        }
+        return path
+    }
+}
+
+// --- StreakBar for animated visualization ---
+struct StreakBar: View {
+    var streak: Int
+    var cycleLength: Int = 30      // How many streaks per spiral "lap"
+    var spiralSpacing: CGFloat = 12
+    var lineWidth: CGFloat = 1
+    var turnsPerCycle: Int = 1     // 1 = full turn per cycle (can be >1 for denser spiral)
+    var size: CGFloat = 100
+
+    var progress: CGFloat {
+        CGFloat(streak % cycleLength) / CGFloat(cycleLength)
+    }
+    var completedCycles: Int {
+        streak / cycleLength
+    }
+
+    var body: some View {
+        ZStack {
+            // Draw the spiral
+            SpiralArcShape(progress: progress, laps: completedCycles, turnsPerCycle: turnsPerCycle, spiralSpacing: spiralSpacing)
+                .stroke(
+                    AngularGradient(
+                        gradient: Gradient(colors: [Color.orange, Color.yellow, Color.orange]),
+                        center: .center
+                    ),
+                    style: StrokeStyle(lineWidth: lineWidth + CGFloat(completedCycles), lineCap: .round)
+                )
+                .shadow(color: .orange.opacity(0.4), radius: 10)
+                .animation(.smooth(duration: 0.5), value: streak)
+                .frame(width: size, height: size)
+
+            VStack(spacing: 0) {
+                Image(systemName: "flame.fill")
+                    .foregroundColor(.orange)
+                Text("\(streak)")
+                    .font(.title.bold())
+            }
+        }
+        .frame(width: size, height: size)
+        .padding()
+    }
+}
+
+struct SpiralStreakBar_Previews: PreviewProvider {
+    static var previews: some View {
+        VStack(spacing: 20) {
+            StreakBar(streak: 5)
+            StreakBar(streak: 29)
+            StreakBar(streak: 31)
+            StreakBar(streak: 700)
+        }
+        .padding()
+    }
+}
+
+
+
 struct TunerViewTemplate_Previews: PreviewProvider {
     static var previews: some View {
         TunerViewTemplate(
