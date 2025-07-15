@@ -293,7 +293,7 @@ struct VoicePrintDemoView: View {
             .padding(.vertical, 24)
 
             // Stats summary, unchanged
-            VStack(alignment: .leading, spacing: 9) {
+            VStack(alignment: .leading, spacing: 2) {
                 HStack {
                     Text("Session Duration:").bold()
                     Spacer()
@@ -330,11 +330,11 @@ struct VoicePrintDemoView: View {
                     Text("\(stats.outlierCount)")
                 }
             }
-            .font(.system(size: 17, weight: .regular, design: .rounded))
-            .frame(width: 290)
+            .font(.system(size: 12, weight: .regular, design: .rounded))
+            .frame(width: 220)
             .padding(.vertical, 16)
             .background(.ultraThinMaterial)
-            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: 1, style: .continuous))
             .shadow(radius: 6, y: 2)
 
             Spacer()
