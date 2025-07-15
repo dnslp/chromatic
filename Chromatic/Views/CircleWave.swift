@@ -54,7 +54,8 @@ struct WaveCircleBorder: View {
     var animationDuration: Double = 2
     /// Whether the animation should autoreverse (ignored when false).
     var autoreverses: Bool = false
-
+    var height: CGFloat = 200
+    var width: CGFloat = 200
     @State private var phase: CGFloat = 0
 
     var body: some View {
@@ -72,7 +73,7 @@ struct WaveCircleBorder: View {
                     value: phase
                 )
         }
-        .frame(width: 110, height: 110)
+        .frame(width: width, height: height)
         .shadow(color: color.opacity(0.5), radius: 3, x: 1, y: 1)
         .onAppear {
             // Start the wave motion
@@ -85,8 +86,9 @@ struct WaveCircleBorder: View {
 struct WaveCircleBorder_Previews: PreviewProvider {
     static var previews: some View {
         VStack(spacing: 20) {
-            WaveCircleBorder()
-            WaveCircleBorder(strength: 1, frequency: 70, lineWidth: 4, color: .red, animationDuration: 1, autoreverses: false)
+            WaveCircleBorder(height: 100, width: 100)
+            WaveCircleBorder(strength: 1, frequency: 70, lineWidth: 4, color: .red, animationDuration: 1, autoreverses: false, height: 100)
+
         }
         .padding()
     }

@@ -283,21 +283,21 @@ struct ProfileView: View {
                 .padding(.top)
             }
             .navigationTitle("Profile Details")
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        presentationMode.wrappedValue.dismiss()
-                    }
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
-                        // Pass the potentially modified editingProfile
-                        profileManager.updateProfile(cacheUpdater.currentProfile)
-                        presentationMode.wrappedValue.dismiss()
-                    }
-                    .disabled(!isProfileChanged()) // isProfileChanged still uses originalProfile and editingProfile state
-                }
-            }
+//            .toolbar {
+//                ToolbarItem(placement: .navigationBarLeading) {
+//                    Button("Cancel") {
+//                        presentationMode.wrappedValue.dismiss()
+//                    }
+//                }
+//                ToolbarItem(placement: .navigationBarTrailing) {
+//                    Button("Save") {
+//                        // Pass the potentially modified editingProfile
+//                        profileManager.updateProfile(cacheUpdater.currentProfile)
+//                        presentationMode.wrappedValue.dismiss()
+//                    }
+//                    .disabled(!isProfileChanged()) // isProfileChanged still uses originalProfile and editingProfile state
+//                }
+//            }
         }
         // Use the cacheUpdater's published cache
         .onReceive(cacheUpdater.$cache) { newCache in

@@ -82,6 +82,8 @@
 		BE1512942E15F6A600BB9EC2 /* ConcentricCircleVisualizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE15128E2E15F6A600BB9EC2 /* ConcentricCircleVisualizer.swift */; };
 		BE1512952E15F6A600BB9EC2 /* EQBarsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE15128F2E15F6A600BB9EC2 /* EQBarsView.swift */; };
 		BE1512962E15F6A600BB9EC2 /* PitchLineVisualizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE1512902E15F6A600BB9EC2 /* PitchLineVisualizer.swift */; };
+		BE26CAE72E26DC5A00B676D6 /* CircleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE26CAE62E26DC4B00B676D6 /* CircleView.swift */; };
+		BE26CAE82E26DC5A00B676D6 /* CircleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE26CAE62E26DC4B00B676D6 /* CircleView.swift */; };
 		BE37664A2E1C224E005CFA44 /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE3766492E1C224E005CFA44 /* SessionStore.swift */; };
 		BE37664B2E1C224E005CFA44 /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE3766492E1C224E005CFA44 /* SessionStore.swift */; };
 		BE37664D2E1C2270005CFA44 /* SavedSessionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE37664C2E1C2270005CFA44 /* SavedSessionsView.swift */; };
@@ -205,6 +207,7 @@
 		BE15128E2E15F6A600BB9EC2 /* ConcentricCircleVisualizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConcentricCircleVisualizer.swift; sourceTree = "<group>"; };
 		BE15128F2E15F6A600BB9EC2 /* EQBarsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EQBarsView.swift; sourceTree = "<group>"; };
 		BE1512902E15F6A600BB9EC2 /* PitchLineVisualizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchLineVisualizer.swift; sourceTree = "<group>"; };
+		BE26CAE62E26DC4B00B676D6 /* CircleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleView.swift; sourceTree = "<group>"; };
 		BE3766492E1C224E005CFA44 /* SessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
 		BE37664C2E1C2270005CFA44 /* SavedSessionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedSessionsView.swift; sourceTree = "<group>"; };
 		BE3766522E1C229D005CFA44 /* PitchChakraTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchChakraTimelineView.swift; sourceTree = "<group>"; };
@@ -356,6 +359,7 @@
 			children = (
 				BEDD83032E18A99500C46430 /* CircleWave.swift */,
 				BE15128E2E15F6A600BB9EC2 /* ConcentricCircleVisualizer.swift */,
+				BE26CAE62E26DC4B00B676D6 /* CircleView.swift */,
 				8FB571EF25B73ECE007C28BC /* CurrentNoteMarker.swift */,
 				BE15128F2E15F6A600BB9EC2 /* EQBarsView.swift */,
 				BE0541CB2E19759100E8A38E /* F0SelectorView.swift */,
@@ -663,6 +667,7 @@
 				BEED700C2E14526400037881 /* FunctionGeneratorEngine.swift in Sources */,
 				BE7C15962E2040DC00292671 /* TuningOverlapCirclesView.swift in Sources */,
 				BEED6ED32E143EEB00037881 /* AudioPlayer.swift in Sources */,
+				BE26CAE82E26DC5A00B676D6 /* CircleView.swift in Sources */,
 				BE026C072E1D620A0088BD78 /* UserProfile.swift in Sources */,
 				BE026CC12E1DA6DE0088BD78 /* TonePlayerControlPanel.swift in Sources */,
 				BE026C082E1D620A0088BD78 /* UserProfileManager.swift in Sources */,
@@ -716,6 +721,7 @@
 				8FB571FD25B73ECF007C28BC /* NoteDistanceMarkers.swift in Sources */,
 				BEE6D7EE2E1B264000B3B886 /* SessionStatistics.swift in Sources */,
 				BE477BE72E1F670600F991F2 /* VoicePrintDemoView.swift in Sources */,
+				BE26CAE72E26DC5A00B676D6 /* CircleView.swift in Sources */,
 				BEE6D7EF2E1B264000B3B886 /* PitchStatistics.swift in Sources */,
 				BEE6D7F02E1B264000B3B886 /* TunerData+Statistics.swift in Sources */,
 				BEDD83052E18A99500C46430 /* CircleWave.swift in Sources */,

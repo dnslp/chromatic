@@ -49,18 +49,18 @@ struct TunerStreakVoicePrintShape: Shape {
     var waviness: CGFloat
     var lobes: Int
     var inTunePercent: Double
-
+    
     func path(in rect: CGRect) -> Path {
         let center = CGPoint(x: rect.midX, y: rect.midY)
         let points = 360
         let angleStep = (2 * .pi) / CGFloat(points)
-
+        
         var path = Path()
         for i in 0..<points {
             let angle = angleStep * CGFloat(i)
             let lobeEffect = sin(angle * CGFloat(lobes))
             let smoothness = CGFloat(inTunePercent)
-            let radius = baseRadius + (lobeEffect * waviness * smoothness)
+            let radius = baseRadius + (lobeEffect * smoothness)
             let x = center.x + radius * cos(angle)
             let y = center.y + radius * sin(angle)
             if i == 0 {
@@ -81,13 +81,13 @@ struct TunerStreakWavingCircleBorder: View {
     var color: Color
     var animationDuration: Double
     var highlighted: Bool = false
-
+    
     @State private var phase: CGFloat = 0
-
+    
     var body: some View {
         TunerStreakVoicePrintShape(
             baseRadius: 0.5 * 120,
-            waviness: strength * 1,
+            waviness: frequency * strength,
             lobes: Int(frequency),
             inTunePercent: 0.5 + 0.5 * CGFloat(sin(Double(phase)))
         )
@@ -110,34 +110,34 @@ struct TunerStreak: View {
     @Binding var tunerData: TunerData
     @State var modifierPreference: ModifierPreference
     @State var selectedTransposition: Int
-
+    
     // -- State
     @State private var sessionStats: SessionStatistics?
     @State private var showStatsModal = false
     @State private var countdown: Int?
     let countdownSeconds = 3
     @State private var recordingStartedAt: Date?
-
+    
     @EnvironmentObject private var profileManager: UserProfileManager
     @State private var userF0: Double = 77.78
-
+    
     @State private var currentStreak: Int = 0
     @State private var bestStreak: Int = 0
     @State private var updateCount: Int = 0
     private let updatesPerPoint: Int = 5
     private let inTuneThreshold: Double = 5.0
-
+    
     @State private var solidifiedLayers: [TunerStreakLayer] = []
     @State private var milestoneRings: [Int] = []
-
+    
     private let coreBaseSize: CGFloat = 40
     private let coreGrowthFactor: CGFloat = 6.5
-
+    
     @State private var rotationAngle: Double = 0
     @State private var pulse = false
-
+    
     @State private var showingProfileSelector = false
-
+    
     // --- NEW/CHANGED STATE FOR RING ANIMATION ---
     @State private var ringRotation: Double = 0
     @State private var isStreaking: Bool = false
@@ -155,10 +155,10 @@ struct TunerStreak: View {
         ringAnimating = false
         // Do not reset ringRotation so the ring "freezes" at its current spot
     }
-
+    
     // -- Preview/Mock Colors
     private let spectrumColors: [Color] = (0..<12).map { tunerStreakChromaColor(for: 220 * pow(2, Double($0)/12.0)) }
-
+    
     // -- "Work in progress" stats using recent pitch window
     private var liveVoicePrintStats: TunerStreakStats {
         let window = 36
@@ -188,7 +188,7 @@ struct TunerStreak: View {
             inTunePercent: Double(inTuneC) / Double(window) * 100
         )
     }
-
+    
     var body: some View {
         VStack(spacing: 22) {
             // Profile selection bar
@@ -207,13 +207,18 @@ struct TunerStreak: View {
             }
             .padding(.horizontal)
             .padding(.top)
-
+            
             ZStack {
+                
+                TuningOverlapCirclesView(
+                    targetF0: userF0,
+                    liveF0: tunerData.pitch.measurement.value
+                )
                 // --- PROGRESS RING (grows & spins only while streaking) ---
                 let progressLevel = currentStreak / 10
                 let ringBaseSize: CGFloat = 220
                 let ringSize = ringBaseSize + CGFloat(progressLevel) * 16
-
+                
                 Circle()
                     .stroke(
                         AngularGradient(
@@ -224,71 +229,78 @@ struct TunerStreak: View {
                     )
                     .rotationEffect(.degrees(-90 + ringRotation))
                     .frame(width: ringSize, height: ringSize)
-                    .opacity(0.75)
+                    .opacity(1.0)
                     .animation(.easeInOut(duration: 0.4), value: currentStreak)
-
-
-                // "Work-in-progress" liquid voice print
-                TunerStreakVoicePrintShape(
-                    baseRadius: 68 + CGFloat(liveVoicePrintStats.amplitude * 45),
-                    waviness: 1 + CGFloat(liveVoicePrintStats.stdDev * 6),
-                    lobes: max(13, liveVoicePrintStats.uniquePitchCount / 2),
-                    inTunePercent: 0.5 - (liveVoicePrintStats.inTunePercent / 200)
-                )
-                .stroke(
-                    tunerStreakChromaColor(for: liveVoicePrintStats.avgPitch, saturation: 0.3)
-                        .opacity(0.9),
-                    lineWidth: 3
-                )
-                .frame(width: 170, height: 170)
-                .shadow(color: tunerStreakChromaColor(for: liveVoicePrintStats.avgPitch, saturation: 0.3).opacity(0.2), radius: 12)
-                .rotationEffect(.degrees(rotationAngle))
-                .animation(.linear(duration: 11).repeatForever(autoreverses: false), value: rotationAngle)
-
-                // -- Solidified streak rings --
-//                ForEach(solidifiedLayers) { layer in
-//                    TunerStreakWavingCircleBorder(
-//                        strength: layer.animationStrength,
-//                        frequency: layer.animationFrequency,
-//                        lineWidth: 4.2,
-//                        color: layer.color,
-//                        animationDuration: layer.animationDuration
-//                    )
-//                    .frame(width: layer.size, height: layer.size)
-//                    .opacity(0.45 + 0.4 * (CGFloat(layer.milestoneIndex + 1) / CGFloat(solidifiedLayers.count + 1)))
-//                    .rotationEffect(.degrees(rotationAngle / Double(layer.milestoneIndex + 2)))
-//                }
-                // -- Milestone ring at every 10 --
-//                ForEach(milestoneRings, id: \.self) { milestone in
-//                    Circle()
-//                        .stroke(
-//                            LinearGradient(
-//                                colors: [.yellow, .orange, .yellow],
-//                                startPoint: .leading, endPoint: .trailing
-//                            ),
-//                            lineWidth: 11
-//                        )
-//                        .frame(width: 228, height: 228)
-//                        .shadow(color: .yellow.opacity(0.18), radius: 15)
-//                        .scaleEffect(pulse ? 1.09 : 1.0)
-//                        .animation(.easeInOut(duration: 3.2).repeatForever(autoreverses: true), value: pulse)
-//                }
-                // -- Active, growing core --
-                let coreSize = coreBaseSize + CGFloat(currentStreak) * coreGrowthFactor
-                let coreColor = tunerStreakChromaColor(for: liveVoicePrintStats.avgPitch, saturation: 0.62)
-                TunerStreakWavingCircleBorder(
-                    strength: 1.4 + CGFloat(currentStreak) * 0.09,
-                    frequency: 10 + CGFloat(currentStreak) * 0.008,
-                    lineWidth: 2.6 + CGFloat(currentStreak) * 0.008,
-                    color: .white,
-                    animationDuration: max(0.6, 1.2 - Double(currentStreak) * 0.05),
-                    highlighted: abs(tunerData.pitch.measurement.value - userF0) <= inTuneThreshold
-                )
-                .frame(width: coreSize, height: coreSize)
-                .scaleEffect(pulse ? 1.04 : 0.93)
-                .animation(.spring(response: 0.6, dampingFraction: 0.58), value: coreSize)
-                .shadow(color: coreColor.opacity(0.13), radius: 16)
                 
+                
+                // "Work-in-progress" liquid voice print
+                //                TunerStreakVoicePrintShape(
+                //                    baseRadius: 68 + CGFloat(liveVoicePrintStats.amplitude * 45),
+                //                    waviness: 1 + CGFloat(liveVoicePrintStats.stdDev * 2),
+                //                    lobes: (liveVoicePrintStats.uniquePitchCount),
+                //                    inTunePercent: 0.5 - (liveVoicePrintStats.inTunePercent / 200)
+                //                )
+                //                .stroke(
+                //                    tunerStreakChromaColor(for: liveVoicePrintStats.avgPitch, saturation: 0.8)
+                //                        .opacity(0.9),
+                //                    lineWidth: 1
+                //                )
+                //                WaveCircleBorder(strength: abs(userF0/tunerData.pitch.measurement.value*7), frequency: CGFloat(tunerData.pitch.measurement.value / 10), lineWidth: 4 * tunerData.amplitude, color:  tunerStreakChromaColor(for: liveVoicePrintStats.minPitch, saturation: 0.7), animationDuration: 3, autoreverses: false, height: 140)
+                Circle().stroke(Color.white, lineWidth: CGFloat(currentStreak/7))
+                WaveCircleBorder(strength: abs(userF0/tunerData.pitch.measurement.value*3), frequency: CGFloat(9), lineWidth: 20 * tunerData.amplitude, color:  tunerStreakChromaColor(for: tunerData.pitch.measurement.value, saturation: 0.9), animationDuration: 2, autoreverses: false, height: 340)
+                WaveCircleBorder(strength: abs(userF0/tunerData.pitch.measurement.value*1), frequency: CGFloat(7), lineWidth: CGFloat(currentStreak/7), color:  tunerStreakChromaColor(for: tunerData.pitch.measurement.value, saturation: 0.5), animationDuration: 0.4, autoreverses: false, height: 200).opacity(0.3)
+                
+                
+                //                WaveCircleBorder(strength: 1 * tunerData.amplitude, frequency: CGFloat(tunerData.pitch.measurement.value / 10), lineWidth: 4 * tunerData.amplitude, color:  tunerStreakChromaColor(for: liveVoicePrintStats.avgPitch, saturation: 0.2), animationDuration: 3, autoreverses: false, height: 240)
+                
+                //                .shadow(color: tunerStreakChromaColor(for: liveVoicePrintStats.avgPitch, saturation: 0.3).opacity(0.2), radius: 12)
+                //                .rotationEffect(.degrees(rotationAngle))
+                //                .animation(.linear(duration: 11).repeatForever(autoreverses: false), value: rotationAngle)
+                
+                // -- Solidified streak rings --
+                //                ForEach(solidifiedLayers) { layer in
+                //                    TunerStreakWavingCircleBorder(
+                //                        strength: layer.animationStrength,
+                //                        frequency: layer.animationFrequency,
+                //                        lineWidth: 4.2,
+                //                        color: layer.color,
+                //                        animationDuration: layer.animationDuration
+                //                    )
+                //                    .frame(width: layer.size, height: layer.size)
+                //                    .opacity(0.45 + 0.4 * (CGFloat(layer.milestoneIndex + 1) / CGFloat(solidifiedLayers.count + 1)))
+                //                    .rotationEffect(.degrees(rotationAngle / Double(layer.milestoneIndex + 2)))
+                //                }
+                // -- Milestone ring at every 10 --
+                //                ForEach(milestoneRings, id: \.self) { milestone in
+                //                    Circle()
+                //                        .stroke(
+                //                            LinearGradient(
+                //                                colors: [.yellow, .orange, .yellow],
+                //                                startPoint: .leading, endPoint: .trailing
+                //                            ),
+                //                            lineWidth: 11
+                //                        )
+                //                        .frame(width: 228, height: 228)
+                //                        .shadow(color: .yellow.opacity(0.18), radius: 15)
+                //                        .scaleEffect(pulse ? 1.09 : 1.0)
+                //                        .animation(.easeInOut(duration: 3.2).repeatForever(autoreverses: true), value: pulse)
+                //                }
+                // -- Active, growing core --
+                //                let coreSize = coreBaseSize + CGFloat(currentStreak) * coreGrowthFactor
+                //                let coreColor = tunerStreakChromaColor(for: liveVoicePrintStats.avgPitch, saturation: 0.62)
+                //                TunerStreakWavingCircleBorder(
+                //                    strength: 1.4 + CGFloat(currentStreak) * 0.09,
+                //                    frequency: 10 + CGFloat(currentStreak) * 0.008,
+                //                    lineWidth: 2.6 + CGFloat(currentStreak) * 0.008,
+                //                    color: coreColor,
+                //                    animationDuration: max(0.6, 1.2 - Double(currentStreak) * 0.05),
+                //                    highlighted: abs(tunerData.pitch.measurement.value - userF0) <= inTuneThreshold
+                //                )
+                //                .frame(width: coreSize, height: coreSize)
+                //                .scaleEffect(pulse ? 1.04 : 0.93)
+                //                .animation(.spring(response: 0.6, dampingFraction: 0.58), value: coreSize)
+                //                .shadow(color: coreColor.opacity(0.13), radius: 16)
+                //
                 // -- Centered countdown overlay --
                 if let c = countdown {
                     Text("\(c)")
@@ -314,7 +326,7 @@ struct TunerStreak: View {
                 guard tunerData.isRecording, countdown == nil else { return }
                 updateCount += 1
                 let isInTune = abs(newPitch - userF0) <= inTuneThreshold
-
+                
                 if isInTune, updateCount % updatesPerPoint == 0 {
                     currentStreak += 1
                     bestStreak = max(bestStreak, currentStreak)
@@ -324,9 +336,9 @@ struct TunerStreak: View {
                         ringRotation = ringRotation.truncatingRemainder(dividingBy: 360)
                         startRingAnimation()
                     }                    // --- milestone and layer logic ---
-                    if currentStreak > 0 && currentStreak % 10 == 0 {
+                    if currentStreak > 0 {
                         let outerSize = 228 + CGFloat(currentStreak) * 3
-                        let lineW = 11 + CGFloat(currentStreak) * 0.2
+                        let lineW = 11 + CGFloat(currentStreak) * 10.2
                         Circle()
                             .stroke(
                                 LinearGradient(
@@ -336,8 +348,8 @@ struct TunerStreak: View {
                                 lineWidth: lineW
                             )
                             .frame(width: outerSize, height: outerSize)
-                            .shadow(color: .yellow.opacity(0.18), radius: 15)
-                            .scaleEffect(pulse ? 1.09 : 1.0)
+                            .shadow(color: .yellow.opacity(0.98), radius: 15)
+                            .scaleEffect(2 + CGFloat(currentStreak) * 0.02)
                             .animation(.easeInOut(duration: 3.2).repeatForever(autoreverses: true), value: pulse)
                     }
                     let streakIndex = currentStreak - 1
@@ -363,16 +375,13 @@ struct TunerStreak: View {
                 } else if !isInTune {
                     // Pause/freeze animation when out of tune
                     isStreaking = false
-                     stopRingAnimation()
+                    stopRingAnimation()
                 }
             }
-
+            
             // -- Pitch/Streak Text
             VStack(spacing: 8) {
-                TuningOverlapCirclesView(
-                    targetF0: userF0,
-                    liveF0: tunerData.pitch.measurement.value
-                )
+                
                 Text("Target f₀: \(String(format: "%.2f", userF0)) Hz")
                     .font(.headline.weight(.medium))
                     .foregroundColor(.white.opacity(0.8))
@@ -399,7 +408,7 @@ struct TunerStreak: View {
                 }
             }
             .padding(.top, 5)
-
+            
             // -- Controls
             HStack(spacing: 18) {
                 Button(action: toggleRecording) {
@@ -415,7 +424,7 @@ struct TunerStreak: View {
                     .cornerRadius(8)
                 }
                 .disabled(countdown != nil && !tunerData.isRecording)
-
+                
                 Button(action: clearSession) {
                     Text("Clear Data")
                         .padding(.horizontal)
@@ -436,7 +445,7 @@ struct TunerStreak: View {
                     )
                 }
             }
-
+            
             Spacer()
         }
         .sheet(isPresented: $showingProfileSelector) {
@@ -450,9 +459,9 @@ struct TunerStreak: View {
         .padding()
         .background(Color.black.ignoresSafeArea(.all))
     }
-
+    
     // MARK: – Helpers
-
+    
     private func toggleRecording() {
         if tunerData.isRecording {
             tunerData.stopRecording()
@@ -487,7 +496,7 @@ struct TunerStreak: View {
             }
         }
     }
-
+    
     private func clearSession() {
         tunerData.clearRecording()
         sessionStats = nil
@@ -502,7 +511,7 @@ struct TunerStreak: View {
         ringRotation = 0
         lastStreakValue = 0
     }
-
+    
     private func syncF0WithProfile() {
         if let f0 = profileManager.currentProfile?.f0 {
             userF0 = f0
@@ -540,9 +549,9 @@ struct TunerStreak_Previews: PreviewProvider {
     static var previews: some View {
         Group {
             TunerStreak(previewStreak: 9).previewDisplayName("Streak: 9")
-            TunerStreak(previewStreak: 20).previewDisplayName("Streak: 20")
-            TunerStreak(previewStreak: 30).previewDisplayName("Streak: 30")
-            TunerStreak(previewStreak: 40).previewDisplayName("Streak: 40")
+            TunerStreak(previewStreak: 29).previewDisplayName("Streak: 29")
+            TunerStreak(previewStreak: 39).previewDisplayName("Streak: 39")
+            TunerStreak(previewStreak: 49).previewDisplayName("Streak: 49")
         }
         .environmentObject(UserProfileManager.mock)
         .preferredColorScheme(.dark)
