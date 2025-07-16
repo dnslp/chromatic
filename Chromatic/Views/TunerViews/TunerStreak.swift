@@ -192,6 +192,7 @@ struct TunerStreak: View {
     var body: some View {
         VStack(spacing: 22) {
             // Profile selection bar
+            
             HStack {
                 Button(action: { showingProfileSelector = true }) {
                     Label(
@@ -207,13 +208,13 @@ struct TunerStreak: View {
             }
             .padding(.horizontal)
             .padding(.top)
-            
             ZStack {
                 
                 TuningOverlapCirclesView(
                     targetF0: userF0,
                     liveF0: tunerData.pitch.measurement.value
                 )
+                
                 // --- PROGRESS RING (grows & spins only while streaking) ---
                 let progressLevel = currentStreak / 10
                 let ringBaseSize: CGFloat = 220
@@ -231,7 +232,8 @@ struct TunerStreak: View {
                     .frame(width: ringSize, height: ringSize)
                     .opacity(1.0)
                     .animation(.easeInOut(duration: 0.4), value: currentStreak)
-                
+    
+
                 
                 // "Work-in-progress" liquid voice print
                 //                TunerStreakVoicePrintShape(
