@@ -199,11 +199,14 @@ struct PlanetaryIntervalView: View {
     let asteroidMax: Int
     let tuningCents: Double
 
+    /// Now distributes all rings evenly from step to maxRadius
     func ringRadius(_ idx: Int) -> CGFloat {
-        let minR: CGFloat = 50
-        let step: CGFloat = 27
-        return minR + CGFloat(idx) * step
+        let count = intervals.count
+        let step = maxRadius / CGFloat(count)
+        // +1 so the innermost ring isn't at zero
+        return step * CGFloat(idx + 1)
     }
+
     func isMatching(_ idx: Int) -> Bool {
         guard idx < intervals.count else { return false }
         let hz = f0 * intervals[idx].ratio

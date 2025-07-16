@@ -10,6 +10,7 @@ enum TunerDisplay: String, CaseIterable, Identifiable {
     case zen           = "Zen"
     case defaultView   = "Default"
 
+
     var id: String { rawValue }
 }
 

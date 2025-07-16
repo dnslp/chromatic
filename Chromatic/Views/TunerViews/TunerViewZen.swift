@@ -79,7 +79,7 @@ struct TunerViewZen: View {
                     ? 1200 * log2(tunerData.pitch.measurement.value / userF0)
                     : 0
 
-                ConcentricCircleVisualizer(
+                VennView(
                     distance: centsOffset,
                     maxDistance: 50,
                     tunerData: tunerData,

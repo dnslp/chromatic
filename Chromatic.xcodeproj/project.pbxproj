@@ -84,6 +84,12 @@
 		BE1512962E15F6A600BB9EC2 /* PitchLineVisualizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE1512902E15F6A600BB9EC2 /* PitchLineVisualizer.swift */; };
 		BE26CAE72E26DC5A00B676D6 /* CircleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE26CAE62E26DC4B00B676D6 /* CircleView.swift */; };
 		BE26CAE82E26DC5A00B676D6 /* CircleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE26CAE62E26DC4B00B676D6 /* CircleView.swift */; };
+		BE26CAED2E28292500B676D6 /* BareConcentricCircleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE26CAEC2E28292500B676D6 /* BareConcentricCircleView.swift */; };
+		BE26CAEE2E28292500B676D6 /* BareConcentricCircleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE26CAEC2E28292500B676D6 /* BareConcentricCircleView.swift */; };
+		BE26CAF02E2829EF00B676D6 /* VennView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE26CAEF2E2829EF00B676D6 /* VennView.swift */; };
+		BE26CAF12E2829EF00B676D6 /* VennView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE26CAEF2E2829EF00B676D6 /* VennView.swift */; };
+		BE26CAF82E28471400B676D6 /* ChannelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE26CAF72E28471400B676D6 /* ChannelView.swift */; };
+		BE26CAF92E28471400B676D6 /* ChannelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE26CAF72E28471400B676D6 /* ChannelView.swift */; };
 		BE37664A2E1C224E005CFA44 /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE3766492E1C224E005CFA44 /* SessionStore.swift */; };
 		BE37664B2E1C224E005CFA44 /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE3766492E1C224E005CFA44 /* SessionStore.swift */; };
 		BE37664D2E1C2270005CFA44 /* SavedSessionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE37664C2E1C2270005CFA44 /* SavedSessionsView.swift */; };
@@ -208,6 +214,9 @@
 		BE15128F2E15F6A600BB9EC2 /* EQBarsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EQBarsView.swift; sourceTree = "<group>"; };
 		BE1512902E15F6A600BB9EC2 /* PitchLineVisualizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchLineVisualizer.swift; sourceTree = "<group>"; };
 		BE26CAE62E26DC4B00B676D6 /* CircleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleView.swift; sourceTree = "<group>"; };
+		BE26CAEC2E28292500B676D6 /* BareConcentricCircleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BareConcentricCircleView.swift; sourceTree = "<group>"; };
+		BE26CAEF2E2829EF00B676D6 /* VennView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VennView.swift; sourceTree = "<group>"; };
+		BE26CAF72E28471400B676D6 /* ChannelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelView.swift; sourceTree = "<group>"; };
 		BE3766492E1C224E005CFA44 /* SessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
 		BE37664C2E1C2270005CFA44 /* SavedSessionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedSessionsView.swift; sourceTree = "<group>"; };
 		BE3766522E1C229D005CFA44 /* PitchChakraTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchChakraTimelineView.swift; sourceTree = "<group>"; };
@@ -357,6 +366,9 @@
 		8FB571D425B722F2007C28BC /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				BE26CAF72E28471400B676D6 /* ChannelView.swift */,
+				BE26CAEF2E2829EF00B676D6 /* VennView.swift */,
+				BE26CAEC2E28292500B676D6 /* BareConcentricCircleView.swift */,
 				BEDD83032E18A99500C46430 /* CircleWave.swift */,
 				BE15128E2E15F6A600BB9EC2 /* ConcentricCircleVisualizer.swift */,
 				BE26CAE62E26DC4B00B676D6 /* CircleView.swift */,
@@ -650,8 +662,11 @@
 				BEDD824B2E16B6E300C46430 /* HarmonicGraphView.swift in Sources */,
 				BE37664A2E1C224E005CFA44 /* SessionStore.swift in Sources */,
 				8F3ECD212682834700415B9F /* Frequency.swift in Sources */,
+				BE26CAF02E2829EF00B676D6 /* VennView.swift in Sources */,
+				BE26CAED2E28292500B676D6 /* BareConcentricCircleView.swift in Sources */,
 				BE026C032E1D61F80088BD78 /* ProfileSelectionView.swift in Sources */,
 				BE026C042E1D61F80088BD78 /* ProfileView.swift in Sources */,
+				BE26CAF82E28471400B676D6 /* ChannelView.swift in Sources */,
 				8F3ECD232682837800415B9F /* Alignment.swift in Sources */,
 				BE0F24732E1AE569003DE109 /* SpectrogramView.swift in Sources */,
 				BE1512912E15F6A600BB9EC2 /* ConcentricCircleVisualizer.swift in Sources */,
@@ -692,6 +707,7 @@
 			files = (
 				8FB571E525B73E9A007C28BC /* TunerData.swift in Sources */,
 				8FB571F525B73ECF007C28BC /* CurrentNoteMarker.swift in Sources */,
+				BE26CAF12E2829EF00B676D6 /* VennView.swift in Sources */,
 				BE7C15972E2040DC00292671 /* TuningOverlapCirclesView.swift in Sources */,
 				BE37664B2E1C224E005CFA44 /* SessionStore.swift in Sources */,
 				BEED700D2E14526400037881 /* FunctionGeneratorEngine.swift in Sources */,
@@ -712,6 +728,7 @@
 				BE0F24702E1AE51D003DE109 /* SpectrogramModel.swift in Sources */,
 				BE026CC02E1DA6DE0088BD78 /* TonePlayerControlPanel.swift in Sources */,
 				BE0F24712E1AE51D003DE109 /* SpectrogramSlice.swift in Sources */,
+				BE26CAEE2E28292500B676D6 /* BareConcentricCircleView.swift in Sources */,
 				BEED70182E1462D300037881 /* Pitch.swift in Sources */,
 				BEDD824A2E16B6E300C46430 /* HarmonicGraphView.swift in Sources */,
 				8FB571E325B73E9A007C28BC /* ScaleNote.swift in Sources */,
@@ -722,6 +739,7 @@
 				BEE6D7EE2E1B264000B3B886 /* SessionStatistics.swift in Sources */,
 				BE477BE72E1F670600F991F2 /* VoicePrintDemoView.swift in Sources */,
 				BE26CAE72E26DC5A00B676D6 /* CircleView.swift in Sources */,
+				BE26CAF92E28471400B676D6 /* ChannelView.swift in Sources */,
 				BEE6D7EF2E1B264000B3B886 /* PitchStatistics.swift in Sources */,
 				BEE6D7F02E1B264000B3B886 /* TunerData+Statistics.swift in Sources */,
 				BEDD83052E18A99500C46430 /* CircleWave.swift in Sources */,

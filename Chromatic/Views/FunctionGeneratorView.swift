@@ -14,14 +14,12 @@ struct FunctionGeneratorView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                Text("🔊 4-Channel Function Generator")
+                Text("🔊Function Generator")
                     .font(.title2)
                     .padding(.top)
 
-                ForEach(Array(engine.channels.enumerated()), id: \.1.id) { idx, currentChannel in
-//                    ChannelView(channel: currentChannel, channelIndex: idx, engine: engine)
-                    Divider()
-                }
+                ChannelView(channel: engine.channels[0],
+                engine: engine)
 
                 Spacer(minLength: 50)
             }

@@ -27,7 +27,7 @@ struct TunerViewTemplate: View {
     @State private var lastMatched: Bool = false
 
     var body: some View {
-        VStack(spacing: 28) {
+        VStack(spacing: 10) {
             // ------- Profile Selection Bar -------
             HStack {
                 Button(action: { showingProfileSelector = true }) {
@@ -41,6 +41,7 @@ struct TunerViewTemplate: View {
             }
             .padding(.top)
             .padding(.horizontal)
+        
 
             // --------- COUNTDOWN TIMER ----------
             if let c = countdown {
@@ -62,8 +63,11 @@ struct TunerViewTemplate: View {
             .opacity(countdown == nil ? 1 : 0.25) // Fade during countdown
 
             // ------- Streak Visualization -------
+  
+            MusicalPitchView(tunerData: $tunerData, modifierPreference: modifierPreference, selectedTransposition: 0)
             StreakBar(streak: streak)
-
+            
+            
             // ------- Recording Controls -------
             HStack(spacing: 18) {
                 Button(action: {

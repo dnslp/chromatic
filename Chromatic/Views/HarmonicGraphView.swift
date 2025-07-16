@@ -21,12 +21,13 @@ struct HarmonicGraphView: View {
             .offset
         return chakraColors[idx]
     }
+    var width: CGFloat = 24
+
 
     var body: some View {
         GeometryReader { geo in
             let maxFreq = harmonics.max() ?? 1
             let height = geo.size.height
-            let width: CGFloat = 24
             // Gradient stops for vertical layout
             let stops: [Gradient.Stop] = harmonics.map { freq in
                 let loc = freq / maxFreq
