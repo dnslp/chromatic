@@ -245,7 +245,7 @@ struct StringTheoryView: View {
                     let size = min(geo.size.width, geo.size.height) * 0.95
                     let center = CGPoint(x: geo.size.width/2, y: geo.size.height/2)
                     let minOrbit = size * 0.21
-                    let maxOrbit = size * 0.47
+                    let maxOrbit = size * 0.49
 
                     let livePitch = tunerData.pitch.measurement.value
                     let highlightIdx = matchingIndex(pitch: livePitch, f0: userF0)
@@ -272,6 +272,7 @@ struct StringTheoryView: View {
                         .shadow(color: highlighted ? .yellow : .clear, radius: highlighted ? 13 : 0)
                         .blur(radius: highlighted ? 0 : 1)
                         .animation(.spring(), value: highlighted)
+                        
                     }
 
                     // --- Orbiting Planets ---
@@ -283,22 +284,22 @@ struct StringTheoryView: View {
                         OrbitingPlanet(
                             color: color,
                             orbitRadius: orbitRadius,
-                            phase: Double(i) * .pi / 4,
-                            size: 16 + 6 * pct,
+                            phase: highlighted ? time : 0, // <--- ONLY highlighted planet rotates!
+                            size: 1 + 6 * pct,
                             label: scaleDegrees[i],
                             time: $time,
                             highlighted: highlighted,
                             isTonic: i == 0
                         )
-                        .shadow(color: highlighted ? .yellow : .clear, radius: highlighted ? 15 : 0)
+                        .shadow(color: highlighted ? .yellow : .clear, radius: highlighted ? 1 : 0)
                     }
 
                     // --- Central Nucleus (f₀) ---
                     ZStack {
                         WavingCircleBorder(
                             strength: 1,
-                            frequency: 9,
-                            lineWidth: 3.6,
+                            frequency: 1,
+                            lineWidth: 4.0,
                             color: .white,
                             animationDuration: 2,
                             highlighted: isTonic
@@ -320,13 +321,8 @@ struct StringTheoryView: View {
                     }
                     .position(center)
                 }
-                .frame(height: 320)
-                .onAppear {
-                    withAnimation(.easeInOut(duration: 1.2)) { time = 0 }
-                    Timer.scheduledTimer(withTimeInterval: 1/60, repeats: true) { t in
-                        time += 0.015
-                    }
-                }
+                .frame(height: 350)
+
 
                 // Overlay live pitch frequency
                 VStack {
@@ -348,6 +344,7 @@ struct StringTheoryView: View {
                                 .transition(.opacity)
                         }
                     }
+                    
                     Text("Live: \(tunerData.pitch.measurement.value, specifier: "%.2f") Hz")
                         .font(.title2)
                         .foregroundColor(.cyan)
