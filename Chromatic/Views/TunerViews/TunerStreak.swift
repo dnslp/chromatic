@@ -249,7 +249,7 @@ struct TunerStreak: View {
                 //                )
                 //                WaveCircleBorder(strength: abs(userF0/tunerData.pitch.measurement.value*7), frequency: CGFloat(tunerData.pitch.measurement.value / 10), lineWidth: 4 * tunerData.amplitude, color:  tunerStreakChromaColor(for: liveVoicePrintStats.minPitch, saturation: 0.7), animationDuration: 3, autoreverses: false, height: 140)
                 Circle().stroke(Color.white, lineWidth: CGFloat(currentStreak/7))
-                WaveCircleBorder(strength: abs(userF0/tunerData.pitch.measurement.value*3), frequency: CGFloat(9), lineWidth: 20 * tunerData.amplitude, color:  tunerStreakChromaColor(for: tunerData.pitch.measurement.value, saturation: 0.9), animationDuration: 2, autoreverses: false, height: 340)
+                WaveCircleBorder(strength: abs(userF0/tunerData.pitch.measurement.value*2), frequency: CGFloat(9), lineWidth: 20 * tunerData.amplitude, color:  tunerStreakChromaColor(for: tunerData.pitch.measurement.value, saturation: 0.9), animationDuration: 2, autoreverses: false, height: 340)
                 WaveCircleBorder(strength: abs(userF0/tunerData.pitch.measurement.value*1), frequency: CGFloat(7), lineWidth: CGFloat(currentStreak/7), color:  tunerStreakChromaColor(for: tunerData.pitch.measurement.value, saturation: 0.5), animationDuration: 0.4, autoreverses: false, height: 200).opacity(0.3)
                 
                 
