@@ -321,9 +321,9 @@ struct StringTheoryView: View {
                     }
                     .position(center)
                 }
-                .frame(height: 350)
+                .frame(height: 320).padding(.bottom, 40)
 
-
+                
                 // Overlay live pitch frequency
                 VStack {
                     Spacer()
@@ -335,14 +335,14 @@ struct StringTheoryView: View {
                             .scaleEffect(isTonic ? 1.4 : 1)
                             .animation(.spring(), value: isTonic)
 
-                        if let idx = highlightIdx {
-                            Text(idx == 0 ? "Tonic!" : "Degree \(scaleDegrees[idx])")
-                                .font(.headline)
-                                .foregroundColor(idx == 0 ? .yellow : .white)
-                                .shadow(color: .yellow.opacity(0.8), radius: 6)
-                                .scaleEffect(1.4)
-                                .transition(.opacity)
-                        }
+//                        if let idx = highlightIdx {
+//                            Text(idx == 0 ? "Tonic!" : "Degree \(scaleDegrees[idx])")
+//                                .font(.headline)
+//                                .foregroundColor(idx == 0 ? .yellow : .white)
+//                                .shadow(color: .yellow.opacity(0.8), radius: 6)
+//                                .scaleEffect(1.4)
+//                                .transition(.opacity)
+//                        }
                     }
                     
                     Text("Live: \(tunerData.pitch.measurement.value, specifier: "%.2f") Hz")

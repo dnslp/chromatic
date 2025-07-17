@@ -81,7 +81,7 @@ struct TunerViewZen: View {
 
                 VennView(
                     distance: centsOffset,
-                    maxDistance: 50,
+                    maxDistance: 75,
                     tunerData: tunerData,
                     fundamentalHz: userF0
                 )
