@@ -121,11 +121,12 @@ struct TunerScreen: View {
         case .zen:
             TunerViewZen(tunerData: $tunerData)
         case .defaultView:
-            TunerView(
-                tunerData: $tunerData,
-                modifierPreference: modifierPreference,
-                selectedTransposition: selectedTransposition
-            )
+            TunerBackgroundView(tunerData: tunerData, userF0: userF0)
+//            TunerView(
+//                tunerData: $tunerData,
+//                modifierPreference: modifierPreference,
+//                selectedTransposition: selectedTransposition
+//            )
         }
     }
 }

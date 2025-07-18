@@ -25,6 +25,7 @@ struct TunerViewTemplate: View {
     
     // Used for streak logic
     @State private var lastMatched: Bool = false
+    
 
     var body: some View {
         VStack(spacing: 10) {
